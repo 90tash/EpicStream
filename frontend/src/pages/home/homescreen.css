@@ -288,8 +288,8 @@
 }
 
 .browse-card {
-    flex: 0 0 clamp(260px, 22vw, 400px); /* Restored for immersive presence */
-    max-width: clamp(260px, 22vw, 400px);
+    flex: 0 0 clamp(160px, 14vw, 240px); /* Narrower for portrait posters */
+    max-width: clamp(160px, 14vw, 240px);
     border: 0;
     padding: 0;
     background: transparent;
@@ -305,7 +305,7 @@
 /* Internal Zoom Effect */
 .card-img-wrapper {
     width: 100%;
-    aspect-ratio: 16 / 9; /* Restored from portrait */
+    aspect-ratio: 2 / 3; /* Vertical poster ratio */
     border-radius: 8px; /* Slightly softer corners */
     overflow: hidden;
     background: #111;
@@ -582,13 +582,13 @@
     }
 
     .browse-card {
-        flex: 0 0 70vw;
-        max-width: 70vw;
+        flex: 0 0 35vw; /* Much narrower to fit vertical posters well on mobile */
+        max-width: 35vw;
     }
 
     .top-ten-card {
-        flex: 0 0 42vw !important;
-        max-width: 42vw !important;
+        flex: 0 0 35vw !important; /* Match regular card width for consistent vertical poster feel on mobile */
+        max-width: 35vw !important;
     }
 
     .row-arrow {

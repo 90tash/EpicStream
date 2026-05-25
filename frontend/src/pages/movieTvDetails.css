@@ -622,7 +622,8 @@
 }
 
 @media (max-width: 600px) {
-    .details-hero { height: 85vh; min-height: 520px; padding-bottom: 40px; }
+    .details-hero { height: 75vh; min-height: 480px; padding-bottom: 40px; }
+    .details-hero-image { object-position: center 20%; }
     .details-hero-content { margin-left: 20px; margin-right: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
     .details-hero-content h1 { font-size: 28px; }
     .details-hero-meta { justify-content: center; gap: 12px; font-size: 13px; }

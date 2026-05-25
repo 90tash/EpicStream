@@ -85,9 +85,3 @@
         gap: 16px;
     }
 }
-
-@media (max-width: 560px) {
-    .menu {
-        display: block;
-    }
-}

@@ -71,7 +71,7 @@ const MovieCard = ({ item, row, index, openDetails }) => {
             )}
             <div className="card-img-wrapper">
                 <img 
-                    src={imageUrl(row.topTen ? (item.poster_path || item.backdrop_path) : (item.backdrop_path || item.poster_path), "w780")} 
+                    src={imageUrl(item.poster_path || item.backdrop_path, "w500")} 
                     alt={getTitle(item)} 
                     loading="lazy"
                 />

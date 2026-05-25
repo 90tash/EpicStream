@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './navbar.css';
 import { Link } from 'react-router-dom';
-import { Menu, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 
 const Navbar = () => {
@@ -31,7 +31,6 @@ const Navbar = () => {
                 <Link className='search-button-link' to={"/search"} aria-label="Search">
                     <Search className='search-icon' />
                 </Link>
-                <Menu className='menu' />
             </div>
         </header>
     );
