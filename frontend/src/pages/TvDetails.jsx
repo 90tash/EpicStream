@@ -156,7 +156,11 @@ const TvDetails = () => {
                         <button 
                             className="details-play" 
                             onClick={() => {
-                                if (imdbId) window.location.href = `https://www.playimdb.com/title/${imdbId}`;
+                                if (imdbId) {
+                                    window.open(`https://www.playimdb.com/title/${imdbId}`, '_blank');
+                                } else {
+                                    alert("Loading player... please try again in a second.");
+                                }
                             }}
                         >
                             <Play fill="currentColor" /> Play

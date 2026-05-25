@@ -148,7 +148,11 @@ const MovieDetails = () => {
                         <button 
                             className="details-play" 
                             onClick={() => {
-                                if (imdbId) window.open(`https://www.playimdb.com/title/${imdbId}`, '_blank');
+                                if (imdbId) {
+                                    window.open(`https://www.playimdb.com/title/${imdbId}`, '_blank');
+                                } else {
+                                    alert("Loading player... please try again in a second.");
+                                }
                             }}
                         >
                             <Play fill="currentColor" /> Play

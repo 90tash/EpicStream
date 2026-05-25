@@ -262,7 +262,11 @@ const HomeScreen = () => {
                                 type="button"
                                 className="browse-play"
                                 onClick={() => {
-                                    if (heroImdbId) window.location.href = `https://www.playimdb.com/title/${heroImdbId}`;
+                                    if (heroImdbId) {
+                                        window.open(`https://www.playimdb.com/title/${heroImdbId}`, '_blank');
+                                    } else {
+                                        alert("Fetching movie data... please try again in a moment.");
+                                    }
                                 }}
                             >
                                 <Play size={20} fill="currentColor" />
