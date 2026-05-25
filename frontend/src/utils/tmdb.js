@@ -50,3 +50,26 @@ export const tmdbGetImages = async (type, id) => {
         return { logos: [], backdrops: [], posters: [] };
     }
 };
+
+export const tmdbGetSeason = async (tvId, seasonNumber) => {
+    try {
+        const data = await tmdbFetch(`/tv/${tvId}/season/${seasonNumber}`);
+        return data;
+    } catch (error) {
+        console.error(`Error fetching season ${seasonNumber}:`, error);
+        return { episodes: [] };
+    }
+};
+
+export const tmdbGetRecommendations = async (type, id) => {
+    try {
+        let data = await tmdbFetch(`/${type}/${id}/recommendations`);
+        if (!data.results || data.results.length === 0) {
+            data = await tmdbFetch(`/${type}/${id}/similar`);
+        }
+        return data.results || [];
+    } catch (error) {
+        console.error(`Error fetching recommendations for ${type} ${id}:`, error);
+        return [];
+    }
+};

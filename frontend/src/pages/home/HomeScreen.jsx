@@ -9,7 +9,6 @@ import "./homescreen.css";
 
 const rows = [
     { title: "TOP 10 Today", path: "/trending/all/day", topTen: true },
-    { title: "Trending Today", path: "/trending/all/day" },
     { title: "Popular Movies", path: "/movie/popular" },
     { title: "Popular Shows", path: "/tv/popular" },
     { title: "Top Rated: Movies", path: "/movie/top_rated" },

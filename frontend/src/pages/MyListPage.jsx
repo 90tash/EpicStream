@@ -1,13 +1,33 @@
-import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { BookmarkPlus, Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { BookmarkPlus, Search, ChevronLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import "./myList.css";
 
 const MyListPage = () => {
+    const navigate = useNavigate();
+
     return (
         <div className="my-list-page">
-            <Navbar />
+            <button className="back-btn-simple" onClick={() => navigate("/")} aria-label="Go back" style={{
+                position: 'absolute',
+                left: '4%',
+                top: '32px',
+                zIndex: 10,
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: '#fff',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 0,
+                cursor: 'pointer'
+            }}>
+                <ChevronLeft size={24} style={{ marginRight: '2px' }} />
+            </button>
+
             <main className="my-list-empty">
                 <div className="my-list-icon">
                     <BookmarkPlus size={54} />

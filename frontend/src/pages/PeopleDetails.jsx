@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import { ChevronLeft } from "lucide-react";
 import Footer from "../components/Footer";
 import "./peopleDetails.css";
 import { getTitle, imageUrl, tmdbFetch } from "../utils/tmdb";
@@ -45,12 +45,14 @@ const PeopleDetails = () => {
     navigate(`/${type}/${movie.id}`, { state: { movie } });
   };
 
-  if (isLoading) return <div className="people-details-page"><Navbar /><p style={{textAlign:'center', padding:'100px'}}>Loading...</p></div>;
+  if (isLoading) return <div className="people-details-page"><p style={{textAlign:'center', padding:'100px'}}>Loading...</p></div>;
   if (!details) return null;
 
   return (
     <div className="people-details-page">
-      <Navbar />
+      <button className="back-btn-simple" onClick={() => navigate("/")} aria-label="Go back">
+          <ChevronLeft size={24} />
+      </button>
       
       <main className="people-container">
         <aside className="people-sidebar">

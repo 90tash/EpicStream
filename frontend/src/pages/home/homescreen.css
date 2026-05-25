@@ -345,7 +345,7 @@
 }
 
 .browse-card:hover .card-title {
-    color: #fff;
+    color: var(--accent);
 }
 
 .card-meta {

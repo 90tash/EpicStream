@@ -1,239 +1,237 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { Play, Info, Volume2, VolumeX } from "lucide-react";
-import ReactPlayer from "react-player";
+import { ChevronLeft, Play, Star, ChevronDown } from "lucide-react";
 import "./movieTvDetails.css";
-import { getTitle, imageUrl, tmdbFetch } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations } from "../utils/tmdb";
 
 const TvDetails = () => {
     const { state } = useLocation();
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [tv, setTv] = useState(state?.movie || null); // In this project, 'movie' is often used generically in state
-    const [teaser, setTeaser] = useState(null);
-    const [trailers, setTrailers] = useState([]);
+    const [tv, setTv] = useState(null);
     const [cast, setCast] = useState([]);
     const [similarTv, setSimilarTv] = useState([]);
     const [imdbId, setImdbId] = useState(null);
-    const [isMuted, setIsMuted] = useState(false); // Default sound to ON
 
+    // Episodes & Seasons State
+    const [selectedSeason, setSelectedSeason] = useState(null);
+    const [showSeasonMenu, setShowSeasonMenu] = useState(false);
+    const [episodes, setEpisodes] = useState([]);
+    const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
+
+    // Sync basic state from location
+    useEffect(() => {
+        if (state?.movie) {
+            setTv(state.movie);
+        }
+    }, [id, state]);
+
+    // 1. Always fetch full TV details (including seasons) on mount or ID change
     useEffect(() => {
         window.scrollTo(0, 0);
 
-        const fetchInitialData = async () => {
-            if (!tv && id) {
-                try {
-                    const data = await tmdbFetch(`/tv/${id}`);
-                    setTv(data);
-                } catch (error) {
-                    console.error("Error fetching initial TV data:", error);
-                    navigate("/", { replace: true });
-                }
-            }
-        };
-
-        fetchInitialData();
-    }, [id, tv, navigate]);
-
-    useEffect(() => {
-        if (!tv) return;
-
-        const fetchVideos = async () => {
+        const fetchAllData = async () => {
             try {
-                // Fetch basic videos first
-                const data = await tmdbFetch(`/tv/${tv.id}/videos`);
-                let foundTeaser = data.results.find((v) => v.type === "Teaser");
-                let foundTrailers = data.results.filter((v) => v.type === "Trailer");
+                // Fetch full TV details (mandatory for the 'seasons' array)
+                const fullTvData = await tmdbFetch(`/tv/${id}`);
+                setTv(fullTvData);
+
+                // Initialize first season
+                if (fullTvData.seasons?.length > 0) {
+                    const firstSeason = fullTvData.seasons.find(s => s.season_number > 0) || fullTvData.seasons[0];
+                    setSelectedSeason(firstSeason.season_number);
+                }
+
+                // Fetch other secondary data
+                const [castData, recsData, idsData] = await Promise.all([
+                    tmdbFetch(`/tv/${id}/credits`),
+                    tmdbGetRecommendations("tv", id),
+                    tmdbFetch(`/tv/${id}/external_ids`)
+                ]);
                 
-                // If no trailers in main, try season 1
-                if (foundTrailers.length === 0) {
-                    const sdata = await tmdbFetch(`/tv/${tv.id}/season/1/videos`);
-                    if (!foundTeaser) foundTeaser = sdata.results.find((v) => v.type === "Teaser");
-                    foundTrailers = sdata.results.filter((v) => v.type === "Trailer");
-                }
-
-                setTeaser(foundTeaser);
-                setTrailers(foundTrailers.slice(0, 2));
+                setCast(castData.cast.slice(0, 10));
+                setSimilarTv(recsData.slice(0, 10));
+                setImdbId(idsData.imdb_id);
             } catch (error) {
-                console.error("Error fetching videos:", error);
+                console.error("Error fetching TV data:", error);
+                if (!tv && !state?.movie) navigate("/", { replace: true });
             }
         };
 
-        const fetchCast = async () => {
-            try {
-                const data = await tmdbFetch(`/tv/${tv.id}/credits`);
-                setCast(data.cast.slice(0, 10));
-            } catch (error) {
-                console.error("Error fetching cast:", error);
-            }
+        fetchAllData();
+    }, [id]);
+
+    // 2. Fetch episodes whenever the selected season changes
+    useEffect(() => {
+        if (!id || selectedSeason === null) return;
+
+        const fetchEpisodes = async () => {
+            setIsLoadingEpisodes(true);
+            const data = await tmdbGetSeason(id, selectedSeason);
+            setEpisodes(data.episodes || []);
+            setIsLoadingEpisodes(false);
         };
 
-        const fetchSimilar = async () => {
-            try {
-                const data = await tmdbFetch(`/tv/${tv.id}/similar`);
-                setSimilarTv(data.results.slice(0, 10));
-            } catch (error) {
-                console.error("Error fetching similar:", error);
-            }
-        };
-
-        const fetchExternalIds = async () => {
-            try {
-                const data = await tmdbFetch(`/tv/${tv.id}/external_ids`);
-                setImdbId(data.imdb_id);
-            } catch (error) {
-                console.error("Error fetching TV details:", error);
-            }
-        };
-
-        fetchVideos();
-        fetchCast();
-        fetchSimilar();
-        fetchExternalIds();
-    }, [tv]);
+        fetchEpisodes();
+    }, [id, selectedSeason]);
 
     if (!tv) return null;
 
     const title = getTitle(tv);
     const releaseYear = (tv.first_air_date || tv.release_date || "").slice(0, 4);
+    const rating = tv.vote_average ? tv.vote_average.toFixed(1) : null;
+
+    // Filter for the dropdown
+    const seasonsList = tv.seasons?.filter(s => s.season_number > 0) || [];
+    const currentSeasonName = seasonsList.find(s => s.season_number === selectedSeason)?.name || `Season ${selectedSeason}`;
 
     return (
         <div className="details-page">
-            <Navbar />
+            <button className="back-btn" onClick={() => navigate("/")} aria-label="Go back">
+                <ChevronLeft size={24} />
+            </button>
             
             <section className="details-hero">
-                {trailers.length > 0 || teaser ? (
-                    <>
-                        <div className="details-hero-video-wrapper">
-                            <ReactPlayer
-                                className="details-hero-video"
-                                url={`https://www.youtube.com/watch?v=${(trailers[0] || teaser).key}`}
-                                playing={true}
-                                muted={isMuted}
-                                loop={true}
-                                width="100%"
-                                height="100%"
-                                controls={false}
-                                config={{
-                                    youtube: {
-                                        playerVars: { 
-                                            showinfo: 0, 
-                                            modestbranding: 1, 
-                                            rel: 0, 
-                                            iv_load_policy: 3, 
-                                            controls: 0,
-                                            disablekb: 1,
-                                            fs: 0,
-                                            autohide: 1
-                                        }
-                                    }
-                                }}
-                            />
-                        </div>
-                        <button 
-                            className="mute-btn" 
-                            onClick={() => setIsMuted(!isMuted)}
-                            aria-label={isMuted ? "Unmute" : "Mute"}
-                        >
-                            {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
-                        </button>
-                    </>
-                ) : (
-                    <img
-                        className="details-hero-image"
-                        src={imageUrl(tv.backdrop_path, "original")}
-                        alt={title}
-                    />
-                )}
+                <img
+                    className="details-hero-image"
+                    src={imageUrl(tv.backdrop_path, "original")}
+                    alt={title}
+                />
                 <div className="details-hero-shade" />
                 <div className="details-hero-content">
-                    <span className="media-type">T V  S H O W</span>
                     <h1>{title}</h1>
+                    <div className="details-hero-meta">
+                        {rating && (
+                            <span className="rating">
+                                <Star size={15} fill="currentColor" />
+                                {rating}
+                            </span>
+                        )}
+                        {releaseYear && <span>{releaseYear}</span>}
+                        <span>TV Show</span>
+                        <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
+                        <span className="hd-badge">HD</span>
+                    </div>
+                    <p className="details-hero-overview">{tv.overview}</p>
                     <div className="details-actions">
                         <button 
                             className="details-play" 
                             onClick={() => {
                                 if (imdbId) {
-                                    window.open(`https://www.playimdb.com/title/${imdbId}`, '_blank');
+                                    window.open(`https://www.playimdb.com/title/${imdbId}/season/${selectedSeason || 1}/episode/1`, '_blank');
                                 } else {
                                     alert("Loading player... please try again in a second.");
                                 }
                             }}
                         >
-                            <Play fill="currentColor" /> Play
+                            <Play size={20} fill="currentColor" />
+                            <span>Play</span>
                         </button>
-                        <button className="details-info" onClick={() => document.getElementById('trailers')?.scrollIntoView({ behavior: 'smooth' })}>
-                            <Info /> More Info
+                        <button className="details-action-btn" onClick={() => document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth' })}>
+                            Episodes
+                        </button>
+                        <button className="details-action-btn" onClick={() => document.getElementById('similar')?.scrollIntoView({ behavior: 'smooth' })}>
+                            Similar
                         </button>
                     </div>
-                    <div className="details-hero-meta">
-                        {tv.vote_average && (
-                            <span className="rating">
-                                <a 
-                                    href={imdbId ? `https://www.imdb.com/title/${imdbId}` : "#"} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    style={{ textDecoration: 'none' }}
-                                >
-                                    <span className="imdb-badge">IMDb</span>
-                                </a> {tv.vote_average.toFixed(1)} Rating
-                            </span>
-                        )}
-                        <span>{releaseYear}</span>
-                        <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
-                        <span className="hd-badge">HD</span>
-                    </div>
-                    <p className="details-hero-overview">{tv.overview}</p>
                 </div>
             </section>
 
             <main>
-                {/* Info section removed from here as it's now in the hero */}
+                {/* Episodes Section */}
+                <section id="episodes" className="episodes-section">
+                    <div className="episodes-header">
+                        <div className="episodes-title-group">
+                            <h2 className="details-section-title">Episodes</h2>
+                            
+                            {seasonsList.length > 0 && (
+                                <div className="custom-season-dropdown">
+                                    <button 
+                                        className="season-dropdown-trigger" 
+                                        onClick={() => setShowSeasonMenu(!showSeasonMenu)}
+                                    >
+                                        {currentSeasonName}
+                                        <ChevronDown size={16} style={{ transform: showSeasonMenu ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
+                                    </button>
 
-                {(teaser || trailers.length > 0) && (
-                    <>
-                        <h2 id="trailers" className="details-section-title">Trailers & Extras</h2>
-                        <div className="details-videos">
-                            {teaser && (
-                                <div className="video-wrapper">
-                                    <iframe
-                                        src={`https://www.youtube.com/embed/${teaser.key}`}
-                                        title="Teaser"
-                                        allowFullScreen
-                                    />
+                                    {showSeasonMenu && (
+                                        <div className="season-dropdown-menu">
+                                            {seasonsList.map(season => (
+                                                <button 
+                                                    key={season.id} 
+                                                    className={`season-option ${selectedSeason === season.season_number ? 'active' : ''}`}
+                                                    onClick={() => {
+                                                        setSelectedSeason(season.season_number);
+                                                        setShowSeasonMenu(false);
+                                                    }}
+                                                >
+                                                    {season.name}
+                                                    {selectedSeason === season.season_number && <div className="active-dot" />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
-                            {trailers.map((trailer) => (
-                                <div className="video-wrapper" key={trailer.id}>
-                                    <iframe
-                                        src={`https://www.youtube.com/embed/${trailer.key}`}
-                                        title="Trailer"
-                                        allowFullScreen
-                                    />
-                                </div>
-                            ))}
                         </div>
-                    </>
-                )}
+                    </div>
+
+                    <div className="episode-list">
+                        {isLoadingEpisodes ? (
+                            <p style={{textAlign:'center', color:'var(--muted)', padding:'40px'}}>Loading episodes...</p>
+                        ) : episodes.length > 0 ? (
+                            episodes.map(ep => (
+                                <div 
+                                    key={ep.id} 
+                                    className="episode-card"
+                                    onClick={() => {
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }}
+                                >
+                                    <div className="episode-thumb-wrapper">
+                                        <img 
+                                            src={imageUrl(ep.still_path, "w500", "/hero.png")} 
+                                            alt={ep.name} 
+                                        />
+                                        <span className="episode-number-badge">{ep.episode_number}</span>
+                                    </div>
+                                    <div className="episode-info">
+                                        <div className="episode-title-row">
+                                            <h3>{ep.name}</h3>
+                                            {ep.runtime && <span className="episode-runtime">{ep.runtime} min</span>}
+                                        </div>
+                                        <p className="episode-overview">
+                                            {ep.overview || "No description available for this episode."}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p style={{textAlign:'center', color:'var(--muted)', padding:'40px'}}>No episodes available.</p>
+                        )}
+                    </div>
+                </section>
 
                 {cast.length > 0 && (
                     <>
                         <h2 className="details-section-title">Cast</h2>
-                        <div className="details-slider">
+                        <div className="cast-grid">
                             {cast.map((person) => (
                                 <div 
                                     key={person.id} 
                                     className="cast-card" 
-                                    onClick={() => navigate("/peopledetails", { state: { person } })}
+                                    onClick={() => navigate(`/person/${person.id}`, { state: { person } })}
                                 >
                                     <img
                                         src={imageUrl(person.profile_path, "w500", "/avatar1.png")}
                                         alt={person.name}
                                     />
-                                    <p>{person.name}</p>
+                                    <div className="cast-info">
+                                        <span className="cast-name">{person.name}</span>
+                                        <span className="cast-character">{person.character}</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -242,21 +240,37 @@ const TvDetails = () => {
 
                 {similarTv.length > 0 && (
                     <>
-                        <h2 className="details-section-title">Similar TV Shows</h2>
-                        <div className="details-slider">
+                        <h2 id="similar" className="details-section-title">Similar TV Shows</h2>
+                        <div className="similar-grid">
                             {similarTv.map((similar) => (
                                 <div 
                                     key={similar.id} 
                                     className="similar-card" 
                                     onClick={() => {
-                                        navigate("/tvdetails", { state: { movie: similar } });
+                                        navigate(`/tv/${similar.id}`, { state: { movie: similar } });
                                         window.scrollTo(0, 0);
                                     }}
                                 >
-                                    <img
-                                        src={imageUrl(similar.backdrop_path || similar.poster_path, "w500")}
-                                        alt={getTitle(similar)}
-                                    />
+                                    <div className="similar-card-img-wrapper">
+                                        <img
+                                            src={imageUrl(similar.backdrop_path || similar.poster_path, "w500")}
+                                            alt={getTitle(similar)}
+                                            loading="lazy"
+                                        />
+                                    </div>
+                                    <span className="similar-card-title">{getTitle(similar)}</span>
+                                    <div className="similar-card-meta">
+                                        {similar.vote_average > 0 && (
+                                            <span className="rating">
+                                                <Star size={13} fill="currentColor" /> 
+                                                {similar.vote_average.toFixed(1)}
+                                                <span className="dot" />
+                                            </span>
+                                        )}
+                                        <span>{(similar.first_air_date || "").slice(0, 4)}</span>
+                                        <span className="dot" />
+                                        <span>TV Show</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -265,12 +279,6 @@ const TvDetails = () => {
             </main>
 
             <Footer />
-        </div>
-    );
-};
-
-export default TvDetails;
-       <Footer />
         </div>
     );
 };
