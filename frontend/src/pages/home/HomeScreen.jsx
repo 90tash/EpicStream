@@ -214,7 +214,14 @@ const HomeScreen = () => {
             try {
                 const row = rows[rowIndex];
                 const data = await tmdbFetch(row.path, row.params);
-                const results = (data.results || []).filter((item) => item.backdrop_path || item.poster_path).slice(0, row.topTen ? 10 : 20);
+                const results = (data.results || [])
+                    .filter((item) => {
+                        const hasImage = item.backdrop_path || item.poster_path;
+                        const releaseDate = item.release_date || item.first_air_date;
+                        const isReleased = !releaseDate || releaseDate <= today;
+                        return hasImage && isReleased;
+                    })
+                    .slice(0, row.topTen ? 10 : 20);
                 
                 setContentRows(prev => {
                     const next = [...prev];
