@@ -11,6 +11,17 @@ const rows = [
     { title: "TOP 10 Today", path: "/trending/all/day", topTen: true },
     { title: "Popular Movies", path: "/movie/popular" },
     { title: "Popular Shows", path: "/tv/popular" },
+    { 
+        title: "Currently Airing: Anime", 
+        path: "/discover/tv", 
+        params: { 
+            with_genres: 16, 
+            sort_by: "popularity.desc", 
+            with_original_language: "ja",
+            "air_date.gte": new Date().toISOString().split("T")[0],
+            "air_date.lte": new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+        } 
+    },
     { title: "Top Rated: Movies", path: "/movie/top_rated" },
     { title: "Top Rated: Series", path: "/tv/top_rated" },
 ];

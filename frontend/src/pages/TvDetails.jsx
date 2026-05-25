@@ -101,40 +101,49 @@ const TvDetails = () => {
                 />
                 <div className="details-hero-shade" />
                 <div className="details-hero-content">
-                    <h1>{title}</h1>
-                    <div className="details-hero-meta">
-                        {rating && (
-                            <span className="rating">
-                                <Star size={15} fill="currentColor" />
-                                {rating}
-                            </span>
-                        )}
-                        {releaseYear && <span>{releaseYear}</span>}
-                        <span>TV Show</span>
-                        <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
-                        <span className="hd-badge">HD</span>
+                    <div className="details-hero-poster">
+                        <img 
+                            src={imageUrl(tv.poster_path, "w500")} 
+                            alt={title + " Poster"} 
+                            className="hero-poster-img"
+                        />
                     </div>
-                    <p className="details-hero-overview">{tv.overview}</p>
-                    <div className="details-actions">
-                        <button 
-                            className="details-play" 
-                            onClick={() => {
-                                if (imdbId) {
-                                    window.open(`https://www.playimdb.com/title/${imdbId}/season/${selectedSeason || 1}/episode/1`, '_blank');
-                                } else {
-                                    alert("Loading player... please try again in a second.");
-                                }
-                            }}
-                        >
-                            <Play size={20} fill="currentColor" />
-                            <span>Play</span>
-                        </button>
-                        <button className="details-action-btn" onClick={() => document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth' })}>
-                            Episodes
-                        </button>
-                        <button className="details-action-btn" onClick={() => document.getElementById('similar')?.scrollIntoView({ behavior: 'smooth' })}>
-                            Similar
-                        </button>
+                    <div className="details-hero-text">
+                        <h1>{title}</h1>
+                        <div className="details-hero-meta">
+                            {rating && (
+                                <span className="rating">
+                                    <Star size={15} fill="currentColor" />
+                                    {rating}
+                                </span>
+                            )}
+                            {releaseYear && <span>{releaseYear}</span>}
+                            <span>TV Show</span>
+                            <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
+                            <span className="hd-badge">HD</span>
+                        </div>
+                        <p className="details-hero-overview">{tv.overview}</p>
+                        <div className="details-actions">
+                            <button 
+                                className="details-play" 
+                                onClick={() => {
+                                    if (imdbId) {
+                                        window.open(`https://www.playimdb.com/title/${imdbId}/season/${selectedSeason || 1}/episode/1`, '_blank');
+                                    } else {
+                                        alert("Loading player... please try again in a second.");
+                                    }
+                                }}
+                            >
+                                <Play size={20} fill="currentColor" />
+                                <span>Play</span>
+                            </button>
+                            <button className="details-action-btn" onClick={() => document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth' })}>
+                                Episodes
+                            </button>
+                            <button className="details-action-btn" onClick={() => document.getElementById('similar')?.scrollIntoView({ behavior: 'smooth' })}>
+                                Similar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
