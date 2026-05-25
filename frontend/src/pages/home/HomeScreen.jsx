@@ -28,6 +28,7 @@ const rows = [
             with_genres: 16, 
             sort_by: "popularity.desc", 
             with_original_language: "ja",
+            include_adult: false,
             "first_air_date.lte": today,
             "air_date.gte": today,
             "air_date.lte": new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
