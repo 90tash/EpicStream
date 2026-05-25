@@ -1,29 +1,31 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./peopleDetails.css";
 import { getTitle, imageUrl, tmdbFetch } from "../utils/tmdb";
 
 const PeopleDetails = () => {
-  const location = useLocation();
+  const { state } = useLocation();
+  const { id } = useParams();
   const navigate = useNavigate();
-  const person = location.state?.person;
-
-  const [details, setDetails] = useState(null);
+  
+  const [details, setDetails] = useState(state?.person || null);
   const [credits, setCredits] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!state?.person);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (!person) return;
+    
+    const fetchAllData = async () => {
+      const personId = details?.id || id;
+      if (!personId) return;
 
-    const fetchDetails = async () => {
       try {
         setIsLoading(true);
         const [detailsData, creditsData] = await Promise.all([
-          tmdbFetch(`/person/${person.id}`),
-          tmdbFetch(`/person/${person.id}/combined_credits`)
+          tmdbFetch(`/person/${personId}`),
+          tmdbFetch(`/person/${personId}/combined_credits`)
         ]);
 
         setDetails(detailsData);
@@ -35,12 +37,12 @@ const PeopleDetails = () => {
       }
     };
 
-    fetchDetails();
-  }, [person]);
+    fetchAllData();
+  }, [id, details?.id]);
 
   const handleCreditClick = (movie) => {
-    const targetPath = movie.media_type === "movie" ? "/moviedetails" : "/tvdetails";
-    navigate(targetPath, { state: { movie } });
+    const type = movie.media_type || (movie.first_air_date ? "tv" : "movie");
+    navigate(`/${type}/${movie.id}`, { state: { movie } });
   };
 
   if (isLoading) return <div className="people-details-page"><Navbar /><p style={{textAlign:'center', padding:'100px'}}>Loading...</p></div>;

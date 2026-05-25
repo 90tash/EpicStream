@@ -14,12 +14,11 @@ function App() {
     <>
       <Routes>
         <Route path='/' element={<HomePage />} />
-        <Route path="/tvdetails" element={<TvDetails />} />
-        <Route path="/moviedetails" element={<MovieDetails />} />
+        <Route path="/tv/:id" element={<TvDetails />} />
+        <Route path="/movie/:id" element={<MovieDetails />} />
         <Route path="/search" element={<SearchPage />} />
-        <Route path="/peopledetails" element={<PeopleDetails />} />
+        <Route path="/person/:id" element={<PeopleDetails />} />
         <Route path="/mylist" element={<MyListPage />} />
-
       </Routes>
       <Toaster />
     </>

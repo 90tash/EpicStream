@@ -73,7 +73,7 @@
 
 @media (max-width: 860px) {
     .header {
-        height: 76px; /* Increased from 70px */
+        height: 64px;
         padding: 0 16px;
     }
 
@@ -82,7 +82,7 @@
     }
 
     .right-header-items {
-        gap: 8px;
+        gap: 16px;
     }
 }
 

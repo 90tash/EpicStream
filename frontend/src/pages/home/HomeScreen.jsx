@@ -224,12 +224,8 @@ const HomeScreen = () => {
 
     const openDetails = (item) => {
         if (!item) return;
-        if (getMediaType(item) === "tv") {
-            navigate("/tvdetails", { state: { movie: item, type: "tv" } });
-            return;
-        }
-
-        navigate("/moviedetails", { state: { movie: item, type: "movie" } });
+        const type = getMediaType(item);
+        navigate(`/${type}/${item.id}`, { state: { movie: item, type } });
     };
 
     const title = getTitle(heroContent);

@@ -1,31 +1,48 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Play, Info, Volume2, VolumeX } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import ReactPlayer from "react-player";
 import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch } from "../utils/tmdb";
 
 const MovieDetails = () => {
     const { state } = useLocation();
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    const [movie, setMovie] = useState(state?.movie || null);
     const [teaser, setTeaser] = useState(null);
     const [trailers, setTrailers] = useState([]);
     const [cast, setCast] = useState([]);
     const [similarMovies, setSimilarMovies] = useState([]);
     const [imdbId, setImdbId] = useState(null);
     const [isMuted, setIsMuted] = useState(false); // Default sound to ON
-    const navigate = useNavigate();
-
-    const movie = state?.movie;
 
     useEffect(() => {
         window.scrollTo(0, 0);
+
+        const fetchInitialData = async () => {
+            if (!movie && id) {
+                try {
+                    const data = await tmdbFetch(`/movie/${id}`);
+                    setMovie(data);
+                } catch (error) {
+                    console.error("Error fetching initial movie data:", error);
+                    navigate("/", { replace: true });
+                }
+            }
+        };
+
+        fetchInitialData();
+    }, [id, movie, navigate]);
+
+    useEffect(() => {
         if (!movie) return;
 
         const fetchVideos = async () => {
-            try {
+...
                 const data = await tmdbFetch(`/movie/${movie.id}/videos`);
                 const foundTeaser = data.results.find((v) => v.type === "Teaser");
                 const foundTrailers = data.results.filter((v) => v.type === "Trailer");
@@ -131,7 +148,7 @@ const MovieDetails = () => {
                         <button 
                             className="details-play" 
                             onClick={() => {
-                                if (imdbId) window.location.href = `https://www.playimdb.com/title/${imdbId}`;
+                                if (imdbId) window.open(`https://www.playimdb.com/title/${imdbId}`, '_blank');
                             }}
                         >
                             <Play fill="currentColor" /> Play

@@ -1,27 +1,44 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Play, Info, Volume2, VolumeX } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import ReactPlayer from "react-player";
 import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch } from "../utils/tmdb";
 
 const TvDetails = () => {
     const { state } = useLocation();
+    const { id } = useParams();
+    const navigate = useNavigate();
+
+    const [tv, setTv] = useState(state?.movie || null); // In this project, 'movie' is often used generically in state
     const [teaser, setTeaser] = useState(null);
     const [trailers, setTrailers] = useState([]);
     const [cast, setCast] = useState([]);
     const [similarTv, setSimilarTv] = useState([]);
     const [imdbId, setImdbId] = useState(null);
     const [isMuted, setIsMuted] = useState(false); // Default sound to ON
-    const navigate = useNavigate();
-
-    const tv = state?.movie; // In this project, 'movie' is often used generically in state
 
     useEffect(() => {
         window.scrollTo(0, 0);
+
+        const fetchInitialData = async () => {
+            if (!tv && id) {
+                try {
+                    const data = await tmdbFetch(`/tv/${id}`);
+                    setTv(data);
+                } catch (error) {
+                    console.error("Error fetching initial TV data:", error);
+                    navigate("/", { replace: true });
+                }
+            }
+        };
+
+        fetchInitialData();
+    }, [id, tv, navigate]);
+
+    useEffect(() => {
         if (!tv) return;
 
         const fetchVideos = async () => {
@@ -244,6 +261,12 @@ const TvDetails = () => {
             </main>
 
             <Footer />
+        </div>
+    );
+};
+
+export default TvDetails;
+       <Footer />
         </div>
     );
 };
