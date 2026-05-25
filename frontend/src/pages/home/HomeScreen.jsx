@@ -7,10 +7,20 @@ import Footer from "../../components/Footer";
 import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
 import "./homescreen.css";
 
+const today = new Date().toISOString().split("T")[0];
+
 const rows = [
     { title: "TOP 10 Today", path: "/trending/all/day", topTen: true },
-    { title: "Popular Movies", path: "/movie/popular" },
-    { title: "Popular Shows", path: "/tv/popular" },
+    { 
+        title: "Popular Movies", 
+        path: "/discover/movie", 
+        params: { sort_by: "popularity.desc", "primary_release_date.lte": today } 
+    },
+    { 
+        title: "Popular Shows", 
+        path: "/discover/tv", 
+        params: { sort_by: "popularity.desc", "first_air_date.lte": today } 
+    },
     { 
         title: "Currently Airing: Anime", 
         path: "/discover/tv", 
@@ -18,12 +28,21 @@ const rows = [
             with_genres: 16, 
             sort_by: "popularity.desc", 
             with_original_language: "ja",
-            "air_date.gte": new Date().toISOString().split("T")[0],
+            "first_air_date.lte": today,
+            "air_date.gte": today,
             "air_date.lte": new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
         } 
     },
-    { title: "Top Rated: Movies", path: "/movie/top_rated" },
-    { title: "Top Rated: Series", path: "/tv/top_rated" },
+    { 
+        title: "Top Rated: Movies", 
+        path: "/discover/movie", 
+        params: { sort_by: "vote_average.desc", "vote_count.gte": 500, "primary_release_date.lte": today } 
+    },
+    { 
+        title: "Top Rated: Series", 
+        path: "/discover/tv", 
+        params: { sort_by: "vote_average.desc", "vote_count.gte": 250, "first_air_date.lte": today } 
+    },
 ];
 
 const HeroSkeleton = () => (
