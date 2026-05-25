@@ -63,9 +63,9 @@ const SearchPage = () => {
 
     const handleResultClick = (result) => {
         const type = getMediaType(result);
-        if (type === "movie") navigate("/moviedetails", { state: { movie: result } });
-        if (type === "tv") navigate("/tvdetails", { state: { movie: result } });
-        if (type === "person") navigate("/peopledetails", { state: { person: result } });
+        if (type === "movie") navigate(`/movie/${result.id}`, { state: { movie: result } });
+        if (type === "tv") navigate(`/tv/${result.id}`, { state: { movie: result } });
+        if (type === "person") navigate(`/person/${result.id}`, { state: { person: result } });
     };
 
     return (
