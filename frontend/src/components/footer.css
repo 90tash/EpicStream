@@ -1,0 +1,27 @@
+.footer {
+    width: 100%;
+    background: #050607;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 48px 0;
+    text-align: center;
+}
+
+.inside-footer-block {
+    display: flex;
+    justify-content: center;
+}
+
+.footer-orbit {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #94a3b8;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.footer-orbit:hover {
+    opacity: 1;
+}

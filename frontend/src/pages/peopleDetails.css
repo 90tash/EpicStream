@@ -1,0 +1,128 @@
+.people-details-page {
+    min-height: 100vh;
+    background: #141414;
+    color: #fff;
+    padding-top: 80px;
+}
+
+.people-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 4%;
+    display: flex;
+    gap: 40px;
+}
+
+.people-sidebar {
+    flex: 0 0 300px;
+}
+
+.people-sidebar img {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+}
+
+.people-sidebar h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+}
+
+.info-item {
+    margin-bottom: 15px;
+}
+
+.info-item label {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #8c8c8c;
+    margin-bottom: 4px;
+}
+
+.info-item p {
+    font-size: 16px;
+    color: #e5e5e5;
+}
+
+.people-main {
+    flex: 1;
+}
+
+.people-main h1 {
+    font-size: 48px;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.biography {
+    margin-bottom: 40px;
+}
+
+.biography h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.biography p {
+    font-size: 18px;
+    line-height: 1.5;
+    color: #d2d2d2;
+}
+
+.known-for h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.credits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.credit-item {
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.credit-item:hover {
+    transform: scale(1.05);
+}
+
+.credit-item img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.credit-item p {
+    font-size: 14px;
+    text-align: center;
+    color: #e5e5e5;
+}
+
+@media (max-width: 900px) {
+    .people-container {
+        flex-direction: column;
+    }
+    .people-sidebar {
+        flex: none;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    .people-main h1 {
+        font-size: 32px;
+        text-align: center;
+    }
+}

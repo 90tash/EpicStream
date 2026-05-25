@@ -1,0 +1,93 @@
+.header {
+    width: 100%;
+    height: 80px; /* Increased from 64px */
+    padding: 0 clamp(22px, 4vw, 84px);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: absolute; 
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+    border-bottom: none; 
+}
+
+/* Remove scrolled styles as per request to not keep it fixed */
+.header.scrolled {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+    border-color: transparent;
+    backdrop-filter: none;
+}
+
+.brand-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    opacity: 0.95;
+    transition: opacity 0.2s ease;
+}
+
+.brand-link:hover {
+    opacity: 1;
+}
+
+.left-header-items,
+.right-header-items {
+    display: flex;
+    align-items: center;
+}
+
+.left-header-items {
+    gap: 40px; /* Increased from 32px */
+}
+
+.right-header-items {
+    gap: 24px; /* Increased from 20px */
+}
+
+.search-button-link {
+    background: transparent !important; 
+    padding: 4px;
+    border-radius: 50%;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0.8;
+}
+
+.search-button-link:hover {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.search-icon,
+.menu {
+    width: 22px; /* Increased from 18px */
+    height: 22px;
+    color: #fff;
+}
+
+.menu {
+    display: none;
+}
+
+@media (max-width: 860px) {
+    .header {
+        height: 76px; /* Increased from 70px */
+        padding: 0 16px;
+    }
+
+    .left-header-items {
+        gap: 14px;
+    }
+
+    .right-header-items {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 560px) {
+    .menu {
+        display: block;
+    }
+}

@@ -1,0 +1,50 @@
+.brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #f8fafc;
+    font-weight: 900;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background:
+        radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.42), transparent 26%),
+        linear-gradient(135deg, #ff4a54 0%, #e50914 46%, #8f0007 100%);
+    box-shadow: 0 12px 30px rgba(229, 9, 20, 0.28);
+}
+
+.brand-logo.compact {
+    gap: 9px;
+    font-size: 22px;
+}
+
+.brand-logo.compact .brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+}
+
+@media (max-width: 640px) {
+    .brand-logo {
+        gap: 8px;
+        font-size: 22px;
+    }
+
+    .brand-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+    }
+}

@@ -1,0 +1,334 @@
+.body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+  
+
+}
+
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.home {
+    height: 113%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    overflow: hidden;
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) -70%, rgba(0, 0, 0, 1) 110%), url("hero.png");
+    background-repeat: no-repeat;
+}
+
+.navbar {
+    background-color: rgba(255, 0, 0, 0);
+    background-image: linear-gradient(rgba(0, 0, 0, 1), rgba(255, 255, 0, 0));
+    width: 100%;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.left-navbar-items>img {
+    width: 160px;
+    margin: 200px;
+
+}
+
+.right-navbar-items {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 200px;
+    justify-content: center;
+}
+
+.language {
+    height: 35px;
+    width: 120px;
+    background-color: rgb(17, 17, 17);
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 7px;
+    border: 1px solid rgb(64, 64, 64);
+}
+
+.language>option {
+    background-color: white;
+    color: black;
+}
+
+.language-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.singin-btn {
+    height: 30px;
+    background-color: red;
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    width: 80px;
+    border-radius: 5px;
+}
+
+.content-advertisment-details {
+    width: 100%;
+
+    margin: 120px 0 0 0;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.content-advertisment-details>h1 {
+    color: white;
+    max-width: 600px;
+    margin: 90px 0 0 0;
+    font-size: 56px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 70px;
+}
+
+.content-advertisment-details>p2 {
+    color: white;
+    max-width: 600px;
+    font-size: 20px;
+    font-weight: 500;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.content-advertisment-details>p3 {
+    color: white;
+
+    font-size: 16px;
+    font-weight: 400;
+    text-align: center;
+    margin: 5px 0;
+}
+
+.sigup-btn-block {
+    width: 100%;
+    height: 55px;
+    gap: 10px;
+    display: flex;
+    justify-content: center;
+
+
+}
+
+.sigup-btn-block>input {
+    background-color: rgba(23, 23, 23, 0.6);
+    padding: 23px 140px 20px 15px;
+
+    font-size: 17px;
+
+    border-radius: 5px;
+
+    text-align: start;
+    color: rgb(255, 255, 255);
+
+    border: 0.1px solid rgb(129, 127, 127);
+}
+
+.sigup-btn-block>input::placeholder {
+    color: rgb(197, 197, 197);
+    font-size: 16px;
+}
+
+.singup-btn {
+    background-color: rgb(223, 14, 14);
+    color: rgb(255, 255, 255);
+    width: 200px;
+    z-index: 9;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 5px;
+
+    border: 0.1px solid rgb(129, 127, 127);
+}
+
+.singup-btn>img {
+    filter: invert(1);
+    width: 30px;
+    margin: 0 0 0 5px;
+}
+
+#c {
+    height: 110px;
+    overflow: hidden;
+    width: 110%;
+    bottom: 0;
+    position: absolute;
+    z-index: 50;
+
+
+}
+
+#b {
+    height: 300px;
+    width: 110%;
+    border: 4px solid;
+
+    border-radius: 50%;
+    margin-bottom: -50px;
+    margin-left: -100px;
+
+
+}
+
+.trending-contents {
+    width: 103%;
+
+    margin: 150px 0 0 0;
+    height: 245px;
+    border-radius: 40% 40% 0 0;
+    z-index: 45;
+    display: flex;
+    background-color: rgb(0, 0, 0);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.trending-movies{
+    width: 100vw;
+    height: 100vh;
+    
+ 
+    z-index: 200;
+}
+.movie-card-block{
+    height: 250px;
+    width: 100%;
+  background-color: black;
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    justify-content: center;
+}
+.card{
+width: 180px;
+border-radius: 7px;
+height: 100%;
+transition: transform .4s;
+
+}
+.card:hover{
+    transform: scale(1.1);
+    
+}
+.card>p{
+    position: relative;
+    font-size: 100px;
+    font-weight: 700;
+    color: black;
+    transform: translateY(140px);
+   left: -25px;
+    text-shadow: 2px 0 #fff, -2px 0 #fff, 0 2px #fff, 0 -2px #fff,
+    1px 1px #fff, -1px -1px #fff, 1px -1px #fff, -1px 1px #fff;
+}
+.benefit-streaming{
+height: 420px;
+background-color: rgb(0, 0, 0);
+width: 100%;
+display: flex;
+
+align-items: center;
+justify-content: center;
+flex-direction: column;
+
+}
+.benefit-streaming>h1{
+    font-size: 24px;
+    font-weight: 500;
+    color: white;
+    margin: 0 0 10px -1300px;
+}
+.benift-block{
+    height: 270px;
+   
+    width: 85%;
+    display: flex;
+    gap: 20px;
+}
+.benifitblocks{
+    width: 25%;
+    height: 100%;
+    background-color: #1e1426;
+    border-radius: 20px;
+}
+.benifitblocks>h1{
+    font-size: 24px;
+    font-weight: 500;
+    color: white; 
+    margin: 25px 15px;
+}
+
+.benifitblocks>p{
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7); 
+    margin: 0 15px;
+}
+  
+
+.frequently-aksed-question{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 600px;
+    background-color: rgb(0, 0, 0);
+}
+.frequently-aksed-question>h1{
+    font-size: 24px;
+    font-weight: 500;
+    color: white;
+    margin: 0 0 10px -1290px;
+   
+  
+}
+.questions{
+    height: 83px;
+    width: 85%;
+    background-color:rgb(45, 45, 45);
+    display: flex;
+    margin: 5px 0;
+    align-items: center;
+    color: white;
+    transition: background-color .2s;
+    justify-content: space-between;
+}
+.questions:hover{
+    background-color:rgb(67, 67, 67);
+}
+.questions>p{
+    color: white;
+    font-size: 24px;
+    font-weight: 400;
+margin: 0 20px;
+}
+.questions>img{
+    width: 40px;
+    filter: invert(1);
+    margin: 0 20px;
+}

@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+    --app-font: "Inter", "Helvetica Neue", Arial, sans-serif;
+    --bg: #050607;
+    --panel: #0b0d10;
+    --panel-soft: #12151a;
+    --line: #20242c;
+    --text: #f6f7fb;
+    --muted: #9aa3b2;
+    --accent: #ff2633;
+    --accent-dark: #c90713;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--app-font);
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+input, button, select, textarea {
+    font-family: var(--app-font);
+}
+
+button {
+    color: inherit;
+}
+
+a {
+    color: inherit;
+}
