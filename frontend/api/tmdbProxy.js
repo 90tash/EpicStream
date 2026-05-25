@@ -12,7 +12,7 @@ const disallowedParams = new Set(["path", "api_key"]);
 const fetchWithCurl = async (url) => {
     try {
         console.log(`Curl fallback attempting: ${url}`);
-        const { stdout } = await execFileAsync("curl.exe", [
+        const { stdout } = await execFileAsync("curl", [
             "-s", "-L", url,
             "-H", "Accept: application/json",
             "-H", "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
