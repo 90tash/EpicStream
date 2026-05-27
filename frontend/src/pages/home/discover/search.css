@@ -410,30 +410,66 @@
 }
 
 @media (max-width: 640px) {
-    .search-modal {
-        width: calc(100% - 24px);
+    .search-page {
+        align-items: flex-start;
+        padding-top: 10vh;
     }
-    
+
+    .search-modal {
+        width: 100%;
+        padding: 0 16px;
+        gap: 10px;
+    }
+
     .search-modal.has-results {
-        /* Flex handles centering */
+        padding-top: 5vh;
     }
 
     .search-modal h1 {
-        font-size: 22px;
+        font-size: 20px;
+    }
+
+    .search-controls {
+        gap: 8px;
     }
 
     .search-input-wrap {
-        height: 48px;
-        padding: 0 16px;
+        height: 44px;
+        padding: 0 14px;
+        gap: 8px;
+    }
+
+    .search-input-wrap input {
+        font-size: 14px;
+    }
+
+    .search-results-panel {
+        max-height: 65vh;
+        border-radius: 14px;
+        padding: 4px;
     }
 
     .search-result-row {
-        gap: 10px;
-        padding: 6px;
+        gap: 12px;
+        padding: 8px;
     }
 
     .search-result-row img {
-        width: 36px;
-        height: 52px;
+        width: 42px;
+        height: 60px;
+    }
+
+    .search-result-main strong {
+        font-size: 13px;
+    }
+
+    .search-expanded p {
+        font-size: 12px;
+        -webkit-line-clamp: 4;
+    }
+
+    .search-expanded-actions button {
+        flex: 1;
+        justify-content: center;
     }
 }
