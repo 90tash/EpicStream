@@ -55,7 +55,12 @@ const SearchPage = () => {
                 const path = category.value === "multi" ? "/search/multi" : `/search/${category.value}`;
                 const data = await tmdbFetch(path, { query: searchTerm.trim(), include_adult: "false" });
                 const filteredResults = (data.results || []).filter(
-                    (result) => result.poster_path || result.profile_path || result.backdrop_path
+                    (result) => {
+                        const hasImage = result.poster_path || result.profile_path || result.backdrop_path;
+                        if (!hasImage) return false;
+                        if (category.value === "multi" && result.media_type === "person") return false;
+                        return true;
+                    }
                 );
                 setSearchResults(filteredResults.slice(0, 12));
             } catch (error) {
@@ -80,6 +85,33 @@ const SearchPage = () => {
         if (type === "movie") navigate(`/movie/${result.id}`, { state: { movie: result } });
         if (type === "tv") navigate(`/tv/${result.id}`, { state: { movie: result } });
         if (type === "person") navigate(`/person/${result.id}`, { state: { person: result } });
+    };
+
+    const handlePlay = async (e, result) => {
+        e.stopPropagation();
+        const type = getMediaType(result);
+        try {
+            let imdbId = null;
+            if (type === "movie") {
+                const data = await tmdbFetch(`/movie/${result.id}`);
+                imdbId = data.imdb_id;
+            } else if (type === "tv") {
+                const data = await tmdbFetch(`/tv/${result.id}/external_ids`);
+                imdbId = data.imdb_id;
+            }
+
+            if (imdbId) {
+                const url = type === "movie" 
+                    ? `https://www.playimdb.com/title/${imdbId}` 
+                    : `https://www.playimdb.com/title/${imdbId}/season/1/episode/1`;
+                window.open(url, '_blank');
+            } else {
+                alert("Player not available for this title.");
+            }
+        } catch (error) {
+            console.error("Error launching player:", error);
+            alert("Unable to launch player. Please try again.");
+        }
     };
 
     if (!isSearchOpen) return null;
@@ -116,13 +148,13 @@ const SearchPage = () => {
                             )}
                         </div>
                         <button type="button" className="search-close" onClick={handleClose} aria-label="Close search">
-                            <X size={26} />
+                            <X size={22} />
                         </button>
                     </div>
                 </div>
 
                 <label className="search-input-wrap">
-                    <Search size={26} />
+                    <Search size={20} />
                     <input
                         type="text"
                         value={searchTerm}
@@ -132,7 +164,7 @@ const SearchPage = () => {
                     />
                     {searchTerm && (
                         <button type="button" onClick={() => setSearchTerm("")} aria-label="Clear search">
-                            <X size={22} />
+                            <X size={18} />
                         </button>
                     )}
                 </label>
@@ -174,7 +206,7 @@ const SearchPage = () => {
                                                 <p>{result.overview || result.known_for_department || "Open this title to see more details."}</p>
                                                 <div className="search-expanded-actions">
                                                     {getMediaType(result) !== "person" && (
-                                                        <button type="button" className="mini-play" onClick={() => handleResultClick(result)}>
+                                                        <button type="button" className="mini-play" onClick={(e) => handlePlay(e, result)}>
                                                             Play
                                                         </button>
                                                     )}

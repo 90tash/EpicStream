@@ -4,6 +4,7 @@
     z-index: 9999;
     display: flex;
     justify-content: center;
+    align-items: center;
     color: #fff;
     font-family: inherit;
 }
@@ -26,17 +27,16 @@
 .search-modal {
     position: relative;
     z-index: 10000;
-    width: min(580px, calc(100% - 32px));
-    padding-top: 20vh;
+    width: min(500px, calc(100% - 32px));
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     animation: modalSlideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .search-modal.has-results {
-    padding-top: 8vh; /* Moves up when searching */
+    /* No padding-top needed, flex centering handles it */
 }
 
 @keyframes modalSlideDown {
@@ -58,7 +58,7 @@
 }
 
 .search-modal h1 {
-    font-size: 26px;
+    font-size: 22px;
     font-weight: 800;
     letter-spacing: -0.04em;
     background: linear-gradient(to bottom, #fff, #cbd5e1);
@@ -78,7 +78,7 @@
 
 .search-category > button,
 .search-close {
-    height: 36px;
+    height: 32px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.08);
@@ -93,8 +93,8 @@
 }
 
 .search-category > button {
-    padding: 0 14px;
-    font-size: 13px;
+    padding: 0 12px;
+    font-size: 12px;
     font-weight: 600;
 }
 
@@ -113,7 +113,7 @@
 }
 
 .search-close {
-    width: 36px;
+    width: 32px;
 }
 
 .search-category-menu {
@@ -152,15 +152,15 @@
 }
 
 .search-input-wrap {
-    height: 52px;
+    height: 46px;
     width: 100%;
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 0 18px;
+    gap: 10px;
+    padding: 0 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(12px);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
@@ -180,7 +180,7 @@
     outline: 0;
     background: transparent;
     color: #fff;
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 500;
     letter-spacing: -0.01em;
 }
@@ -246,7 +246,7 @@
 
 .search-result-row {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     padding: 6px 10px;
     border-radius: 10px;
     transition: all 0.2s ease;
@@ -260,8 +260,8 @@
 }
 
 .search-result-row img {
-    width: 40px;
-    height: 58px;
+    width: 36px;
+    height: 52px;
     border-radius: 6px;
     object-fit: cover;
     background: rgba(255, 255, 255, 0.05);
@@ -411,12 +411,11 @@
 
 @media (max-width: 640px) {
     .search-modal {
-        padding-top: 20vh;
         width: calc(100% - 24px);
     }
     
     .search-modal.has-results {
-        padding-top: 4vh;
+        /* Flex handles centering */
     }
 
     .search-modal h1 {
