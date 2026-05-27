@@ -710,7 +710,7 @@
     .details-hero { 
         height: auto; 
         min-height: 90vh; 
-        padding-top: 100px; 
+        padding-top: clamp(180px, 25vh, 280px); /* Pushes poster down to "center" of screen */
         padding-bottom: 40px; 
         align-items: flex-start;
     }
