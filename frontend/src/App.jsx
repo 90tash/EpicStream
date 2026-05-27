@@ -16,10 +16,10 @@ function App() {
         <Route path='/' element={<HomePage />} />
         <Route path="/tv/:id" element={<TvDetails />} />
         <Route path="/movie/:id" element={<MovieDetails />} />
-        <Route path="/search" element={<SearchPage />} />
         <Route path="/person/:id" element={<PeopleDetails />} />
         <Route path="/mylist" element={<MyListPage />} />
       </Routes>
+      <SearchPage />
       <Toaster />
     </>
 

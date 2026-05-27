@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import './navbar.css';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -20,6 +22,13 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const handleSearchClick = (e) => {
+        e.preventDefault();
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.set('search', 'true');
+        navigate(`${location.pathname}?${searchParams.toString()}`);
+    };
+
     return (
         <header className={`header ${isScrolled ? 'scrolled' : ''}`}>
             <div className="left-header-items">
@@ -28,9 +37,9 @@ const Navbar = () => {
                 </Link>
             </div>
             <div className="right-header-items">
-                <Link className='search-button-link' to={"/search"} aria-label="Search">
+                <a href="#" className='search-button-link' onClick={handleSearchClick} aria-label="Search">
                     <Search className='search-icon' />
-                </Link>
+                </a>
             </div>
         </header>
     );

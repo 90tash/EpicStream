@@ -1,6 +1,6 @@
 import { ChevronDown, Search, Star, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch } from "../../../utils/tmdb";
 import "./search.css";
 
@@ -20,18 +20,25 @@ const SearchPage = () => {
     const [category, setCategory] = useState(categories[0]);
     const [expandedId, setExpandedId] = useState(null);
     const navigate = useNavigate();
-
-    const backdrop = useMemo(() => {
-        const result = searchResults.find((item) => item.backdrop_path || item.poster_path);
-        return imageUrl(result?.backdrop_path || result?.poster_path, "original", "/hero.png");
-    }, [searchResults]);
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const isSearchOpen = searchParams.get('search') === 'true';
 
     useEffect(() => {
-        window.scrollTo(0, 0);
-        setSearchTerm("");
-        setSearchResults([]);
-        setHasSearched(false);
-    }, []);
+        if (isSearchOpen) {
+            setSearchTerm("");
+            setSearchResults([]);
+            setHasSearched(false);
+            setExpandedId(null);
+            // Prevent body scroll when modal is open
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, [isSearchOpen]);
 
     useEffect(() => {
         if (!searchTerm.trim()) {
@@ -61,17 +68,25 @@ const SearchPage = () => {
         return () => clearTimeout(timeout);
     }, [searchTerm, category]);
 
+    const handleClose = () => {
+        const newSearchParams = new URLSearchParams(location.search);
+        newSearchParams.delete('search');
+        navigate(`${location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}`);
+    };
+
     const handleResultClick = (result) => {
+        handleClose();
         const type = getMediaType(result);
         if (type === "movie") navigate(`/movie/${result.id}`, { state: { movie: result } });
         if (type === "tv") navigate(`/tv/${result.id}`, { state: { movie: result } });
         if (type === "person") navigate(`/person/${result.id}`, { state: { person: result } });
     };
 
+    if (!isSearchOpen) return null;
+
     return (
         <div className="search-page">
-            <img className="search-bg" src={backdrop} alt="" />
-            <div className="search-shade" />
+            <div className="search-shade" onClick={handleClose} />
 
             <main className={`search-modal ${searchResults.length > 0 || isLoading || (hasSearched && searchResults.length === 0) ? "has-results" : ""}`}>
                 <div className="search-modal-top">
@@ -100,7 +115,7 @@ const SearchPage = () => {
                                 </div>
                             )}
                         </div>
-                        <button type="button" className="search-close" onClick={() => navigate(-1)} aria-label="Close search">
+                        <button type="button" className="search-close" onClick={handleClose} aria-label="Close search">
                             <X size={26} />
                         </button>
                     </div>
