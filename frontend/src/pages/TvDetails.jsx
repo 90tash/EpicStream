@@ -122,7 +122,19 @@ const TvDetails = () => {
                             <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
                             <span className="hd-badge">HD</span>
                         </div>
-                        <p className="details-hero-overview">{tv.overview}</p>
+                        <div className="details-hero-info-section">
+                            <p className="details-hero-overview">{tv.overview}</p>
+                            <div className="details-hero-side-bar">
+                                <div className="side-bar-item">
+                                    <span className="side-bar-label">Genre</span>
+                                    <span className="side-bar-value">{tv.genres?.map(g => g.name).slice(0, 3).join(", ")}</span>
+                                </div>
+                                <div className="side-bar-item">
+                                    <span className="side-bar-label">Status</span>
+                                    <span className="side-bar-value">{tv.status}</span>
+                                </div>
+                            </div>
+                        </div>
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
