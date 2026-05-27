@@ -45,7 +45,7 @@
     height: 100%; /* Grow with the container */
     background:
         linear-gradient(90deg, #050607 0%, rgba(5, 6, 7, 0.78) 30%, rgba(5, 6, 7, 0.18) 68%, rgba(5, 6, 7, 0.7) 100%),
-        linear-gradient(180deg, rgba(5, 6, 7, 0.5) 0%, transparent 40%, rgba(5, 6, 7, 0.9) 80%, #050607 100%); /* Smoother, earlier transition to solid */
+        linear-gradient(180deg, rgba(5, 6, 7, 0.5) 0%, transparent 40%, rgba(5, 6, 7, 0.98) 75%, #050607 100%); /* Adjusted to start lower (remaining 40% range) */
     z-index: 1;
     pointer-events: none;
 }
