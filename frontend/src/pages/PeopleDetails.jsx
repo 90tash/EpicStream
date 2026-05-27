@@ -29,7 +29,54 @@ const PeopleDetails = () => {
         ]);
 
         setDetails(detailsData);
-        setCredits(creditsData.cast.sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0)).slice(0, 20));
+        
+        // Combine cast and crew, tagging them for identification
+        const allCredits = [
+          ...(creditsData.cast || []).map(c => ({ ...c, credit_type: "cast" })),
+          ...(creditsData.crew || []).map(c => ({ ...c, credit_type: "crew" }))
+        ];
+
+        // Deduplicate: Keep one entry per movie/tv show, prioritizing the primary role
+        const uniqueMap = new Map();
+        allCredits.forEach(item => {
+          const key = `${item.id}-${item.media_type}`;
+          const isPrimary = detailsData.known_for_department === "Acting" 
+            ? item.credit_type === "cast" 
+            : item.department === detailsData.known_for_department;
+
+          if (!uniqueMap.has(key)) {
+            uniqueMap.set(key, item);
+          } else {
+            const existing = uniqueMap.get(key);
+            const wasExistingPrimary = detailsData.known_for_department === "Acting" 
+              ? existing.credit_type === "cast" 
+              : existing.department === detailsData.known_for_department;
+
+            if (isPrimary && !wasExistingPrimary) {
+              uniqueMap.set(key, item);
+            } else if (isPrimary === wasExistingPrimary) {
+              if ((item.vote_count || 0) > (existing.vote_count || 0)) {
+                uniqueMap.set(key, item);
+              }
+            }
+          }
+        });
+
+        // Sort: Primary roles first, then by popularity (vote_count)
+        const sortedCredits = Array.from(uniqueMap.values()).sort((a, b) => {
+          const aPrimary = detailsData.known_for_department === "Acting" 
+            ? a.credit_type === "cast" 
+            : a.department === detailsData.known_for_department;
+          const bPrimary = detailsData.known_for_department === "Acting" 
+            ? b.credit_type === "cast" 
+            : b.department === detailsData.known_for_department;
+
+          if (aPrimary && !bPrimary) return -1;
+          if (!aPrimary && bPrimary) return 1;
+          return (b.vote_count || 0) - (a.vote_count || 0);
+        });
+
+        setCredits(sortedCredits.slice(0, 20));
       } catch (error) {
         console.error("Error fetching person details:", error);
       } finally {
@@ -98,11 +145,13 @@ const PeopleDetails = () => {
                   className="credit-item"
                   onClick={() => handleCreditClick(credit)}
                 >
-                  <img
-                    src={imageUrl(credit.poster_path, "w342")}
-                    alt={getTitle(credit)}
-                  />
-                  <p>{getTitle(credit)}</p>
+                  <div className="card-img-wrapper">
+                    <img
+                      src={imageUrl(credit.poster_path, "w342")}
+                      alt={getTitle(credit)}
+                    />
+                  </div>
+                  <p className="credit-title">{getTitle(credit)}</p>
                 </div>
               ))}
             </div>

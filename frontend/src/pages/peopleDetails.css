@@ -1,7 +1,7 @@
 .people-details-page {
     min-height: 100vh;
-    background: #141414;
-    color: #fff;
+    background: var(--bg);
+    color: var(--text);
     padding-top: 80px;
     position: relative;
 }
@@ -27,7 +27,7 @@
 }
 
 .back-btn-simple svg {
-    margin-right: 2px; /* Visual centering for the chevron arrow */
+    margin-right: 2px;
 }
 
 .back-btn-simple:hover {
@@ -40,7 +40,7 @@
     margin: 0 auto;
     padding: 40px 4%;
     display: flex;
-    gap: 40px;
+    gap: 48px;
 }
 
 .people-sidebar {
@@ -49,34 +49,37 @@
 
 .people-sidebar img {
     width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .people-sidebar h2 {
     font-size: 20px;
     font-weight: 700;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #333;
+    margin-bottom: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 10px;
 }
 
 .info-item {
-    margin-bottom: 15px;
+    margin-bottom: 18px;
 }
 
 .info-item label {
     display: block;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
-    color: #8c8c8c;
+    color: #94a3b8;
     margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .info-item p {
     font-size: 16px;
-    color: #e5e5e5;
+    color: #cbd5e1;
 }
 
 .people-main {
@@ -84,65 +87,117 @@
 }
 
 .people-main h1 {
-    font-size: 48px;
+    font-size: clamp(32px, 4vw, 56px);
     font-weight: 800;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
 }
 
 .biography {
-    margin-bottom: 40px;
+    margin-bottom: 48px;
 }
 
 .biography h2 {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 15px;
+    font-size: 24px;
+    font-weight: 750;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.biography h2::before {
+    content: "";
+    width: 3px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--accent);
 }
 
 .biography p {
     font-size: 18px;
-    line-height: 1.5;
-    color: #d2d2d2;
+    line-height: 1.7;
+    color: #cbd5e1;
 }
 
 .known-for h2 {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 750;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.known-for h2::before {
+    content: "";
+    width: 3px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--accent);
 }
 
 .credits-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 24px;
 }
 
 .credit-item {
     cursor: pointer;
-    transition: transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
 }
 
-.credit-item:hover {
-    transform: scale(1.05);
+/* Matching Home UI Internal Zoom Effect */
+.card-img-wrapper {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.3s ease;
+}
+
+.credit-item:hover .card-img-wrapper {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
 }
 
 .credit-item img {
     width: 100%;
-    aspect-ratio: 2 / 3;
+    height: 100%;
+    display: block;
     object-fit: cover;
-    border-radius: 4px;
-    margin-bottom: 8px;
+    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1);
 }
 
-.credit-item p {
+.credit-item:hover img {
+    transform: scale(1.06);
+}
+
+.credit-title {
+    margin-top: 6px;
     font-size: 14px;
-    text-align: center;
-    color: #e5e5e5;
+    font-weight: 600;
+    color: #f1f5f9;
+    line-height: 1.25;
+    padding: 0 4px;
+    transition: color 0.2s ease;
+}
+
+.credit-item:hover .credit-title {
+    color: var(--accent);
 }
 
 @media (max-width: 900px) {
     .people-container {
         flex-direction: column;
+        gap: 32px;
     }
     .people-sidebar {
         flex: none;
@@ -151,8 +206,14 @@
         margin: 0 auto;
         text-align: center;
     }
+    .people-sidebar h2 {
+        text-align: left;
+    }
+    .info-item {
+        text-align: left;
+    }
     .people-main h1 {
-        font-size: 32px;
         text-align: center;
     }
 }
+

@@ -158,9 +158,11 @@ const SearchPage = () => {
                                             <div className="search-expanded">
                                                 <p>{result.overview || result.known_for_department || "Open this title to see more details."}</p>
                                                 <div className="search-expanded-actions">
-                                                    <button type="button" className="mini-play" onClick={() => handleResultClick(result)}>
-                                                        Play
-                                                    </button>
+                                                    {getMediaType(result) !== "person" && (
+                                                        <button type="button" className="mini-play" onClick={() => handleResultClick(result)}>
+                                                            Play
+                                                        </button>
+                                                    )}
                                                     <button type="button" className="mini-more" onClick={() => handleResultClick(result)}>
                                                         See more
                                                     </button>

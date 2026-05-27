@@ -27,6 +27,7 @@ export const getYear = (item) => (
 
 export const getMediaType = (item, fallback = "movie") => {
     if (item?.media_type) return item.media_type;
+    if (item?.profile_path || item?.known_for_department) return "person";
     if (item?.first_air_date || item?.name) return "tv";
     return fallback;
 };
