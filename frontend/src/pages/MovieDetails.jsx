@@ -1,5 +1,5 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Footer from "../components/Footer";
 import { ChevronLeft, Play, Star } from "lucide-react";
 import "./movieTvDetails.css";
@@ -15,6 +15,8 @@ const MovieDetails = () => {
     const [similarMovies, setSimilarMovies] = useState([]);
     const [imdbId, setImdbId] = useState(null);
     const [showFullOverview, setShowFullOverview] = useState(false);
+    const [isOverflowing, setIsOverflowing] = useState(false);
+    const overviewRef = useRef(null);
 
     // Sync state when ID or location state changes
     useEffect(() => {
@@ -22,6 +24,14 @@ const MovieDetails = () => {
             setMovie(state.movie);
         }
     }, [id, state]);
+
+    // Detect if overview text overflows 3 lines
+    useEffect(() => {
+        if (overviewRef.current) {
+            const { scrollHeight, clientHeight } = overviewRef.current;
+            setIsOverflowing(scrollHeight > clientHeight);
+        }
+    }, [movie]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -93,9 +103,10 @@ const MovieDetails = () => {
                         </div>
                         <div className="details-hero-info-section">
                             <p 
-                                className={`details-hero-overview ${showFullOverview ? 'expanded' : ''}`}
-                                onClick={() => setShowFullOverview(!showFullOverview)}
-                                title={showFullOverview ? "Click to shrink" : "Click to read more"}
+                                ref={overviewRef}
+                                className={`details-hero-overview ${showFullOverview ? 'expanded' : ''} ${isOverflowing ? 'can-expand' : ''}`}
+                                onClick={() => isOverflowing && setShowFullOverview(!showFullOverview)}
+                                title={isOverflowing ? (showFullOverview ? "Click to shrink" : "Click to read more") : ""}
                             >
                                 {movie.overview}
                             </p>
