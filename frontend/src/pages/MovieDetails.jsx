@@ -14,6 +14,7 @@ const MovieDetails = () => {
     const [cast, setCast] = useState([]);
     const [similarMovies, setSimilarMovies] = useState([]);
     const [imdbId, setImdbId] = useState(null);
+    const [showFullOverview, setShowFullOverview] = useState(false);
 
     // Sync state when ID or location state changes
     useEffect(() => {
@@ -91,7 +92,14 @@ const MovieDetails = () => {
                             <span className="hd-badge">HD</span>
                         </div>
                         <div className="details-hero-info-section">
-                            <p className="details-hero-overview">{movie.overview}</p>
+                            <p 
+                                className={`details-hero-overview ${showFullOverview ? 'expanded' : ''}`}
+                                onClick={() => setShowFullOverview(!showFullOverview)}
+                                title={showFullOverview ? "Click to shrink" : "Click to read more"}
+                            >
+                                {movie.overview}
+                            </p>
+
                             <div className="details-hero-side-bar">
                                 <div className="side-bar-item">
                                     <span className="side-bar-label">Genre</span>

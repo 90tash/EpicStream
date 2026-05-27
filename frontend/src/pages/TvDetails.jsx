@@ -14,6 +14,7 @@ const TvDetails = () => {
     const [cast, setCast] = useState([]);
     const [similarTv, setSimilarTv] = useState([]);
     const [imdbId, setImdbId] = useState(null);
+    const [showFullOverview, setShowFullOverview] = useState(false);
 
     // Episodes & Seasons State
     const [selectedSeason, setSelectedSeason] = useState(null);
@@ -123,7 +124,14 @@ const TvDetails = () => {
                             <span className="hd-badge">HD</span>
                         </div>
                         <div className="details-hero-info-section">
-                            <p className="details-hero-overview">{tv.overview}</p>
+                            <p 
+                                className={`details-hero-overview ${showFullOverview ? 'expanded' : ''}`}
+                                onClick={() => setShowFullOverview(!showFullOverview)}
+                                title={showFullOverview ? "Click to shrink" : "Click to read more"}
+                            >
+                                {tv.overview}
+                            </p>
+
                             <div className="details-hero-side-bar">
                                 <div className="side-bar-item">
                                     <span className="side-bar-label">Genre</span>

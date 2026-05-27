@@ -135,6 +135,7 @@
     -webkit-backdrop-filter: blur(8px);
     width: fit-content;
     max-width: 100%;
+    position: relative; /* Added for popover positioning */
 }
 
 .details-hero-overview {
@@ -142,6 +143,7 @@
     line-height: 1.6;
     color: #cbd5e1;
     max-width: 500px;
+    max-height: 4.8em; /* Exactly 3 lines (3 * 1.6) */
     margin: 0;
     font-weight: 500;
     text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -149,6 +151,21 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    cursor: pointer;
+    transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                color 0.3s ease;
+    will-change: max-height;
+}
+
+.details-hero-overview:hover {
+    color: #fff;
+}
+
+.details-hero-overview.expanded {
+    -webkit-line-clamp: unset;
+    max-height: 1000px; /* Large enough to show all text */
+    color: #fff;
+    margin-bottom: 8px;
 }
 
 .details-hero-side-bar {
@@ -159,6 +176,7 @@
     gap: 8px;
     padding-left: 20px;
     border-left: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth the push */
 }
 
 .side-bar-item {
@@ -716,6 +734,12 @@
     }
     .details-hero-shade { background: linear-gradient(180deg, rgba(5, 6, 7, 0.4) 0%, rgba(5, 6, 7, 0.6) 40%, #050607 95%); }
     .similar-grid { grid-template-columns: minmax(0, 1fr); padding-bottom: 40px; }
+
+    /* Ensure overview expansion pushes content on mobile */
+    .details-hero-overview.expanded {
+        max-width: 100%;
+        margin-bottom: 16px;
+    }
 }
 
 @media (max-width: 640px) {
