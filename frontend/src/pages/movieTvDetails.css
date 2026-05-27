@@ -14,10 +14,10 @@
     overflow: hidden;
     margin-top: -78px;
     display: flex;
-    align-items: flex-start;
-    padding-top: clamp(250px, 35vh, 450px);
-    padding-bottom: clamp(60px, 12vh, 120px);
-    background: #050607; /* Matches the bottom of the gradient shade */
+    align-items: center; 
+    padding-top: clamp(280px, 35vh, 450px); /* Keep poster at original low level */
+    padding-bottom: 80px; /* Bring headings (Cast/Episodes) back up */
+    background: #050607;
 }
 
 .details-hero-image {
@@ -45,7 +45,7 @@
     height: 100%; /* Grow with the container */
     background:
         linear-gradient(90deg, #050607 0%, rgba(5, 6, 7, 0.78) 30%, rgba(5, 6, 7, 0.18) 68%, rgba(5, 6, 7, 0.7) 100%),
-        linear-gradient(180deg, rgba(5, 6, 7, 0.5) 0%, transparent 40%, rgba(5, 6, 7, 0.8) 80%, #050607 100%);
+        linear-gradient(180deg, rgba(5, 6, 7, 0.5) 0%, transparent 40%, rgba(5, 6, 7, 0.9) 80%, #050607 100%); /* Smoother, earlier transition to solid */
     z-index: 1;
     pointer-events: none;
 }
@@ -58,9 +58,10 @@
     margin-left: clamp(22px, 4vw, 84px);
     display: flex;
     flex-direction: row;
-    align-items: flex-start; /* Align poster and text at top */
+    align-items: center; 
     gap: clamp(24px, 4vw, 48px);
     animation: revealSlide 0.9s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+    transform: translateY(160px); /* Adjust vertical position */
 }
 
 .details-hero-poster {
@@ -71,6 +72,7 @@
     overflow: hidden;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
     background: #111;
+    align-self: center; /* Lock to center line */
 }
 
 .hero-poster-img {
@@ -133,10 +135,10 @@
 
 .details-hero-info-section {
     display: flex;
-    align-items: stretch;
+    align-items: center; /* Center overview and sidebar vertically */
     gap: 32px;
     margin: 4px 0 12px;
-    padding: 12px 20px;
+    padding: 16px 20px; /* Uniform padding for centered look */
     background: rgba(255, 255, 255, 0.05);
     border-left: 3px solid var(--accent);
     border-radius: 0 8px 8px 0;
