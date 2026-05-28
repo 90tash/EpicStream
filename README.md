@@ -2,26 +2,32 @@
 
 EpicStream is a premium, high-performance streaming discovery platform built with **React** and powered by the **TMDB API**. It features a modern, cinematic UI with advanced CSS optimizations, dynamic hero banners, and a seamless responsive experience.
 
-![EpicStream Preview](https://via.placeholder.com/1280x720/050607/ff2633?text=EpicStream+Cinematic+Experience)
+![EpicStream Preview](https://github.com/ashishpatra/EpicStream/blob/main/frontend/public/hero.png?raw=true)
 
 ## ✨ Features
 
-- **Dynamic Hero Banners:** Auto-sliding hero section with intelligent gradient overlays (120vh) and fixed-point blending for a seamless transition into content.
+- **Dynamic Hero Banners:** Auto-sliding hero section with intelligent gradient overlays and fixed-point blending for a seamless transition into content.
 - **TMDB Integration:** Real-time data fetching for Trending, Popular, Top Rated, and Genre-specific content.
+- **Curated Discovery:** Specialized rows for "TOP 10 Today", "Popular Shows", and "Currently Airing: Anime".
 - **Comprehensive Details:** Deep-dive into Movies and TV Shows with cast credits, similar recommendations, and status tracking.
-- **TV Series Management:** Interactive season and episode selection with detailed overview and thumbnails.
+- **Video Integration:** Integrated trailer playback using `react-player`.
+- **TV Series Management:** Interactive season and episode selection with detailed overviews and thumbnails.
 - **Advanced UI/UX:** 
   - Glassmorphism effects and CSS3 animations.
-  - Stationary poster cards with adaptive centered text layouts.
+  - Stationary poster cards with adaptive centered text layouts on detail pages.
   - Custom responsive breakpoints for mobile, tablet, and desktop.
 - **Search & Discovery:** Explore a vast library of content with optimized search functionality.
+- **Watchlist Ready:** Dedicated "My List" architecture, ready for personal collection management.
 
 ## 🚀 Tech Stack
 
 - **Framework:** [React.js](https://reactjs.org/)
 - **Build Tool:** [Vite](https://vitejs.dev/)
-- **Icons:** [Lucide React](https://lucide.dev/)
+- **State Management:** [Zustand](https://github.com/pmndrs/zustand)
 - **Routing:** [React Router Dom](https://reactrouter.com/)
+- **Icons:** [Lucide React](https://lucide.dev/)
+- **Media Player:** [React Player](https://www.npmjs.com/package/react-player)
+- **Notifications:** [React Hot Toast](https://react-hot-toast.com/)
 - **API:** [TMDB API](https://www.themoviedb.org/documentation/api)
 - **Styling:** Custom Modern CSS (CSS Variables, Flexbox, Grid)
 
@@ -29,7 +35,7 @@ EpicStream is a premium, high-performance streaming discovery platform built wit
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/EpicStream.git
+   git clone https://github.com/ashishpatra/EpicStream.git
    cd EpicStream
    ```
 
@@ -41,8 +47,10 @@ EpicStream is a premium, high-performance streaming discovery platform built wit
 
 3. **Install Dependencies:**
    ```bash
-   cd frontend
+   # Using the root package.json script
    npm install
+   # Or manually
+   cd frontend && npm install
    ```
 
 4. **Run the Application:**
@@ -55,14 +63,16 @@ EpicStream is a premium, high-performance streaming discovery platform built wit
 ```text
 EpicStream/
 ├── frontend/
+│   ├── api/             # TMDB Proxy and API logic
 │   ├── src/
-│   │   ├── components/      # Reusable UI components (Navbar, Footer, etc.)
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── pages/           # Page components (Home, MovieDetails, etc.)
-│   │   ├── utils/           # Helper functions and API logic
-│   │   └── stores/          # State management logic
-│   ├── public/              # Static assets
-│   └── index.html           # Entry point
+│   │   ├── components/  # Reusable UI components (Navbar, Footer, etc.)
+│   │   ├── hooks/       # Custom React hooks (useGetTrendingContent, etc.)
+│   │   ├── pages/       # Page components (Home, MovieDetails, etc.)
+│   │   ├── stores/      # Zustand state management
+│   │   ├── utils/       # Helper functions and TMDB formatting
+│   │   └── App.jsx      # Main application routing
+│   ├── public/          # Static assets
+│   └── index.html       # Entry point
 └── README.md
 ```
 
@@ -76,6 +86,9 @@ The Movie and TV details pages utilize a unique layout where the poster remains 
 linear-gradient(180deg, transparent 0%, rgba(5, 6, 7, 0.3) 40%, #050607 90vh);
 ```
 
+### Responsive Design
+EpicStream is built with a mobile-first approach, ensuring that the cinematic experience translates perfectly from large 4K monitors down to mobile devices.
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -85,4 +98,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
-Built with ❤️ by [Your Name/Team]
+Built with ❤️ by [Ashish Patra (90tash)](https://github.com/ashishpatra)

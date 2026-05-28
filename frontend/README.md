@@ -1,8 +1,38 @@
-# React + Vite
+# EpicStream Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory contains the React frontend for EpicStream, built with Vite.
 
-Currently, two official plugins are available:
+## 🚀 Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. **Install Dependencies:**
+   ```bash
+   npm install
+   ```
+
+2. **Environment Variables:**
+   Create a `.env` file in this directory:
+   ```env
+   VITE_TMDB_API_KEY=your_api_key_here
+   ```
+
+3. **Development Mode:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Build for Production:**
+   ```bash
+   npm run build
+   ```
+
+## 🛠️ Key Technologies
+
+- **React 18**
+- **Vite**
+- **Zustand** (State Management)
+- **React Router Dom 7**
+- **Lucide React** (Icons)
+- **React Player**
+- **React Hot Toast**
+
+For more information on the project features and architecture, please refer to the [main README](../README.md).

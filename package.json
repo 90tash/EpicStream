@@ -9,8 +9,8 @@
     "lint": "npm --prefix frontend run lint"
   },
   "keywords": [],
-  "author": "",
+  "author": "Ashish Patra (90tash)",
   "type": "module",
-  "license": "ISC",
+  "license": "MIT",
   "description": "Frontend-only EpicStream movie and TV discovery app using TMDB API."
 }
