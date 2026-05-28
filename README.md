@@ -1,100 +1,88 @@
-# EpicStream
+# 🎬 EpicStream
 
-EpicStream is a frontend movie and TV discovery app built with React, Vite, CSS, and TMDB data. It uses a dark cinematic interface with wide content rows, immersive hero artwork, search overlays, detail pages, trailers, cast information, and curated browsing sections.
+EpicStream is a premium, high-performance streaming discovery platform built with **React** and powered by the **TMDB API**. It features a modern, cinematic UI with advanced CSS optimizations, dynamic hero banners, and a seamless responsive experience.
 
-## Features
+![EpicStream Preview](https://via.placeholder.com/1280x720/050607/ff2633?text=EpicStream+Cinematic+Experience)
 
-- Immersive auto-rotating hero section with TMDB backdrop imagery.
-- Wide horizontal movie and TV rows with ratings, years, media types, and Top 10 badges.
-- Cinematic search overlay with category filtering, expandable result previews, and detail navigation.
-- Movie, TV, and people detail pages with trailers, cast, metadata, and similar titles.
-- EpicStream branding with a custom red streaming-style wordmark.
-- Frontend-only demo architecture with direct TMDB API usage.
+## ✨ Features
 
-## Tech Stack
+- **Dynamic Hero Banners:** Auto-sliding hero section with intelligent gradient overlays (120vh) and fixed-point blending for a seamless transition into content.
+- **TMDB Integration:** Real-time data fetching for Trending, Popular, Top Rated, and Genre-specific content.
+- **Comprehensive Details:** Deep-dive into Movies and TV Shows with cast credits, similar recommendations, and status tracking.
+- **TV Series Management:** Interactive season and episode selection with detailed overview and thumbnails.
+- **Advanced UI/UX:** 
+  - Glassmorphism effects and CSS3 animations.
+  - Stationary poster cards with adaptive centered text layouts.
+  - Custom responsive breakpoints for mobile, tablet, and desktop.
+- **Search & Discovery:** Explore a vast library of content with optimized search functionality.
 
-- React 18
-- Vite
-- JavaScript
-- Vanilla CSS
-- React Router DOM
-- Zustand
-- Lucide React
-- React Player
-- TMDB API
+## 🚀 Tech Stack
 
-## Run Locally
+- **Framework:** [React.js](https://reactjs.org/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Icons:** [Lucide React](https://lucide.dev/)
+- **Routing:** [React Router Dom](https://reactrouter.com/)
+- **API:** [TMDB API](https://www.themoviedb.org/documentation/api)
+- **Styling:** Custom Modern CSS (CSS Variables, Flexbox, Grid)
 
-Install dependencies:
+## 🛠️ Installation & Setup
 
-```bash
-cd frontend
-npm install
-```
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/EpicStream.git
+   cd EpicStream
+   ```
 
-Start the development server:
+2. **Setup API Keys:**
+   Create a `.env` file in the `frontend` directory and add your TMDB API key:
+   ```env
+   VITE_TMDB_API_KEY=your_api_key_here
+   ```
 
-```bash
-npm run dev
-```
+3. **Install Dependencies:**
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-Open the Vite URL shown in the terminal, usually:
+4. **Run the Application:**
+   ```bash
+   npm run dev
+   ```
 
-```text
-http://localhost:5173
-```
-
-## Environment
-
-The app uses a Vercel serverless API route to keep the TMDB key out of the browser bundle. For local development, create `frontend/.env.local`:
-
-```text
-TMDB_API_KEY=your_tmdb_key_here
-```
-
-For Vercel, add the same environment variable in Project Settings:
+## 📁 Project Structure
 
 ```text
-TMDB_API_KEY=your_tmdb_key_here
-```
-
-Do not use a `VITE_` prefix for this key. `VITE_` variables are exposed to browser code.
-
-## Deploy To Vercel
-
-Import the repository in Vercel and use:
-
-```text
-Root Directory: frontend
-Build Command: npm run build
-Output Directory: dist
-```
-
-The frontend calls `/api/tmdb`, and the serverless function forwards requests to TMDB with the server-side key.
-
-## Project Structure
-
-```text
-epicstream/
+EpicStream/
 ├── frontend/
-│   ├── public/
 │   ├── src/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── pages/
-│   │   ├── stores/
-│   │   └── utils/
-│   ├── index.html
-│   └── package.json
-├── README.md
-└── package.json
+│   │   ├── components/      # Reusable UI components (Navbar, Footer, etc.)
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── pages/           # Page components (Home, MovieDetails, etc.)
+│   │   ├── utils/           # Helper functions and API logic
+│   │   └── stores/          # State management logic
+│   ├── public/              # Static assets
+│   └── index.html           # Entry point
+└── README.md
 ```
 
-## Developer Links
+## 🎨 UI Highlights
 
-- LinkedIn: [Ashish Kumar Patra](https://linkedin.com/in/ashish-kumar-patra-2b4207315/)
-- GitHub: [90tash](https://github.com/90tash)
+### Stationary Hero Layout
+The Movie and TV details pages utilize a unique layout where the poster remains stationary while the title and metadata arrange themselves dynamically. The background gradient is locked to the viewport to ensure a perfect blend even when the synopsis expands.
 
-## Note
+```css
+/* Optimized Gradient Blend */
+linear-gradient(180deg, transparent 0%, rgba(5, 6, 7, 0.3) 40%, #050607 90vh);
+```
 
-This application is a frontend-focused project. Media metadata is dynamically sourced from the TMDB API, and playback buttons link to external player/detail experiences.
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+Built with ❤️ by [Your Name/Team]
