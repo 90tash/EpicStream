@@ -753,6 +753,7 @@
     }
     .details-hero-poster {
         width: 180px;
+        align-self: center;
     }
     .details-hero-text {
         align-items: center;
