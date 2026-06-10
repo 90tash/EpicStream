@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import Footer from "../components/Footer";
 import { ChevronLeft, Play, Star, ChevronDown } from "lucide-react";
 import "./movieTvDetails.css";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, getPlayerUrl } from "../utils/tmdb";
 
 const TvDetails = () => {
     const { state } = useLocation();
@@ -154,7 +154,7 @@ const TvDetails = () => {
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
-                                onClick={() => navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`)}
+                                onClick={() => window.location.href = getPlayerUrl("tv", id, selectedSeason || 1, 1)}
                             >
                                 <Play size={20} fill="currentColor" />
                                 <span>Play</span>
@@ -218,7 +218,7 @@ const TvDetails = () => {
                                     key={ep.id} 
                                     className="episode-card"
                                     onClick={() => {
-                                        navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=${ep.episode_number || 1}`);
+                                        window.location.href = getPlayerUrl("tv", id, selectedSeason || 1, ep.episode_number || 1);
                                     }}
                                 >
                                     <div className="episode-thumb-wrapper">

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch } from "../../utils/tmdb";
+import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, getPlayerUrl } from "../../utils/tmdb";
 import "./homescreen.css";
 
 const today = new Date().toISOString().split("T")[0];
@@ -284,8 +284,7 @@ const HomeScreen = () => {
                                 className="browse-play"
                                 onClick={() => {
                                     const type = getMediaType(heroContent);
-                                    const query = type === "tv" ? "?season=1&episode=1" : "";
-                                    navigate(`/watch/${type}/${heroContent.id}${query}`);
+                                    window.location.href = getPlayerUrl(type, heroContent.id);
                                 }}
                             >
                                 <Play size={20} fill="currentColor" />

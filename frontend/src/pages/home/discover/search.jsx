@@ -1,7 +1,7 @@
 import { ChevronDown, Search, Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch } from "../../../utils/tmdb";
+import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, getPlayerUrl } from "../../../utils/tmdb";
 import "./search.css";
 
 const categories = [
@@ -91,8 +91,7 @@ const SearchPage = () => {
         e.stopPropagation();
         handleClose();
         const type = getMediaType(result);
-        const query = type === "tv" ? "?season=1&episode=1" : "";
-        navigate(`/watch/${type}/${result.id}${query}`);
+        window.location.href = getPlayerUrl(type, result.id);
     };
 
     if (!isSearchOpen) return null;

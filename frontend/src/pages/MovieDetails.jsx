@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import Footer from "../components/Footer";
 import { ChevronLeft, Play, Star } from "lucide-react";
 import "./movieTvDetails.css";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, getPlayerUrl } from "../utils/tmdb";
 
 const MovieDetails = () => {
     const { state } = useLocation();
@@ -123,7 +123,7 @@ const MovieDetails = () => {
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
-                                onClick={() => navigate(`/watch/movie/${id}`)}
+                                onClick={() => window.location.href = getPlayerUrl("movie", id)}
                             >
                                 <Play size={20} fill="currentColor" />
                                 <span>Play</span>

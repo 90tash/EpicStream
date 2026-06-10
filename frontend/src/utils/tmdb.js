@@ -74,3 +74,14 @@ export const tmdbGetRecommendations = async (type, id) => {
         return [];
     }
 };
+
+export const getPlayerUrl = (type, id, season = 1, episode = 1) => {
+    const color = "ff2633"; // Project accent color
+    const commonParams = `overlay=true&color=${color}`;
+    
+    if (type === "movie") {
+        return `https://player.videasy.net/movie/${id}?${commonParams}`;
+    }
+    
+    return `https://player.videasy.net/tv/${id}/${season}/${episode}?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
+};
