@@ -1,10 +1,10 @@
 /* eslint-disable react/prop-types */
-import { ChevronLeft, ChevronRight, Compass, Flame, Info, Play, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Play, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
+import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch } from "../../utils/tmdb";
 import "./homescreen.css";
 
 const today = new Date().toISOString().split("T")[0];
@@ -191,24 +191,8 @@ const HomeScreen = () => {
     const [heroCandidates, setHeroCandidates] = useState([]);
     const [heroIndex, setHeroIndex] = useState(0);
     const [contentRows, setContentRows] = useState(rows.map(r => ({ ...r, items: null })));
-    const [heroImdbId, setHeroImdbId] = useState(null);
     const [isLoadingHero, setIsLoadingHero] = useState(true);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const fetchImdbId = async () => {
-            if (!heroContent) return;
-            try {
-                const isTv = getMediaType(heroContent) === "tv";
-                const data = await tmdbFetch(isTv ? `/tv/${heroContent.id}/external_ids` : `/movie/${heroContent.id}`);
-                setHeroImdbId(data.imdb_id);
-            } catch (error) {
-                console.error("Error fetching hero IMDB ID:", error);
-            }
-        };
-
-        fetchImdbId();
-    }, [heroContent]);
 
     useEffect(() => {
         const loadRow = async (rowIndex) => {
@@ -299,11 +283,9 @@ const HomeScreen = () => {
                                 type="button"
                                 className="browse-play"
                                 onClick={() => {
-                                    if (heroImdbId) {
-                                        window.open(`https://www.playimdb.com/title/${heroImdbId}`, '_blank');
-                                    } else {
-                                        alert("Fetching movie data... please try again in a moment.");
-                                    }
+                                    const type = getMediaType(heroContent);
+                                    const query = type === "tv" ? "?season=1&episode=1" : "";
+                                    navigate(`/watch/${type}/${heroContent.id}${query}`);
                                 }}
                             >
                                 <Play size={20} fill="currentColor" />

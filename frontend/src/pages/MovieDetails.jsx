@@ -13,7 +13,6 @@ const MovieDetails = () => {
     const [movie, setMovie] = useState(null);
     const [cast, setCast] = useState([]);
     const [similarMovies, setSimilarMovies] = useState([]);
-    const [imdbId, setImdbId] = useState(null);
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const overviewRef = useRef(null);
@@ -41,7 +40,6 @@ const MovieDetails = () => {
                 // 1. Always fetch/refresh full movie data
                 const fullData = await tmdbFetch(`/movie/${id}`);
                 setMovie(fullData);
-                setImdbId(fullData.imdb_id);
 
                 // 2. Fetch secondary data
                 const [castData, recsData] = await Promise.all([
@@ -125,13 +123,7 @@ const MovieDetails = () => {
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
-                                onClick={() => {
-                                    if (imdbId) {
-                                        window.open(`https://www.playimdb.com/title/${imdbId}`, '_blank');
-                                    } else {
-                                        alert("Loading player... please try again in a second.");
-                                    }
-                                }}
+                                onClick={() => navigate(`/watch/movie/${id}`)}
                             >
                                 <Play size={20} fill="currentColor" />
                                 <span>Play</span>

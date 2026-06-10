@@ -13,7 +13,6 @@ const TvDetails = () => {
     const [tv, setTv] = useState(null);
     const [cast, setCast] = useState([]);
     const [similarTv, setSimilarTv] = useState([]);
-    const [imdbId, setImdbId] = useState(null);
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const overviewRef = useRef(null);
@@ -56,15 +55,13 @@ const TvDetails = () => {
                 }
 
                 // Fetch other secondary data
-                const [castData, recsData, idsData] = await Promise.all([
+                const [castData, recsData] = await Promise.all([
                     tmdbFetch(`/tv/${id}/credits`),
-                    tmdbGetRecommendations("tv", id),
-                    tmdbFetch(`/tv/${id}/external_ids`)
+                    tmdbGetRecommendations("tv", id)
                 ]);
                 
                 setCast(castData.cast.slice(0, 10));
                 setSimilarTv(recsData.slice(0, 10));
-                setImdbId(idsData.imdb_id);
             } catch (error) {
                 console.error("Error fetching TV data:", error);
                 if (!tv && !state?.movie) navigate("/", { replace: true });
@@ -157,13 +154,7 @@ const TvDetails = () => {
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
-                                onClick={() => {
-                                    if (imdbId) {
-                                        window.open(`https://www.playimdb.com/title/${imdbId}/season/${selectedSeason || 1}/episode/1`, '_blank');
-                                    } else {
-                                        alert("Loading player... please try again in a second.");
-                                    }
-                                }}
+                                onClick={() => navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`)}
                             >
                                 <Play size={20} fill="currentColor" />
                                 <span>Play</span>
@@ -227,7 +218,7 @@ const TvDetails = () => {
                                     key={ep.id} 
                                     className="episode-card"
                                     onClick={() => {
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=${ep.episode_number || 1}`);
                                     }}
                                 >
                                     <div className="episode-thumb-wrapper">

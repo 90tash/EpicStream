@@ -87,31 +87,12 @@ const SearchPage = () => {
         if (type === "person") navigate(`/person/${result.id}`, { state: { person: result } });
     };
 
-    const handlePlay = async (e, result) => {
+    const handlePlay = (e, result) => {
         e.stopPropagation();
+        handleClose();
         const type = getMediaType(result);
-        try {
-            let imdbId = null;
-            if (type === "movie") {
-                const data = await tmdbFetch(`/movie/${result.id}`);
-                imdbId = data.imdb_id;
-            } else if (type === "tv") {
-                const data = await tmdbFetch(`/tv/${result.id}/external_ids`);
-                imdbId = data.imdb_id;
-            }
-
-            if (imdbId) {
-                const url = type === "movie" 
-                    ? `https://www.playimdb.com/title/${imdbId}` 
-                    : `https://www.playimdb.com/title/${imdbId}/season/1/episode/1`;
-                window.open(url, '_blank');
-            } else {
-                alert("Player not available for this title.");
-            }
-        } catch (error) {
-            console.error("Error launching player:", error);
-            alert("Unable to launch player. Please try again.");
-        }
+        const query = type === "tv" ? "?season=1&episode=1" : "";
+        navigate(`/watch/${type}/${result.id}${query}`);
     };
 
     if (!isSearchOpen) return null;
