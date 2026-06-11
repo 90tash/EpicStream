@@ -15,8 +15,10 @@ const WatchPage = () => {
             <iframe
                 src={playerUrl}
                 style={{ width: "100%", height: "100%", border: "none" }}
+                allow="autoplay; fullscreen *; encrypted-media; picture-in-picture; allow-presentation"
                 allowFullScreen
-                allow="autoplay; fullscreen; picture-in-picture; encrypted-media;"
+                webkitallowfullscreen="true"
+                mozallowfullscreen="true"
                 title="EpicStream Player"
             />
         </div>
