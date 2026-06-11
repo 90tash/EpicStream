@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import HomePage from './pages/home/HomePage'
 import MovieDetails from './pages/MovieDetails';
 import TvDetails from './pages/TvDetails';
+import WatchPage from './pages/WatchPage';
 import PeopleDetails from './pages/PeopleDetails';
 import MyListPage from './pages/MyListPage';
 import SearchPage from './pages/home/discover/search';
@@ -16,6 +17,7 @@ function App() {
         <Route path='/' element={<HomePage />} />
         <Route path="/tv/:id" element={<TvDetails />} />
         <Route path="/movie/:id" element={<MovieDetails />} />
+        <Route path="/watch/:type/:id" element={<WatchPage />} />
         <Route path="/person/:id" element={<PeopleDetails />} />
         <Route path="/mylist" element={<MyListPage />} />
       </Routes>

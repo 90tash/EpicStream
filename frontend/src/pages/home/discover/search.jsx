@@ -91,7 +91,7 @@ const SearchPage = () => {
         e.stopPropagation();
         handleClose();
         const type = getMediaType(result);
-        window.location.href = getPlayerUrl(type, result.id);
+        navigate(`/watch/${type}/${result.id}`);
     };
 
     if (!isSearchOpen) return null;

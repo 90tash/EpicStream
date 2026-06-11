@@ -284,7 +284,7 @@ const HomeScreen = () => {
                                 className="browse-play"
                                 onClick={() => {
                                     const type = getMediaType(heroContent);
-                                    window.location.href = getPlayerUrl(type, heroContent.id);
+                                    navigate(`/watch/${type}/${heroContent.id}`);
                                 }}
                             >
                                 <Play size={20} fill="currentColor" />

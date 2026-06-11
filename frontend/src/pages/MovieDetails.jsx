@@ -123,7 +123,7 @@ const MovieDetails = () => {
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
-                                onClick={() => window.location.href = getPlayerUrl("movie", id)}
+                                onClick={() => navigate(`/watch/movie/${id}`)}
                             >
                                 <Play size={20} fill="currentColor" />
                                 <span>Play</span>

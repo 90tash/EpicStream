@@ -154,7 +154,7 @@ const TvDetails = () => {
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
-                                onClick={() => window.location.href = getPlayerUrl("tv", id, selectedSeason || 1, 1)}
+                                onClick={() => navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`)}
                             >
                                 <Play size={20} fill="currentColor" />
                                 <span>Play</span>
@@ -218,7 +218,7 @@ const TvDetails = () => {
                                     key={ep.id} 
                                     className="episode-card"
                                     onClick={() => {
-                                        window.location.href = getPlayerUrl("tv", id, selectedSeason || 1, ep.episode_number || 1);
+                                        navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=${ep.episode_number || 1}`);
                                     }}
                                 >
                                     <div className="episode-thumb-wrapper">
