@@ -148,8 +148,7 @@
 
 .search-category-menu button.active,
 .search-category-menu button:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    color: var(--accent);
 }
 
 .search-input-wrap {
@@ -169,7 +168,6 @@
 }
 
 .search-input-wrap:focus-within {
-    background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 38, 51, 0.4);
     box-shadow: 0 0 0 4px rgba(255, 38, 51, 0.05);
 }

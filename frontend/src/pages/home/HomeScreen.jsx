@@ -256,7 +256,7 @@ const HomeScreen = () => {
         }, 8000);
 
         return () => clearInterval(interval);
-    }, [heroCandidates]);
+    }, [heroCandidates, heroIndex]);
 
     useEffect(() => {
         if (heroCandidates.length > 0) {
@@ -280,14 +280,16 @@ const HomeScreen = () => {
 
             {isLoadingHero ? <HeroSkeleton /> : (
                 <section className="browse-hero">
-                    {heroContent?.backdrop_path && (
-                        <img 
-                            key={heroContent.id + "-image"}
-                            className="browse-hero-image" 
-                            src={imageUrl(heroContent.backdrop_path, "original")} 
-                            alt={title} 
-                        />
-                    )}
+                    {heroCandidates.map((candidate, idx) => (
+                        candidate.backdrop_path && (
+                            <img 
+                                key={`hero-img-${candidate.id}`}
+                                className={`browse-hero-image ${idx === heroIndex ? 'active' : ''}`} 
+                                src={imageUrl(candidate.backdrop_path, "original")} 
+                                alt={getTitle(candidate)} 
+                            />
+                        )
+                    ))}
                     <div className="browse-hero-shade" />
                     <div key={heroContent?.id + "-content"} className="browse-hero-content">
                         <h1>{title}</h1>
@@ -316,6 +318,21 @@ const HomeScreen = () => {
                                 See More
                             </button>
                         </div>
+                    </div>
+
+                    <div className="hero-pagination-container">
+                        {heroCandidates.map((candidate, idx) => {
+                            const isActive = idx === heroIndex;
+                            return (
+                                <div 
+                                    key={`pagination-${candidate.id}`}
+                                    className={`hero-pagination-pill ${isActive ? 'active' : ''}`}
+                                    onClick={() => setHeroIndex(idx)}
+                                >
+                                    {isActive && <div key={`progress-${heroIndex}`} className="pill-progress" />}
+                                </div>
+                            );
+                        })}
                     </div>
                 </section>            )}
 

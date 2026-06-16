@@ -22,18 +22,14 @@
     height: 100%;
     object-fit: cover;
     z-index: 0;
-    animation: imageGlide 1.2s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: scale(1.02);
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 8.5s linear;
 }
 
-@keyframes imageGlide {
-    from { 
-        opacity: 0.4;
-        transform: scale(1.1) translateX(40px); /* Glide image from right */
-    }
-    to { 
-        opacity: 1;
-        transform: scale(1.08) translateX(0); /* Settle at slight zoom */
-    }
+.browse-hero-image.active {
+    opacity: 1;
+    transform: scale(1.08);
 }
 
 .browse-hero-shade {
@@ -194,6 +190,64 @@
     color: #94a3b8;
     margin-top: 32px;
     opacity: 0.8;
+}
+
+/* --- Vertical Hero Pagination --- */
+.hero-pagination-container {
+    position: absolute;
+    right: clamp(22px, 4vw, 84px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.hero-pagination-pill {
+    width: 6px;
+    height: 16px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: height 0.6s cubic-bezier(0.25, 1, 0.5, 1), width 0.6s cubic-bezier(0.25, 1, 0.5, 1), background 0.3s ease, transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-pagination-pill:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scaleX(1.2);
+}
+
+.hero-pagination-pill.active {
+    height: 48px;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 12px rgba(229, 9, 20, 0.4);
+    transform: scaleX(1);
+}
+
+.pill-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: var(--accent);
+    height: 0%;
+    border-radius: 6px;
+    animation: fillProgress 8s linear forwards;
+    box-shadow: 0 0 8px var(--accent);
+}
+
+@keyframes fillProgress {
+    0% { height: 0%; }
+    100% { height: 100%; }
+}
+
+@keyframes fillProgressHorizontal {
+    0% { width: 0%; }
+    100% { width: 100%; }
 }
 
 .browse-main {
@@ -609,6 +663,38 @@
         padding: 0 16px;
         font-size: 15px;
         justify-content: center;
+    }
+
+    .hero-pagination-container {
+        top: auto;
+        bottom: 24px;
+        right: 0;
+        left: 0;
+        transform: none;
+        flex-direction: row;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .hero-pagination-pill {
+        width: 16px;
+        height: 4px;
+    }
+
+    .hero-pagination-pill:hover {
+        transform: scaleY(1.5);
+    }
+
+    .hero-pagination-pill.active {
+        width: 48px;
+        height: 4px;
+        transform: scaleY(1);
+    }
+
+    .pill-progress {
+        width: 0%;
+        height: 100%;
+        animation-name: fillProgressHorizontal;
     }
 
     .browse-main {

@@ -78,6 +78,7 @@ const TvDetails = () => {
     const [showSeasonMenu, setShowSeasonMenu] = useState(false);
     const [episodes, setEpisodes] = useState([]);
     const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
+    const [expandedEpisodeId, setExpandedEpisodeId] = useState(null);
 
     // Sync basic state from location
     useEffect(() => {
