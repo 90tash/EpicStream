@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, getPlayerUrl } from "../../utils/tmdb";
+import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch } from "../../utils/tmdb";
 import "./homescreen.css";
 
 const today = new Date().toISOString().split("T")[0];
@@ -189,7 +189,7 @@ const MovieRow = ({ row, openDetails }) => {
 const HomeScreen = () => {
     const [heroContent, setHeroContent] = useState(null);
     const [heroCandidates, setHeroCandidates] = useState([]);
-    const [heroIndex, setHeroIndex] = useState(0);
+    const [heroIndex, setHeroIndex] = useState(-1);
     const [contentRows, setContentRows] = useState(rows.map(r => ({ ...r, items: null })));
     const [isLoadingHero, setIsLoadingHero] = useState(true);
     const [showScrollTop, setShowScrollTop] = useState(false);
@@ -250,7 +250,14 @@ const HomeScreen = () => {
     }, []);
 
     useEffect(() => {
-        if (heroCandidates.length === 0) return undefined;
+        if (heroCandidates.length > 0 && heroIndex === -1) {
+            const timer = setTimeout(() => setHeroIndex(0), 50);
+            return () => clearTimeout(timer);
+        }
+    }, [heroCandidates, heroIndex]);
+
+    useEffect(() => {
+        if (heroCandidates.length === 0 || heroIndex === -1) return undefined;
         const interval = setInterval(() => {
             setHeroIndex((prev) => (prev + 1) % heroCandidates.length);
         }, 8000);
@@ -259,7 +266,7 @@ const HomeScreen = () => {
     }, [heroCandidates, heroIndex]);
 
     useEffect(() => {
-        if (heroCandidates.length > 0) {
+        if (heroCandidates.length > 0 && heroIndex >= 0) {
             setHeroContent(heroCandidates[heroIndex]);
         }
     }, [heroIndex, heroCandidates]);

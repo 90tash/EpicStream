@@ -2,8 +2,9 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, Play, Star, ChevronDown } from "lucide-react";
 import "./movieTvDetails.css";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, getPlayerUrl, tmdbGetImages } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 
+/* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate }) => {
     const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
 
@@ -78,7 +79,6 @@ const TvDetails = () => {
     const [showSeasonMenu, setShowSeasonMenu] = useState(false);
     const [episodes, setEpisodes] = useState([]);
     const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
-    const [expandedEpisodeId, setExpandedEpisodeId] = useState(null);
 
     // Sync basic state from location
     useEffect(() => {

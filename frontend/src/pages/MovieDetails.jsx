@@ -2,8 +2,9 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, Play, Star } from "lucide-react";
 import "./movieTvDetails.css";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, getPlayerUrl, tmdbGetImages } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 
+/* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate }) => {
     const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
 

@@ -96,8 +96,8 @@ export const handleTmdbRequest = async (requestUrl, apiKey) => {
             status: 200,
             body,
         };
-    } catch (error) {
-        console.error("All fetch attempts and curl fallback failed.");
+    } catch (fallbackError) {
+        console.error("All fetch attempts and curl fallback failed.", fallbackError);
         throw lastError;
     }
 };

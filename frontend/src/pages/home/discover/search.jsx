@@ -1,7 +1,7 @@
 import { ChevronDown, Search, Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, getPlayerUrl } from "../../../utils/tmdb";
+import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch } from "../../../utils/tmdb";
 import "./search.css";
 
 const categories = [
