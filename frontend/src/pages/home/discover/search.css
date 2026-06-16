@@ -101,7 +101,8 @@
 .search-category > button:hover,
 .search-close:hover {
     background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
 }
 
 .search-category svg {
@@ -169,8 +170,12 @@
 
 .search-input-wrap:focus-within {
     background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 38, 51, 0.4);
+    box-shadow: 0 0 0 4px rgba(255, 38, 51, 0.05);
+}
+
+.search-input-wrap:focus-within svg {
+    color: var(--accent);
 }
 
 .search-input-wrap input {
@@ -329,7 +334,19 @@
 }
 
 .search-result-meta .rating {
-    color: #fbbf24;
+    color: var(--accent);
+}
+
+.search-result-meta .rating svg {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2.5px;
+    transition: all 0.3s ease;
+}
+
+.search-result-row:hover .rating svg,
+.search-result-row.expanded .rating svg {
+    fill: var(--accent);
 }
 
 .search-result-main svg {

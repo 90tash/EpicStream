@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { ChevronLeft, ChevronRight, Info, Play, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
@@ -192,7 +192,28 @@ const HomeScreen = () => {
     const [heroIndex, setHeroIndex] = useState(0);
     const [contentRows, setContentRows] = useState(rows.map(r => ({ ...r, items: null })));
     const [isLoadingHero, setIsLoadingHero] = useState(true);
+    const [showScrollTop, setShowScrollTop] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 600) {
+                setShowScrollTop(true);
+            } else {
+                setShowScrollTop(false);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    };
 
     useEffect(() => {
         const loadRow = async (rowIndex) => {
@@ -263,7 +284,7 @@ const HomeScreen = () => {
                         <img 
                             key={heroContent.id + "-image"}
                             className="browse-hero-image" 
-                            src={imageUrl(heroContent.backdrop_path, "w1280")} 
+                            src={imageUrl(heroContent.backdrop_path, "original")} 
                             alt={title} 
                         />
                     )}
@@ -303,6 +324,12 @@ const HomeScreen = () => {
                     <MovieRow key={row.title} row={row} openDetails={openDetails} />
                 ))}
             </main>
+
+            {showScrollTop && (
+                <button className="scroll-to-top" onClick={scrollToTop} aria-label="Scroll to top">
+                    <ArrowUp size={24} />
+                </button>
+            )}
 
             <Footer />
         </div>

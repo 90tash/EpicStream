@@ -172,7 +172,7 @@ const SearchPage = () => {
                                                     {getYear(result) && <span>{getYear(result)}</span>}
                                                     {rating && (
                                                         <span className="rating">
-                                                            <Star size={13} fill="currentColor" />
+                                                            <Star size={13} />
                                                             {rating}
                                                         </span>
                                                     )}

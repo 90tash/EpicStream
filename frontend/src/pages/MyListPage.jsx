@@ -1,4 +1,3 @@
-import Footer from "../components/Footer";
 import { BookmarkPlus, Search, ChevronLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import "./myList.css";
@@ -42,7 +41,6 @@ const MyListPage = () => {
                     Find something to watch
                 </Link>
             </main>
-            <Footer />
         </div>
     );
 };

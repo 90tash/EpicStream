@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import Footer from "../components/Footer";
 import "./peopleDetails.css";
 import { getTitle, imageUrl, tmdbFetch } from "../utils/tmdb";
 
@@ -158,8 +157,6 @@ const PeopleDetails = () => {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 };

@@ -40,8 +40,10 @@
     position: absolute;
     inset: 0;
     background:
-        linear-gradient(90deg, rgba(5, 6, 7, 0.96) 0%, rgba(5, 6, 7, 0.78) 30%, rgba(5, 6, 7, 0.18) 68%, rgba(5, 6, 7, 0.7) 100%),
-        linear-gradient(180deg, rgba(5, 6, 7, 0.7) 0%, transparent 36%, #050607 100%);
+        /* Left side shadow for text readability */
+        linear-gradient(90deg, rgba(5, 6, 7, 0.9) 0%, rgba(5, 6, 7, 0.6) 20%, transparent 50%),
+        /* Bottom fade to black */
+        linear-gradient(180deg, transparent 0%, transparent 30%, rgba(5, 6, 7, 0.3) 60%, #050607 100%);
     z-index: 1;
 }
 
@@ -101,7 +103,7 @@
 
 .browse-meta .rating,
 .card-meta svg {
-    color: #ef4444;
+    color: var(--accent);
 }
 
 .browse-meta span {
@@ -199,6 +201,49 @@
     z-index: 2;
     margin-top: -86px;
     padding-bottom: 56px;
+}
+
+.scroll-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 44px;
+    height: 44px;
+    background: rgba(8, 10, 13, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInScale {
+    from { 
+        opacity: 0;
+        transform: scale(0.5) translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.scroll-to-top:hover {
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
+    transform: scale(1.1);
+}
+
+.scroll-to-top svg {
+    stroke-width: 2.5px;
 }
 
 .browse-row {
@@ -363,7 +408,7 @@
 }
 
 .card-meta svg {
-    color: #ef4444;
+    color: var(--accent);
 }
 
 /* Top 10 Premium Vertical Layout */

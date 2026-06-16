@@ -1,9 +1,65 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import Footer from "../components/Footer";
 import { ChevronLeft, Play, Star, ChevronDown } from "lucide-react";
 import "./movieTvDetails.css";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, getPlayerUrl } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, getPlayerUrl, tmdbGetImages } from "../utils/tmdb";
+
+const SimilarCard = ({ item, type, navigate }) => {
+    const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
+
+    useEffect(() => {
+        const fetchTitledBanner = async () => {
+            try {
+                const data = await tmdbGetImages(type, item.id);
+                if (data.backdrops && data.backdrops.length > 0) {
+                    // Filter for backdrops that are NOT textless (iso_639_1 is not null)
+                    const titledBackdrops = data.backdrops.filter(b => b.iso_639_1 !== null);
+                    if (titledBackdrops.length > 0) {
+                        // Prioritize English titled backdrops
+                        const enTitled = titledBackdrops.find(b => b.iso_639_1 === 'en');
+                        const selected = enTitled || titledBackdrops[0];
+                        setBannerUrl(imageUrl(selected.file_path, "w780"));
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching images for similar item:", error);
+            }
+        };
+        fetchTitledBanner();
+    }, [item.id, type]);
+
+    return (
+        <div 
+            className="similar-card" 
+            onClick={() => {
+                navigate(`/${type}/${item.id}`, { state: { movie: item } });
+                window.scrollTo(0, 0);
+            }}
+        >
+            <div className="similar-card-img-wrapper">
+                <img
+                    src={bannerUrl}
+                    alt={getTitle(item)}
+                    loading="lazy"
+                />
+                <div className="similar-card-shade" />
+            </div>
+            <span className="similar-card-title">{getTitle(item)}</span>
+            <div className="similar-card-meta">
+                {item.vote_average > 0 && (
+                    <span className="rating">
+                        <Star size={13} fill="currentColor" /> 
+                        {item.vote_average.toFixed(1)}
+                        <span className="dot" />
+                    </span>
+                )}
+                <span>{(item.release_date || item.first_air_date || "").slice(0, 4)}</span>
+                <span className="dot" />
+                <span>{type === "movie" ? "Movie" : "TV Show"}</span>
+            </div>
+        </div>
+    );
+};
 
 const TvDetails = () => {
     const { state } = useLocation();
@@ -274,42 +330,17 @@ const TvDetails = () => {
                         <h2 id="similar" className="details-section-title">Similar TV Shows</h2>
                         <div className="similar-grid">
                             {similarTv.map((similar) => (
-                                <div 
+                                <SimilarCard 
                                     key={similar.id} 
-                                    className="similar-card" 
-                                    onClick={() => {
-                                        navigate(`/tv/${similar.id}`, { state: { movie: similar } });
-                                        window.scrollTo(0, 0);
-                                    }}
-                                >
-                                    <div className="similar-card-img-wrapper">
-                                        <img
-                                            src={imageUrl(similar.backdrop_path || similar.poster_path, "w500")}
-                                            alt={getTitle(similar)}
-                                            loading="lazy"
-                                        />
-                                    </div>
-                                    <span className="similar-card-title">{getTitle(similar)}</span>
-                                    <div className="similar-card-meta">
-                                        {similar.vote_average > 0 && (
-                                            <span className="rating">
-                                                <Star size={13} fill="currentColor" /> 
-                                                {similar.vote_average.toFixed(1)}
-                                                <span className="dot" />
-                                            </span>
-                                        )}
-                                        <span>{(similar.first_air_date || "").slice(0, 4)}</span>
-                                        <span className="dot" />
-                                        <span>TV Show</span>
-                                    </div>
-                                </div>
+                                    item={similar} 
+                                    type="tv" 
+                                    navigate={navigate} 
+                                />
                             ))}
                         </div>
                     </>
                 )}
             </main>
-
-            <Footer />
         </div>
     );
 };

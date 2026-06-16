@@ -73,7 +73,7 @@
 
 .singin-btn {
     height: 30px;
-    background-color: red;
+    background-color: var(--accent);
     border: none;
     color: white;
     font-size: 16px;

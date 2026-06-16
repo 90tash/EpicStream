@@ -42,11 +42,12 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 120vh; /* Taller than the scaled image (100vh * 1.06) to ensure full coverage */
+    height: 100%;
     background:
-        linear-gradient(90deg, rgba(5, 6, 7, 0.96) 0%, rgba(5, 6, 7, 0.78) 30%, rgba(5, 6, 7, 0.18) 68%, rgba(5, 6, 7, 0.7) 100%),
-        /* Hits solid black at 90vh, ensuring the bottom edge of the image is completely buried */
-        linear-gradient(180deg, transparent 0%, rgba(5, 6, 7, 0.3) 40%, #050607 90vh, #050607 100%);
+        /* Left side shadow for text readability */
+        linear-gradient(90deg, rgba(5, 6, 7, 0.9) 0%, rgba(5, 6, 7, 0.6) 20%, transparent 50%),
+        /* Bottom fade to black */
+        linear-gradient(180deg, transparent 0%, transparent 30%, rgba(5, 6, 7, 0.3) 60%, #050607 100%);
     z-index: 1;
     pointer-events: none;
 }
@@ -117,7 +118,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: #ef4444;
+    color: var(--accent);
 }
 
 .details-hero-meta span {
@@ -396,7 +397,7 @@
 }
 
 .episode-card:hover h3 {
-    color: #ef4444;
+    color: var(--accent);
 }
 
 .episode-thumb-wrapper {
@@ -510,7 +511,8 @@
 }
 
 .back-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
     transform: scale(1.1);
 }
 
@@ -647,6 +649,13 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+.similar-card-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+    z-index: 1;
+}
+
 .similar-card img {
     width: 100%;
     height: 100%;
@@ -682,11 +691,8 @@
     align-items: center;
     gap: 8px;
     color: #64748b;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     padding: 0 4px;
 }
 
@@ -694,7 +700,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    color: #ef4444;
+    color: var(--accent);
 }
 
 .similar-card-meta .dot {
