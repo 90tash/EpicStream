@@ -619,7 +619,7 @@
         flex-direction: column;
         justify-content: flex-end;
         align-items: center;
-        padding-bottom: 50px;
+        padding-bottom: 40px;
     }
 
     .browse-hero-shade {
@@ -629,9 +629,10 @@
 
     .browse-hero-content {
         width: 100%;
-        margin-left: 16px;
-        margin-right: 16px;
-        padding-top: 0;
+        margin-left: 0;
+        margin-right: 0;
+        padding: 0 24px;
+        box-sizing: border-box;
         text-align: center;
         display: flex;
         flex-direction: column;
@@ -641,6 +642,7 @@
     .browse-hero-content h1 {
         font-size: 34px;
         margin-bottom: 12px;
+        padding: 0 8px;
     }
 
     .browse-meta {
@@ -652,6 +654,10 @@
         font-size: 14px;
         margin: 10px 0 24px;
         -webkit-line-clamp: 2;
+        width: 100%;
+        max-width: 400px;
+        padding: 0 8px;
+        box-sizing: border-box;
     }
 
     .browse-actions {
@@ -670,14 +676,16 @@
     }
 
     .hero-pagination-container {
+        position: relative;
         top: auto;
-        bottom: 24px;
-        right: 0;
-        left: 0;
+        bottom: auto;
+        right: auto;
+        left: auto;
         transform: none;
         flex-direction: row;
         justify-content: center;
         gap: 8px;
+        margin-top: 32px;
     }
 
     .hero-pagination-pill {
