@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, Play, Star } from "lucide-react";
 import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
+import { addToHistory } from "../utils/history";
 
 /* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate }) => {
