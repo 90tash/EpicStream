@@ -1,7 +1,7 @@
 .brand-logo {
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px; /* Tightened to 8px as requested */
     color: #f8fafc;
     font-weight: 900;
     font-size: 28px;
@@ -12,28 +12,26 @@
 }
 
 .brand-mark {
-    width: 42px;
-    height: 42px;
-    border-radius: 13px;
+    height: 48px; /* Reset to 48px as requested */
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    background:
-        radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.42), transparent 26%),
-        linear-gradient(135deg, #ff4a54 0%, #e50914 46%, #8f0007 100%);
-    box-shadow: 0 12px 30px rgba(229, 9, 20, 0.28);
+}
+
+.logo-image {
+    height: 100%;
+    width: auto; /* Preserve original aspect ratio */
+    object-fit: contain;
+    filter: blur(0.2px); /* Keeping only the subtle blur */
 }
 
 .brand-logo.compact {
-    gap: 9px;
+    gap: 8px;
     font-size: 22px;
 }
 
 .brand-logo.compact .brand-mark {
-    width: 34px;
-    height: 34px;
-    border-radius: 11px;
+    height: 34px; /* Scaled height for compact mode */
 }
 
 @media (max-width: 640px) {
