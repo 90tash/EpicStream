@@ -2,7 +2,7 @@
 
 EpicStream is a premium, high-performance streaming discovery platform built with **React** and powered by the **TMDB API**. It features a modern, cinematic UI with advanced CSS optimizations, dynamic hero banners, and a seamless responsive experience.
 
-<p align="center"><img src="frontend/public/logo.png" width="150" alt="EpicStream Logo"></p>
+<p align="center"><img src="frontend/public/logo.png" width="350" alt="EpicStream Logo"></p>
 
 ## ✨ Features
 
