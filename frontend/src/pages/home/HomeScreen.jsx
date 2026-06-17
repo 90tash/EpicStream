@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
-import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
-import { addToHistory, getHistory } from "../../utils/history";
+import { addToHistory, getHistory, removeFromHistory } from "../../utils/history";
 import "./homescreen.css";
 
 const today = new Date().toISOString().split("T")[0];
@@ -98,20 +98,20 @@ const getRelativeTime = (timestamp) => {
     return `${days}d ago`;
 };
 
-const HistoryCard = ({ item, row, index, openDetails }) => {
+const HistoryCard = ({ item, openDetails, onRemove }) => {
     const type = item.type || getMediaType(item);
     const progress = item.percentage || 0;
     const timeAgo = getRelativeTime(item.timestamp);
     const bottomInfo = type === "tv" ? `S${item.season}:E${item.episode}` : (item.timeStr || "");
 
+    const handleRemove = (e) => {
+        e.stopPropagation();
+        onRemove(item.id);
+    };
+
     return (
-        <button
-            type="button"
-            className="browse-card history-card"
-            key={`history-${item.id}`}
-            onClick={() => openDetails(item)}
-        >
-            <div className="card-img-wrapper">
+        <div className="browse-card history-card" key={`history-${item.id}`}>
+            <div className="card-img-wrapper" onClick={() => openDetails(item)}>
                 <img 
                     src={imageUrl(item.poster_path || item.backdrop_path, "w500")} 
                     alt={item.title} 
@@ -123,7 +123,16 @@ const HistoryCard = ({ item, row, index, openDetails }) => {
                     </div>
                 )}
             </div>
-            <div className="history-card-info">
+            
+            <button 
+                className="history-remove-btn" 
+                onClick={handleRemove}
+                aria-label="Remove from history"
+            >
+                <X size={14} />
+            </button>
+
+            <div className="history-card-info" onClick={() => openDetails(item)}>
                 <div className="history-info-top">
                     <span className="history-title">{item.title}</span>
                     <span className="history-percentage">{progress}%</span>
@@ -133,7 +142,7 @@ const HistoryCard = ({ item, row, index, openDetails }) => {
                     <span className="history-meta">{bottomInfo}</span>
                 </div>
             </div>
-        </button>
+        </div>
     );
 };
 
@@ -182,7 +191,7 @@ const MovieCard = ({ item, row, index, openDetails }) => {
     );
 };
 
-const MovieRow = ({ row, openDetails }) => {
+const MovieRow = ({ row, openDetails, onRemoveHistory }) => {
     const sliderRef = useRef(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [items, setItems] = useState(row.items || []);
@@ -226,9 +235,9 @@ const MovieRow = ({ row, openDetails }) => {
                             <HistoryCard 
                                 key={`history-${item.id}`} 
                                 item={item} 
-                                row={row} 
                                 index={index}
                                 openDetails={openDetails} 
+                                onRemove={onRemoveHistory}
                             />
                         ) : (
                             <MovieCard 
@@ -296,6 +305,24 @@ const HomeScreen = () => {
         window.scrollTo({
             top: 0,
             behavior: "smooth"
+        });
+    };
+
+    const handleRemoveFromHistory = (id) => {
+        removeFromHistory(id);
+        setContentRows(prev => {
+            const next = [...prev];
+            const historyRowIndex = next.findIndex(r => r.isHistory);
+            if (historyRowIndex > -1) {
+                const updatedItems = next[historyRowIndex].items.filter(item => item.id !== id);
+                if (updatedItems.length === 0) {
+                    // Remove the entire row if history is empty
+                    next.splice(historyRowIndex, 1);
+                } else {
+                    next[historyRowIndex] = { ...next[historyRowIndex], items: updatedItems };
+                }
+            }
+            return next;
         });
     };
 
@@ -469,6 +496,7 @@ const HomeScreen = () => {
                         key={row.title} 
                         row={row} 
                         openDetails={row.isHistory ? openWatch : openDetails} 
+                        onRemoveHistory={handleRemoveFromHistory}
                     />
                 ))}
             </main>
