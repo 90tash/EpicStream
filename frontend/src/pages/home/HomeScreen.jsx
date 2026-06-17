@@ -245,9 +245,9 @@ const HomeScreen = () => {
                     return next;
                 });
 
-                // Use the first row for hero candidates
+                // Use the first row for hero candidates (limit to 5)
                 if (rowIndex === 0) {
-                    const heroWithDetails = await Promise.all(results.map(async (item) => {
+                    const heroWithDetails = await Promise.all(results.slice(0, 5).map(async (item) => {
                         try {
                             const images = await tmdbGetImages(getMediaType(item), item.id);
                             // Look for English or null (textless) posters
@@ -356,13 +356,19 @@ const HomeScreen = () => {
                     <div className="hero-pagination-container">
                         {heroCandidates.map((candidate, idx) => {
                             const isActive = idx === heroIndex;
+                            const isPast = idx < heroIndex;
                             return (
                                 <div 
                                     key={`pagination-${candidate.id}`}
-                                    className={`hero-pagination-pill ${isActive ? 'active' : ''}`}
+                                    className={`hero-pagination-pill ${isActive ? 'active' : ''} ${isPast ? 'past' : ''}`}
                                     onClick={() => setHeroIndex(idx)}
                                 >
-                                    {isActive && <div key={`progress-${heroIndex}`} className="pill-progress" />}
+                                    {(isActive || isPast) && (
+                                        <div 
+                                            key={isActive ? `progress-${heroIndex}` : `past-${idx}`} 
+                                            className="pill-progress" 
+                                        />
+                                    )}
                                 </div>
                             );
                         })}

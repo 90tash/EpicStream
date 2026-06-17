@@ -194,7 +194,7 @@
     opacity: 0.8;
 }
 
-/* --- Vertical Hero Pagination --- */
+/* --- Hero Pagination --- */
 .hero-pagination-container {
     position: absolute;
     right: clamp(22px, 4vw, 84px);
@@ -208,29 +208,27 @@
 }
 
 .hero-pagination-pill {
-    width: 6px;
+    width: 4px;
     height: 16px;
-    border-radius: 6px;
+    border-radius: 4px;
     background: rgba(255, 255, 255, 0.2);
     cursor: pointer;
-    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                width 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                background 0.3s ease, 
-                transform 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
 }
 
 .hero-pagination-pill:hover {
     background: rgba(255, 255, 255, 0.4);
-    transform: scaleX(1.2);
 }
 
 .hero-pagination-pill.active {
     height: 48px;
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 0 12px rgba(229, 9, 20, 0.4);
-    transform: scaleX(1);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-pagination-pill.past {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .pill-progress {
@@ -238,10 +236,17 @@
     top: 0;
     left: 0;
     width: 100%;
-    background: var(--accent);
     height: 0%;
+    background: var(--accent);
     border-radius: 6px;
+}
+
+.hero-pagination-pill.active .pill-progress {
     animation: fillProgress 8s linear forwards;
+}
+
+.hero-pagination-pill.past .pill-progress {
+    height: 100%;
 }
 
 @keyframes fillProgress {
