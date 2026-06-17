@@ -5,11 +5,12 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
+import { addToHistory, getHistory } from "../../utils/history";
 import "./homescreen.css";
 
 const today = new Date().toISOString().split("T")[0];
 
-const rows = [
+const initialRows = [
     { title: "TOP 10 Today", path: "/trending/all/day", topTen: true },
     { 
         title: "Popular Movies", 
@@ -80,6 +81,59 @@ const RowHeader = ({ row }) => {
         <div className="row-heading">
             {row.title && <h2 className="section-title">{row.title}</h2>}
         </div>
+    );
+};
+
+const getRelativeTime = (timestamp) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) return "Just now";
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+};
+
+const HistoryCard = ({ item, row, index, openDetails }) => {
+    const type = item.type || getMediaType(item);
+    const progress = item.percentage || 0;
+    const timeAgo = getRelativeTime(item.timestamp);
+    const bottomInfo = type === "tv" ? `S${item.season}:E${item.episode}` : (item.timeStr || "");
+
+    return (
+        <button
+            type="button"
+            className="browse-card history-card"
+            key={`history-${item.id}`}
+            onClick={() => openDetails(item)}
+        >
+            <div className="card-img-wrapper">
+                <img 
+                    src={imageUrl(item.poster_path || item.backdrop_path, "w500")} 
+                    alt={item.title} 
+                    loading="lazy"
+                />
+                {progress > 0 && (
+                    <div className="card-progress-bar">
+                        <div className="progress-fill" style={{ width: `${progress}%` }} />
+                    </div>
+                )}
+            </div>
+            <div className="history-card-info">
+                <div className="history-info-top">
+                    <span className="history-title">{item.title}</span>
+                    <span className="history-percentage">{progress}%</span>
+                </div>
+                <div className="history-info-bottom">
+                    <span className="history-time-ago">{timeAgo}</span>
+                    <span className="history-meta">{bottomInfo}</span>
+                </div>
+            </div>
+        </button>
     );
 };
 
@@ -168,13 +222,23 @@ const MovieRow = ({ row, openDetails }) => {
                     onScroll={() => setShowLeftArrow(sliderRef.current?.scrollLeft > 0)}
                 >
                     {items.map((item, index) => (
-                        <MovieCard 
-                            key={`${row.title}-${item.id}`} 
-                            item={item} 
-                            row={row} 
-                            index={index}
-                            openDetails={openDetails} 
-                        />
+                        row.isHistory ? (
+                            <HistoryCard 
+                                key={`history-${item.id}`} 
+                                item={item} 
+                                row={row} 
+                                index={index}
+                                openDetails={openDetails} 
+                            />
+                        ) : (
+                            <MovieCard 
+                                key={`${row.title}-${item.id}`} 
+                                item={item} 
+                                row={row} 
+                                index={index}
+                                openDetails={openDetails} 
+                            />
+                        )
                     ))}
                 </div>
 
@@ -190,11 +254,21 @@ const HomeScreen = () => {
     const [heroContent, setHeroContent] = useState(null);
     const [heroCandidates, setHeroCandidates] = useState([]);
     const [heroIndex, setHeroIndex] = useState(-1);
-    const [contentRows, setContentRows] = useState(rows.map(r => ({ ...r, items: null })));
+    const [contentRows, setContentRows] = useState([]);
     const [isLoadingHero, setIsLoadingHero] = useState(true);
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const navigate = useNavigate();
+
+    // Initialize rows with history if available
+    useEffect(() => {
+        const history = getHistory();
+        const updatedRows = history.length > 0 
+            ? [{ title: "Continue Watching", items: history, isHistory: true }, ...initialRows.map(r => ({ ...r, items: null }))]
+            : initialRows.map(r => ({ ...r, items: null }));
+        
+        setContentRows(updatedRows);
+    }, []);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia("(max-width: 640px)");
@@ -227,8 +301,10 @@ const HomeScreen = () => {
 
     useEffect(() => {
         const loadRow = async (rowIndex) => {
+            const row = contentRows[rowIndex];
+            if (!row || row.isHistory) return;
+
             try {
-                const row = rows[rowIndex];
                 const data = await tmdbFetch(row.path, row.params);
                 const results = (data.results || [])
                     .filter((item) => {
@@ -245,8 +321,9 @@ const HomeScreen = () => {
                     return next;
                 });
 
-                // Use the first row for hero candidates (limit to 5)
-                if (rowIndex === 0) {
+                // Use the first non-history row for hero candidates (limit to 5)
+                const firstDataRowIndex = contentRows.findIndex(r => !r.isHistory);
+                if (rowIndex === firstDataRowIndex) {
                     const heroWithDetails = await Promise.all(results.slice(0, 5).map(async (item) => {
                         try {
                             const images = await tmdbGetImages(getMediaType(item), item.id);
@@ -267,8 +344,10 @@ const HomeScreen = () => {
             }
         };
 
-        rows.forEach((_, index) => loadRow(index));
-    }, []);
+        if (contentRows.length > 0) {
+            contentRows.forEach((_, index) => loadRow(index));
+        }
+    }, [contentRows.length]);
 
     useEffect(() => {
         if (heroCandidates.length > 0 && heroIndex === -1) {
@@ -296,6 +375,14 @@ const HomeScreen = () => {
         if (!item) return;
         const type = getMediaType(item);
         navigate(`/${type}/${item.id}`, { state: { movie: item, type } });
+    };
+
+    const openWatch = (item) => {
+        const type = getMediaType(item);
+        const season = item.season || 1;
+        const episode = item.episode || 1;
+        const path = type === "movie" ? `/watch/movie/${item.id}` : `/watch/tv/${item.id}?season=${season}&episode=${episode}`;
+        navigate(path);
     };
 
     const title = getTitle(heroContent);
@@ -340,6 +427,7 @@ const HomeScreen = () => {
                                 className="browse-play"
                                 onClick={() => {
                                     const type = getMediaType(heroContent);
+                                    addToHistory(heroContent, type);
                                     navigate(`/watch/${type}/${heroContent.id}`);
                                 }}
                             >
@@ -377,7 +465,11 @@ const HomeScreen = () => {
 
             <main className="browse-main">
                 {contentRows.map((row) => (
-                    <MovieRow key={row.title} row={row} openDetails={openDetails} />
+                    <MovieRow 
+                        key={row.title} 
+                        row={row} 
+                        openDetails={row.isHistory ? openWatch : openDetails} 
+                    />
                 ))}
             </main>
 

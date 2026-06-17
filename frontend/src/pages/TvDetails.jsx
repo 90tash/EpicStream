@@ -211,7 +211,10 @@ const TvDetails = () => {
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
-                                onClick={() => navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`)}
+                                onClick={() => {
+                                    addToHistory(tv, "tv", selectedSeason || 1, 1);
+                                    navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`);
+                                }}
                             >
                                 <Play size={20} fill="currentColor" />
                                 <span>Play</span>

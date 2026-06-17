@@ -180,7 +180,10 @@ const MovieDetails = () => {
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
-                                onClick={() => navigate(`/watch/movie/${id}`)}
+                                onClick={() => {
+                                    addToHistory(movie, "movie");
+                                    navigate(`/watch/movie/${id}`);
+                                }}
                             >
                                 <Play size={20} fill="currentColor" />
                                 <span>Play</span>
