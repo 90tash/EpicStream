@@ -751,24 +751,24 @@
     }
 
     .hero-pagination-container {
-        position: absolute;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
+        position: relative;
+        top: auto;
+        bottom: auto;
+        right: auto;
+        left: auto;
+        transform: none;
         flex-direction: row;
         justify-content: center;
         gap: 8px;
         z-index: 10;
         pointer-events: auto;
-        margin-top: 0;
+        margin-top: 32px;
     }
 
     .hero-pagination-pill {
         width: 16px;
         height: 4px;
         transform-origin: left center; /* Makes the pill stretch rightwards on mobile */
-        padding: 10px 0; /* Increase hit area */
-        background-clip: content-box;
     }
 
     .hero-pagination-pill:hover {
@@ -779,7 +779,6 @@
         width: 48px;
         height: 4px;
         transform: scaleY(1);
-        padding: 10px 0; /* Ensure same hit area */
     }
 
     .pill-progress {
