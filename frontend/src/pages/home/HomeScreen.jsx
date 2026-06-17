@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch } from "../../utils/tmdb";
+import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
 import "./homescreen.css";
 
 const today = new Date().toISOString().split("T")[0];
@@ -193,7 +193,17 @@ const HomeScreen = () => {
     const [contentRows, setContentRows] = useState(rows.map(r => ({ ...r, items: null })));
     const [isLoadingHero, setIsLoadingHero] = useState(true);
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(max-width: 640px)");
+        setIsMobile(mediaQuery.matches);
+
+        const handler = (e) => setIsMobile(e.matches);
+        mediaQuery.addEventListener("change", handler);
+        return () => mediaQuery.removeEventListener("change", handler);
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -237,8 +247,19 @@ const HomeScreen = () => {
 
                 // Use the first row for hero candidates
                 if (rowIndex === 0) {
-                    setHeroCandidates(results);
-                    setHeroContent(results[0] || null);
+                    const heroWithDetails = await Promise.all(results.map(async (item) => {
+                        try {
+                            const images = await tmdbGetImages(getMediaType(item), item.id);
+                            // Look for English or null (textless) posters
+                            const posters = images.posters || [];
+                            const textlessPoster = posters.find(p => p.iso_639_1 === null)?.file_path;
+                            return { ...item, textless_poster: textlessPoster };
+                        } catch (e) {
+                            return item;
+                        }
+                    }));
+                    setHeroCandidates(heroWithDetails);
+                    setHeroContent(heroWithDetails[0] || null);
                     setIsLoadingHero(false);
                 }
             } catch (error) {
@@ -288,11 +309,16 @@ const HomeScreen = () => {
             {isLoadingHero ? <HeroSkeleton /> : (
                 <section className="browse-hero">
                     {heroCandidates.map((candidate, idx) => (
-                        candidate.backdrop_path && (
+                        (candidate.backdrop_path || candidate.poster_path) && (
                             <img 
                                 key={`hero-img-${candidate.id}`}
                                 className={`browse-hero-image ${idx === heroIndex ? 'active' : ''}`} 
-                                src={imageUrl(candidate.backdrop_path, "original")} 
+                                src={imageUrl(
+                                    isMobile 
+                                        ? (candidate.textless_poster || candidate.poster_path || candidate.backdrop_path) 
+                                        : (candidate.backdrop_path || candidate.poster_path), 
+                                    "original"
+                                )} 
                                 alt={getTitle(candidate)} 
                             />
                         )

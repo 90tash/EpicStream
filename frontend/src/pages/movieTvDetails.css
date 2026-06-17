@@ -114,6 +114,11 @@
     font-weight: 500;
 }
 
+.details-hero-meta .rating svg,
+.similar-card-meta .rating svg {
+    flex-shrink: 0;
+}
+
 .details-hero-meta .rating {
     display: inline-flex;
     align-items: center;
