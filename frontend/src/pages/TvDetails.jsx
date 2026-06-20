@@ -68,7 +68,7 @@ const TvDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [tv, setTv] = useState(null);
+    const [tv, setTv] = useState(() => state?.movie || null);
     const [cast, setCast] = useState([]);
     const [similarTv, setSimilarTv] = useState([]);
     const [showFullOverview, setShowFullOverview] = useState(false);
