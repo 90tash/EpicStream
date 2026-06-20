@@ -25,16 +25,17 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%; /* Matches the container height to ensure the bottom gradient covers the edge */
+    height: 720px; /* Fixed height to keep image size static and prevent resizing/zooming */
     object-fit: cover;
     object-position: center 20%;
     z-index: 0;
-    animation: imageGlide 1.2s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+    opacity: 0; /* Default to invisible to prevent flashing before load/animation starts */
+    animation: imageGlide 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; /* Soft, slow premium glide */
 }
 
 @keyframes imageGlide {
-    from { opacity: 0.4; transform: scale(1.1) translateX(20px); }
-    to { opacity: 1; transform: scale(1.06) translateX(0); }
+    from { opacity: 0; transform: scale(1.06) translateX(12px); }
+    to { opacity: 1; transform: scale(1.02) translateX(0); }
 }
 
 .details-hero-shade {
@@ -42,14 +43,18 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 780px; /* Taller than the image (720px) + scale (763px) to create a static, absolute mask envelope */
     background:
         /* Left side shadow for text readability */
         linear-gradient(90deg, rgba(5, 6, 7, 0.95) 0%, rgba(5, 6, 7, 0.7) 25%, transparent 65%),
-        /* Bottom fade to black - smoother transition starting earlier */
-        linear-gradient(180deg, rgba(5, 6, 7, 0) 0%, rgba(5, 6, 7, 0.25) 20%, rgba(5, 6, 7, 0.7) 50%, rgba(5, 6, 7, 0.95) 80%, #050607 100%);
+        /* Bottom fade to black - reaches 100% solid color early at 68% height */
+        linear-gradient(180deg, rgba(5, 6, 7, 0) 0%, rgba(5, 6, 7, 0.35) 20%, rgba(5, 6, 7, 0.85) 45%, #050607 68%, #050607 100%),
+        /* Solid dark tint over the entire image to reduce overall brightness and blend it */
+        linear-gradient(0deg, rgba(5, 6, 7, 0.28), rgba(5, 6, 7, 0.28));
     z-index: 1;
     pointer-events: none;
+    opacity: 1; /* Keep fully opaque to guarantee the bottom of the image is masked instantly on load */
+    /* No animation or scale transform: remains perfectly static to blend with overall background without stutters */
 }
 
 
@@ -730,7 +735,7 @@
         align-items: flex-start;
     }
     .details-hero-image {
-        height: 100%;
+        height: 480px; /* Fixed mobile banner height to prevent resizing */
         object-position: top center;
     }
     .details-hero-content { 
@@ -771,8 +776,12 @@
         gap: 12px;
     }
     .details-hero-shade { 
-        height: 120vh; /* Cover expansion and scaled image */
-        background: linear-gradient(180deg, rgba(5, 6, 7, 0) 0%, rgba(5, 6, 7, 0.4) 25%, rgba(5, 6, 7, 0.8) 60%, #050607 85%, #050607 100%); 
+        height: 540px; /* Taller than mobile image (480px) to form a static mask */
+        background: 
+            linear-gradient(180deg, rgba(5, 6, 7, 0) 0%, rgba(5, 6, 7, 0.35) 20%, rgba(5, 6, 7, 0.85) 45%, #050607 68%, #050607 100%),
+            linear-gradient(0deg, rgba(5, 6, 7, 0.28), rgba(5, 6, 7, 0.28)); 
+        animation: none; /* Keep static on mobile */
+        transform: none;
     }
     .similar-grid { grid-template-columns: minmax(0, 1fr); padding-bottom: 40px; }
 

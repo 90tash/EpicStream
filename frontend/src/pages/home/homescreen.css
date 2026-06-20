@@ -277,11 +277,9 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #fff;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     padding: 0;
-    line-height: 0;
     cursor: pointer;
     z-index: 20;
     opacity: 0;
@@ -303,6 +301,8 @@
 
 .history-remove-btn svg {
     display: block;
+    margin: 0;
+    padding: 0;
     pointer-events: none;
     transition: none; /* No color transition needed if we just inherit */
 }
