@@ -30,6 +30,7 @@ const SearchPage = () => {
             setSearchResults([]);
             setHasSearched(false);
             setExpandedId(null);
+            setCategory(categories[0]);
             // Prevent body scroll when modal is open
             document.body.style.overflow = 'hidden';
         } else {

@@ -424,7 +424,7 @@
 
 .episode-card:hover {
     background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 38, 51, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 .episode-card:hover h3 {
@@ -599,8 +599,8 @@
 
 .cast-card:hover {
     background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 38, 51, 0.6);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 38, 51, 0.1);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 .cast-card:hover .cast-name {
@@ -817,12 +817,370 @@
     .details-hero-content h1 { font-size: 26px; }
     .details-hero-meta { justify-content: center; gap: 10px; font-size: 12px; }
     .details-hero-overview { font-size: 13.5px; -webkit-line-clamp: 3; margin: 0; }
-    .details-actions { width: 100%; justify-content: center; gap: 8px; }
-    .details-play, .details-action-btn { min-height: 42px; padding: 0 24px; font-size: 15px; }
+    .details-actions {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+    .details-play {
+        flex: 1 1 100%;
+        min-height: 42px;
+        font-size: 15px;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .details-action-btn {
+        flex: 1;
+        min-width: 0;
+        min-height: 42px;
+        padding: 0 12px;
+        font-size: 14px;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
     .back-btn { width: 36px; height: 36px; top: 16px; left: 16px; }
     .details-section-title { font-size: 18px; margin: 24px 16px 12px; }
     .episodes-header { flex-direction: column; align-items: flex-start; gap: 16px; }
     .episode-card { flex-direction: column; align-items: stretch; gap: 16px; padding: 12px; }
     .episode-thumb-wrapper { width: 100%; flex: none; }
     .episode-info { width: 100%; }
+}
+
+/* --- Collection Modal --- */
+.collection-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(5, 6, 7, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.collection-modal {
+    width: min(860px, 94vw);
+    max-height: 80vh;
+    background: rgba(11, 13, 16, 0.96);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.95) translateY(12px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.collection-modal-header {
+    padding: 24px 28px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.collection-modal-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+}
+
+.collection-count-badge {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.collection-close-btn {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    color: #9aa3b2;
+    padding: 6px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.collection-close-btn:hover {
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
+    transform: scale(1.1);
+}
+
+.collection-modal-body {
+    padding: 0 28px 28px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Hide scrollbars for body */
+.collection-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+.collection-modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.collection-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+}
+.collection-modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.collection-sort {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.sort-label {
+    font-size: 12px;
+    color: #9aa3b2;
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.sort-btn {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #9aa3b2;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.sort-btn:hover {
+    color: #fff;
+}
+
+.sort-btn.active {
+    border-color: rgba(255, 38, 51, 0.4);
+    background: rgba(255, 38, 51, 0.08);
+    color: var(--accent);
+}
+
+.collection-overview-text {
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #9aa3b2;
+    margin: 0;
+}
+
+/* --- Collection Cards & Slider --- */
+.collection-slider-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.collection-slider {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 4px;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+}
+
+.collection-slider::-webkit-scrollbar {
+    display: none;
+}
+
+.collection-card {
+    flex: 0 0 140px;
+    max-width: 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    text-align: left;
+}
+
+.col-card-img-wrapper {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.collection-card:hover .col-card-img-wrapper {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.col-card-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.collection-card:hover img {
+    transform: scale(1.06);
+}
+
+.col-card-title {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 2px;
+    transition: color 0.2s ease;
+}
+
+.collection-card:hover .col-card-title {
+    color: var(--accent);
+}
+
+.col-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+    padding: 0 2px;
+}
+
+.col-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.col-card-meta svg {
+    color: var(--accent);
+}
+
+.col-arrow {
+    position: absolute;
+    top: 42%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: rgba(8, 10, 13, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+}
+
+.col-arrow:hover {
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.col-arrow.left {
+    left: -16px;
+}
+
+.col-arrow.right {
+    right: -16px;
+}
+
+/* Mobile responsive styling for the Collection Modal */
+@media (max-width: 600px) {
+    .collection-modal {
+        border-radius: 14px;
+        max-height: 85vh;
+        width: 94vw;
+    }
+    .collection-modal-header {
+        padding: 18px 20px 8px;
+    }
+    .collection-modal-header h2 {
+        font-size: 18px;
+    }
+    .collection-modal-body {
+        padding: 0 20px 20px;
+        gap: 14px;
+    }
+    .collection-overview-text {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+    .collection-sort {
+        gap: 4px;
+    }
+    .sort-btn {
+        height: 26px;
+        padding: 0 8px;
+        font-size: 10px;
+    }
+    .col-arrow {
+        display: none !important;
+    }
+    .collection-slider {
+        gap: 10px;
+        padding: 2px;
+    }
+    .collection-card {
+        flex: 0 0 110px;
+        max-width: 110px;
+    }
+    .col-card-title {
+        font-size: 11.5px;
+    }
+    .col-card-meta {
+        font-size: 10.5px;
+    }
 }
