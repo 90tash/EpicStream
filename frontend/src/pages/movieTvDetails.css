@@ -806,10 +806,10 @@
     .details-hero-shade {
         height: 100%;
         background: 
-            /* Soft bottom fade starting much later and more gradually */
-            linear-gradient(180deg, rgba(5, 6, 7, 0) 50%, rgba(5, 6, 7, 0.5) 80%, #050607 100%),
-            /* Extremely light dark tint to keep colors vibrant */
-            linear-gradient(0deg, rgba(5, 6, 7, 0.1), rgba(5, 6, 7, 0.1));
+            /* Dense bottom fade reaching solid black at 80% */
+            linear-gradient(180deg, rgba(5, 6, 7, 0) 10%, rgba(5, 6, 7, 0.3) 30%, rgba(5, 6, 7, 0.8) 60%, #050607 80%, #050607 100%),
+            /* Toned-down overall dark tint */
+            linear-gradient(0deg, rgba(5, 6, 7, 0.18), rgba(5, 6, 7, 0.18));
     }
 }
 
