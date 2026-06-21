@@ -130,8 +130,8 @@ const HistoryCard = ({ item, openDetails, onRemove }) => {
         if (isRemoving) return;
         setIsSwiping(false);
         
-        // If swiped left more than 90px, swipe it off-screen and remove
-        if (currentX < -90) {
+        // If swiped left more than 60px, swipe it off-screen and remove
+        if (currentX < -60) {
             setIsRemoving(true);
             setCurrentX(-300); // Slide off-screen
             setTimeout(() => {

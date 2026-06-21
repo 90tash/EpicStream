@@ -244,7 +244,7 @@ const TvDetails = () => {
                                         className="season-dropdown-trigger" 
                                         onClick={() => setShowSeasonMenu(!showSeasonMenu)}
                                     >
-                                        {currentSeasonName}
+                                        <span className="season-trigger-text">{currentSeasonName}</span>
                                         <ChevronDown size={16} style={{ transform: showSeasonMenu ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease' }} />
                                     </button>
 
@@ -259,7 +259,7 @@ const TvDetails = () => {
                                                         setShowSeasonMenu(false);
                                                     }}
                                                 >
-                                                    {season.name}
+                                                    <span className="season-option-text">{season.name}</span>
                                                     {selectedSeason === season.season_number && <div className="active-dot" />}
                                                 </button>
                                             ))}
