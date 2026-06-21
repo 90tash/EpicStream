@@ -81,6 +81,7 @@ const MovieDetails = () => {
         return false;
     });
     const [textlessPoster, setTextlessPoster] = useState(() => state?.movie?.textless_poster || null);
+    const [textlessLoaded, setTextlessLoaded] = useState(false);
 
     // Collection states
     const [collectionData, setCollectionData] = useState(null);
@@ -146,6 +147,7 @@ const MovieDetails = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        setTextlessLoaded(false);
 
         const fetchAllData = async () => {
             try {
@@ -219,16 +221,30 @@ const MovieDetails = () => {
             </button>
             
             <section className="details-hero">
-                <img
-                    className="details-hero-image"
-                    src={imageUrl(
-                        isMobile 
-                            ? (textlessPoster || movie.poster_path || movie.backdrop_path) 
-                            : (movie.backdrop_path || movie.poster_path), 
-                        "original"
+                <div className="details-hero-image-wrapper">
+                    <img
+                        className="details-hero-image"
+                        src={imageUrl(
+                            isMobile 
+                                ? (movie.poster_path || movie.backdrop_path) 
+                                : (movie.backdrop_path || movie.poster_path), 
+                            "original"
+                        )}
+                        alt={title}
+                    />
+                    {isMobile && textlessPoster && (
+                        <img
+                            className="details-hero-image"
+                            src={imageUrl(textlessPoster, "original")}
+                            alt={title}
+                            onLoad={() => setTextlessLoaded(true)}
+                            style={{
+                                opacity: textlessLoaded ? 1 : 0,
+                                transition: "opacity 0.8s ease-in-out"
+                            }}
+                        />
                     )}
-                    alt={title}
-                />
+                </div>
                 <div className="details-hero-shade" />
                 <div className="details-hero-content">
                     <div className="details-hero-poster">

@@ -20,17 +20,25 @@
     background: #050607;
 }
 
-.details-hero-image {
+.details-hero-image-wrapper {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 720px; /* Fixed height to keep image size static and prevent resizing/zooming */
-    object-fit: cover;
-    object-position: center 20%;
     z-index: 0;
     opacity: 0; /* Default to invisible to prevent flashing before load/animation starts */
     animation: imageGlide 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; /* Soft, slow premium glide */
+}
+
+.details-hero-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
 }
 
 @keyframes imageGlide {
