@@ -74,6 +74,7 @@ const TvDetails = () => {
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const overviewRef = useRef(null);
+    const seasonRef = useRef(null);
     const [isMobile, setIsMobile] = useState(false);
     const [textlessPoster, setTextlessPoster] = useState(null);
 
@@ -107,6 +108,23 @@ const TvDetails = () => {
         mediaQuery.addEventListener("change", handler);
         return () => mediaQuery.removeEventListener("change", handler);
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (seasonRef.current && !seasonRef.current.contains(event.target)) {
+                setShowSeasonMenu(false);
+            }
+        };
+
+        if (showSeasonMenu) {
+            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener("touchstart", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [showSeasonMenu]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -267,7 +285,7 @@ const TvDetails = () => {
                             <h2 className="details-section-title">Episodes</h2>
                             
                             {seasonsList.length > 0 && (
-                                <div className="custom-season-dropdown">
+                                <div className="custom-season-dropdown" ref={seasonRef}>
                                     <button 
                                         className="season-dropdown-trigger" 
                                         onClick={() => setShowSeasonMenu(!showSeasonMenu)}

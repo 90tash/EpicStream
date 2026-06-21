@@ -1,5 +1,5 @@
 import { ChevronDown, Search, Star, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch } from "../../../utils/tmdb";
 import "./search.css";
@@ -19,6 +19,7 @@ const SearchPage = () => {
     const [categoryOpen, setCategoryOpen] = useState(false);
     const [category, setCategory] = useState(categories[0]);
     const [expandedId, setExpandedId] = useState(null);
+    const categoryRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -40,6 +41,23 @@ const SearchPage = () => {
             document.body.style.overflow = 'auto';
         };
     }, [isSearchOpen]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (categoryRef.current && !categoryRef.current.contains(event.target)) {
+                setCategoryOpen(false);
+            }
+        };
+
+        if (categoryOpen) {
+            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener("touchstart", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, [categoryOpen]);
 
     useEffect(() => {
         if (!searchTerm.trim()) {
@@ -105,7 +123,7 @@ const SearchPage = () => {
                 <div className="search-modal-top">
                     <h1>Search</h1>
                     <div className="search-controls">
-                        <div className="search-category">
+                        <div className="search-category" ref={categoryRef}>
                             <button type="button" onClick={() => setCategoryOpen((value) => !value)}>
                                 {category.label}
                                 <ChevronDown size={18} className={categoryOpen ? "open" : ""} />

@@ -802,6 +802,15 @@
         overflow-y: visible;
         margin-bottom: 0;
     }
+
+    .details-hero-shade {
+        height: 100%;
+        background: 
+            /* Soft bottom fade starting much later and more gradually */
+            linear-gradient(180deg, rgba(5, 6, 7, 0) 50%, rgba(5, 6, 7, 0.5) 80%, #050607 100%),
+            /* Extremely light dark tint to keep colors vibrant */
+            linear-gradient(0deg, rgba(5, 6, 7, 0.1), rgba(5, 6, 7, 0.1));
+    }
 }
 
 @media (max-width: 640px) {
