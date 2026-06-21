@@ -283,7 +283,14 @@
     cursor: pointer;
     z-index: 20;
     opacity: 0;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(1);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
+                color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     pointer-events: auto;
@@ -294,9 +301,9 @@
 }
 
 .history-remove-btn:hover {
-    background: rgba(5, 6, 7, 0.9);
-    border-color: var(--accent);
+    border-color: rgba(255, 38, 51, 0.4);
     color: var(--accent);
+    transform: scale(1.1);
 }
 
 .history-remove-btn svg {
@@ -864,6 +871,10 @@
 
     .row-arrow {
         display: none;
+    }
+
+    .history-remove-btn {
+        display: none !important;
     }
 }
 

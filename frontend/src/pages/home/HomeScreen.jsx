@@ -104,13 +104,57 @@ const HistoryCard = ({ item, openDetails, onRemove }) => {
     const timeAgo = getRelativeTime(item.timestamp);
     const bottomInfo = type === "tv" ? `S${item.season}:E${item.episode}` : (item.timeStr || "");
 
-    const handleRemove = (e) => {
-        e.stopPropagation();
-        onRemove(item.id);
+    // Mobile Swipe-to-Delete States
+    const [startX, setStartX] = useState(0);
+    const [currentX, setCurrentX] = useState(0);
+    const [isSwiping, setIsSwiping] = useState(false);
+    const [isRemoving, setIsRemoving] = useState(false);
+
+    const handleTouchStart = (e) => {
+        if (isRemoving) return;
+        setStartX(e.touches[0].clientX);
+        setIsSwiping(true);
+    };
+
+    const handleTouchMove = (e) => {
+        if (!isSwiping || isRemoving) return;
+        const diffX = e.touches[0].clientX - startX;
+        
+        // Only allow swiping to the left (negative translation)
+        if (diffX < 0) {
+            setCurrentX(diffX);
+        }
+    };
+
+    const handleTouchEnd = () => {
+        if (isRemoving) return;
+        setIsSwiping(false);
+        
+        // If swiped left more than 90px, swipe it off-screen and remove
+        if (currentX < -90) {
+            setIsRemoving(true);
+            setCurrentX(-300); // Slide off-screen
+            setTimeout(() => {
+                onRemove(item.id);
+            }, 200); // Delay to match the transition duration
+        } else {
+            setCurrentX(0);
+        }
     };
 
     return (
-        <div className="browse-card history-card" key={`history-${item.id}`}>
+        <div 
+            className="browse-card history-card" 
+            key={`history-${item.id}`}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            style={{
+                transform: currentX !== 0 ? `translateX(${currentX}px)` : undefined,
+                opacity: currentX !== 0 ? Math.max(0, 1 - Math.abs(currentX) / 200) : undefined,
+                transition: isSwiping ? 'none' : 'transform 0.2s ease, opacity 0.2s ease'
+            }}
+        >
             <div className="card-img-wrapper" onClick={() => openDetails(item)}>
                 <img 
                     src={imageUrl(item.poster_path || item.backdrop_path, "w500")} 
@@ -126,7 +170,10 @@ const HistoryCard = ({ item, openDetails, onRemove }) => {
             
             <button 
                 className="history-remove-btn" 
-                onClick={handleRemove}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove(item.id);
+                }}
                 aria-label="Remove from history"
             >
                 <X size={14} />
@@ -194,6 +241,7 @@ const MovieCard = ({ item, row, index, openDetails }) => {
 const MovieRow = ({ row, openDetails, onRemoveHistory }) => {
     const sliderRef = useRef(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
+    const [showRightArrow, setShowRightArrow] = useState(false);
     const [items, setItems] = useState(row.items || []);
     const [isLoading, setIsLoading] = useState(!row.items);
 
@@ -203,6 +251,22 @@ const MovieRow = ({ row, openDetails, onRemoveHistory }) => {
             setIsLoading(false);
         }
     }, [row.items]);
+
+    const updateArrows = () => {
+        if (!sliderRef.current) return;
+        const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
+        setShowLeftArrow(scrollLeft > 1);
+        setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 1);
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(updateArrows, 100);
+        window.addEventListener("resize", updateArrows);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener("resize", updateArrows);
+        };
+    }, [items, isLoading]);
 
     const scroll = (direction) => {
         if (!sliderRef.current) return;
@@ -228,7 +292,7 @@ const MovieRow = ({ row, openDetails, onRemoveHistory }) => {
                 <div
                     className={`browse-slider ${row.topTen ? "top-ten-slider" : ""}`}
                     ref={sliderRef}
-                    onScroll={() => setShowLeftArrow(sliderRef.current?.scrollLeft > 0)}
+                    onScroll={updateArrows}
                 >
                     {items.map((item, index) => (
                         row.isHistory ? (
@@ -251,9 +315,11 @@ const MovieRow = ({ row, openDetails, onRemoveHistory }) => {
                     ))}
                 </div>
 
-                <button className="row-arrow right" onClick={() => scroll("right")} aria-label="Scroll right">
-                    <ChevronRight size={36} />
-                </button>
+                {showRightArrow && (
+                    <button className="row-arrow right" onClick={() => scroll("right")} aria-label="Scroll right">
+                        <ChevronRight size={36} />
+                    </button>
+                )}
             </div>
         </section>
     );
@@ -358,7 +424,7 @@ const HomeScreen = () => {
                             const posters = images.posters || [];
                             const textlessPoster = posters.find(p => p.iso_639_1 === null)?.file_path;
                             return { ...item, textless_poster: textlessPoster };
-                        } catch (e) {
+                        } catch {
                             return item;
                         }
                     }));

@@ -7,24 +7,8 @@ const MyListPage = () => {
 
     return (
         <div className="my-list-page">
-            <button className="back-btn-simple" onClick={() => navigate("/")} aria-label="Go back" style={{
-                position: 'absolute',
-                left: '4%',
-                top: '32px',
-                zIndex: 10,
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: '#fff',
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 0,
-                cursor: 'pointer'
-            }}>
-                <ChevronLeft size={24} style={{ marginRight: '2px' }} />
+            <button className="back-btn-simple" onClick={() => navigate("/")} aria-label="Go back">
+                <ChevronLeft size={24} />
             </button>
 
             <main className="my-list-empty">

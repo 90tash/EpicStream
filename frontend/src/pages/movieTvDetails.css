@@ -314,23 +314,26 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    height: 42px;
+    height: 38px;
     min-width: 160px;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     color: #fff;
     padding: 0 16px;
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.2s ease;
 }
 
 .season-dropdown-trigger:hover {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: var(--accent);
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
+    transform: scale(1.05);
 }
 
 .season-dropdown-menu {
@@ -338,11 +341,13 @@
     top: calc(100% + 8px);
     left: 0;
     width: 220px;
-    background: #0f1115;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    padding: 8px 0;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+    padding: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    background: rgba(15, 15, 15, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -350,13 +355,15 @@
 
 .season-option {
     width: 100%;
-    padding: 12px 16px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
     background: transparent;
-    border: none;
     color: #94a3b8;
-    font-size: 14px;
-    font-weight: 600;
     text-align: left;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -364,14 +371,10 @@
     transition: all 0.2s ease;
 }
 
-.season-option:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
-}
-
+.season-option:hover,
 .season-option.active {
+    background: transparent;
     color: var(--accent);
-    background: rgba(255, 38, 51, 0.08);
 }
 
 .active-dot {
