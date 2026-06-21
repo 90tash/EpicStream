@@ -74,8 +74,13 @@ const MovieDetails = () => {
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const overviewRef = useRef(null);
-    const [isMobile, setIsMobile] = useState(false);
-    const [textlessPoster, setTextlessPoster] = useState(null);
+    const [isMobile, setIsMobile] = useState(() => {
+        if (typeof window !== "undefined") {
+            return window.matchMedia("(max-width: 640px)").matches;
+        }
+        return false;
+    });
+    const [textlessPoster, setTextlessPoster] = useState(() => state?.movie?.textless_poster || null);
 
     // Collection states
     const [collectionData, setCollectionData] = useState(null);
@@ -144,9 +149,21 @@ const MovieDetails = () => {
 
         const fetchAllData = async () => {
             try {
-                // 1. Always fetch/refresh full movie data
-                const fullData = await tmdbFetch(`/movie/${id}`);
+                // Fetch movie details and images in parallel for maximum speed
+                const [fullData, imagesData] = await Promise.all([
+                    tmdbFetch(`/movie/${id}`),
+                    tmdbGetImages("movie", id).catch(err => {
+                        console.error("Error fetching movie images:", err);
+                        return { posters: [] };
+                    })
+                ]);
+
                 setMovie(fullData);
+
+                // Extract and store the textless poster immediately
+                const posters = imagesData.posters || [];
+                const textless = posters.find(p => p.iso_639_1 === null)?.file_path;
+                setTextlessPoster(textless || null);
 
                 // Fetch collection details if movie belongs to one
                 if (fullData.belongs_to_collection) {
@@ -161,18 +178,7 @@ const MovieDetails = () => {
                     setCollectionData(null);
                 }
 
-                // Fetch images for textless poster
-                try {
-                    const images = await tmdbGetImages("movie", id);
-                    const posters = images.posters || [];
-                    const textless = posters.find(p => p.iso_639_1 === null)?.file_path;
-                    setTextlessPoster(textless || null);
-                } catch (imgErr) {
-                    console.error("Error fetching movie images for textless poster:", imgErr);
-                    setTextlessPoster(null);
-                }
-
-                // 2. Fetch secondary data
+                // 2. Fetch secondary data (credits, recommendations)
                 const [castData, recsData] = await Promise.all([
                     tmdbFetch(`/movie/${id}/credits`),
                     tmdbGetRecommendations("movie", id)

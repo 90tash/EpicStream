@@ -75,8 +75,13 @@ const TvDetails = () => {
     const [isOverflowing, setIsOverflowing] = useState(false);
     const overviewRef = useRef(null);
     const seasonRef = useRef(null);
-    const [isMobile, setIsMobile] = useState(false);
-    const [textlessPoster, setTextlessPoster] = useState(null);
+    const [isMobile, setIsMobile] = useState(() => {
+        if (typeof window !== "undefined") {
+            return window.matchMedia("(max-width: 640px)").matches;
+        }
+        return false;
+    });
+    const [textlessPoster, setTextlessPoster] = useState(() => state?.movie?.textless_poster || null);
 
     // Episodes & Seasons State
     const [selectedSeason, setSelectedSeason] = useState(null);
@@ -131,9 +136,21 @@ const TvDetails = () => {
 
         const fetchAllData = async () => {
             try {
-                // Fetch full TV details (mandatory for the 'seasons' array)
-                const fullTvData = await tmdbFetch(`/tv/${id}`);
+                // Fetch TV details and images in parallel for maximum speed
+                const [fullTvData, imagesData] = await Promise.all([
+                    tmdbFetch(`/tv/${id}`),
+                    tmdbGetImages("tv", id).catch(err => {
+                        console.error("Error fetching TV images:", err);
+                        return { posters: [] };
+                    })
+                ]);
+
                 setTv(fullTvData);
+
+                // Extract and store the textless poster immediately
+                const posters = imagesData.posters || [];
+                const textless = posters.find(p => p.iso_639_1 === null)?.file_path;
+                setTextlessPoster(textless || null);
 
                 // Initialize first season
                 if (fullTvData.seasons?.length > 0) {
@@ -141,18 +158,7 @@ const TvDetails = () => {
                     setSelectedSeason(firstSeason.season_number);
                 }
 
-                // Fetch images for textless poster
-                try {
-                    const images = await tmdbGetImages("tv", id);
-                    const posters = images.posters || [];
-                    const textless = posters.find(p => p.iso_639_1 === null)?.file_path;
-                    setTextlessPoster(textless || null);
-                } catch (imgErr) {
-                    console.error("Error fetching TV images for textless poster:", imgErr);
-                    setTextlessPoster(null);
-                }
-
-                // Fetch other secondary data
+                // Fetch other secondary data (credits, recommendations)
                 const [castData, recsData] = await Promise.all([
                     tmdbFetch(`/tv/${id}/credits`),
                     tmdbGetRecommendations("tv", id)
