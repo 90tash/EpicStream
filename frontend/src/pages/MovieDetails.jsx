@@ -74,6 +74,8 @@ const MovieDetails = () => {
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const overviewRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(false);
+    const [textlessPoster, setTextlessPoster] = useState(null);
 
     // Collection states
     const [collectionData, setCollectionData] = useState(null);
@@ -129,6 +131,15 @@ const MovieDetails = () => {
     }, [movie]);
 
     useEffect(() => {
+        const mediaQuery = window.matchMedia("(max-width: 640px)");
+        setIsMobile(mediaQuery.matches);
+
+        const handler = (e) => setIsMobile(e.matches);
+        mediaQuery.addEventListener("change", handler);
+        return () => mediaQuery.removeEventListener("change", handler);
+    }, []);
+
+    useEffect(() => {
         window.scrollTo(0, 0);
 
         const fetchAllData = async () => {
@@ -148,6 +159,17 @@ const MovieDetails = () => {
                     }
                 } else {
                     setCollectionData(null);
+                }
+
+                // Fetch images for textless poster
+                try {
+                    const images = await tmdbGetImages("movie", id);
+                    const posters = images.posters || [];
+                    const textless = posters.find(p => p.iso_639_1 === null)?.file_path;
+                    setTextlessPoster(textless || null);
+                } catch (imgErr) {
+                    console.error("Error fetching movie images for textless poster:", imgErr);
+                    setTextlessPoster(null);
                 }
 
                 // 2. Fetch secondary data
@@ -193,7 +215,12 @@ const MovieDetails = () => {
             <section className="details-hero">
                 <img
                     className="details-hero-image"
-                    src={imageUrl(movie.backdrop_path, "original")}
+                    src={imageUrl(
+                        isMobile 
+                            ? (textlessPoster || movie.poster_path || movie.backdrop_path) 
+                            : (movie.backdrop_path || movie.poster_path), 
+                        "original"
+                    )}
                     alt={title}
                 />
                 <div className="details-hero-shade" />

@@ -74,6 +74,8 @@ const TvDetails = () => {
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const overviewRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(false);
+    const [textlessPoster, setTextlessPoster] = useState(null);
 
     // Episodes & Seasons State
     const [selectedSeason, setSelectedSeason] = useState(null);
@@ -98,6 +100,15 @@ const TvDetails = () => {
 
     // 1. Always fetch full TV details (including seasons) on mount or ID change
     useEffect(() => {
+        const mediaQuery = window.matchMedia("(max-width: 640px)");
+        setIsMobile(mediaQuery.matches);
+
+        const handler = (e) => setIsMobile(e.matches);
+        mediaQuery.addEventListener("change", handler);
+        return () => mediaQuery.removeEventListener("change", handler);
+    }, []);
+
+    useEffect(() => {
         window.scrollTo(0, 0);
 
         const fetchAllData = async () => {
@@ -110,6 +121,17 @@ const TvDetails = () => {
                 if (fullTvData.seasons?.length > 0) {
                     const firstSeason = fullTvData.seasons.find(s => s.season_number > 0) || fullTvData.seasons[0];
                     setSelectedSeason(firstSeason.season_number);
+                }
+
+                // Fetch images for textless poster
+                try {
+                    const images = await tmdbGetImages("tv", id);
+                    const posters = images.posters || [];
+                    const textless = posters.find(p => p.iso_639_1 === null)?.file_path;
+                    setTextlessPoster(textless || null);
+                } catch (imgErr) {
+                    console.error("Error fetching TV images for textless poster:", imgErr);
+                    setTextlessPoster(null);
                 }
 
                 // Fetch other secondary data
@@ -162,7 +184,12 @@ const TvDetails = () => {
             <section className="details-hero">
                 <img
                     className="details-hero-image"
-                    src={imageUrl(tv.backdrop_path, "original")}
+                    src={imageUrl(
+                        isMobile 
+                            ? (textlessPoster || tv.poster_path || tv.backdrop_path) 
+                            : (tv.backdrop_path || tv.poster_path), 
+                        "original"
+                    )}
                     alt={title}
                 />
                 <div className="details-hero-shade" />
