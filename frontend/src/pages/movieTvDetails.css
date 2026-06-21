@@ -818,7 +818,8 @@
     .details-hero-meta { justify-content: center; gap: 10px; font-size: 12px; }
     .details-hero-overview { font-size: 13.5px; -webkit-line-clamp: 3; margin: 0; }
     .details-actions {
-        width: 100%;
+        width: 90%;
+        max-width: 400px;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
