@@ -74,14 +74,6 @@ const MovieDetails = () => {
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [isOverflowing, setIsOverflowing] = useState(false);
     const overviewRef = useRef(null);
-    const [isMobile, setIsMobile] = useState(() => {
-        if (typeof window !== "undefined") {
-            return window.matchMedia("(max-width: 640px)").matches;
-        }
-        return false;
-    });
-    const [textlessPoster, setTextlessPoster] = useState(() => state?.movie?.textless_poster || null);
-    const [textlessLoaded, setTextlessLoaded] = useState(false);
 
     // Collection states
     const [collectionData, setCollectionData] = useState(null);
@@ -136,36 +128,15 @@ const MovieDetails = () => {
         }
     }, [movie]);
 
-    useEffect(() => {
-        const mediaQuery = window.matchMedia("(max-width: 640px)");
-        setIsMobile(mediaQuery.matches);
-
-        const handler = (e) => setIsMobile(e.matches);
-        mediaQuery.addEventListener("change", handler);
-        return () => mediaQuery.removeEventListener("change", handler);
-    }, []);
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        setTextlessLoaded(false);
 
         const fetchAllData = async () => {
             try {
-                // Fetch movie details and images in parallel for maximum speed
-                const [fullData, imagesData] = await Promise.all([
-                    tmdbFetch(`/movie/${id}`),
-                    tmdbGetImages("movie", id).catch(err => {
-                        console.error("Error fetching movie images:", err);
-                        return { posters: [] };
-                    })
-                ]);
-
+                // Fetch movie details
+                const fullData = await tmdbFetch(`/movie/${id}`);
                 setMovie(fullData);
-
-                // Extract and store the textless poster immediately
-                const posters = imagesData.posters || [];
-                const textless = posters.find(p => p.iso_639_1 === null)?.file_path;
-                setTextlessPoster(textless || null);
 
                 // Fetch collection details if movie belongs to one
                 if (fullData.belongs_to_collection) {
@@ -224,26 +195,9 @@ const MovieDetails = () => {
                 <div className="details-hero-image-wrapper">
                     <img
                         className="details-hero-image"
-                        src={imageUrl(
-                            isMobile 
-                                ? (movie.poster_path || movie.backdrop_path) 
-                                : (movie.backdrop_path || movie.poster_path), 
-                            "original"
-                        )}
+                        src={imageUrl(movie.backdrop_path || movie.poster_path, "original")}
                         alt={title}
                     />
-                    {isMobile && textlessPoster && (
-                        <img
-                            className="details-hero-image"
-                            src={imageUrl(textlessPoster, "original")}
-                            alt={title}
-                            onLoad={() => setTextlessLoaded(true)}
-                            style={{
-                                opacity: textlessLoaded ? 1 : 0,
-                                transition: "opacity 0.8s ease-in-out"
-                            }}
-                        />
-                    )}
                 </div>
                 <div className="details-hero-shade" />
                 <div className="details-hero-content">

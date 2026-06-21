@@ -75,14 +75,6 @@ const TvDetails = () => {
     const [isOverflowing, setIsOverflowing] = useState(false);
     const overviewRef = useRef(null);
     const seasonRef = useRef(null);
-    const [isMobile, setIsMobile] = useState(() => {
-        if (typeof window !== "undefined") {
-            return window.matchMedia("(max-width: 640px)").matches;
-        }
-        return false;
-    });
-    const [textlessPoster, setTextlessPoster] = useState(() => state?.movie?.textless_poster || null);
-    const [textlessLoaded, setTextlessLoaded] = useState(false);
 
     // Episodes & Seasons State
     const [selectedSeason, setSelectedSeason] = useState(null);
@@ -106,14 +98,6 @@ const TvDetails = () => {
     }, [tv]);
 
     // 1. Always fetch full TV details (including seasons) on mount or ID change
-    useEffect(() => {
-        const mediaQuery = window.matchMedia("(max-width: 640px)");
-        setIsMobile(mediaQuery.matches);
-
-        const handler = (e) => setIsMobile(e.matches);
-        mediaQuery.addEventListener("change", handler);
-        return () => mediaQuery.removeEventListener("change", handler);
-    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -134,25 +118,12 @@ const TvDetails = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        setTextlessLoaded(false);
 
         const fetchAllData = async () => {
             try {
-                // Fetch TV details and images in parallel for maximum speed
-                const [fullTvData, imagesData] = await Promise.all([
-                    tmdbFetch(`/tv/${id}`),
-                    tmdbGetImages("tv", id).catch(err => {
-                        console.error("Error fetching TV images:", err);
-                        return { posters: [] };
-                    })
-                ]);
-
+                // Fetch TV details
+                const fullTvData = await tmdbFetch(`/tv/${id}`);
                 setTv(fullTvData);
-
-                // Extract and store the textless poster immediately
-                const posters = imagesData.posters || [];
-                const textless = posters.find(p => p.iso_639_1 === null)?.file_path;
-                setTextlessPoster(textless || null);
 
                 // Initialize first season
                 if (fullTvData.seasons?.length > 0) {
@@ -211,26 +182,9 @@ const TvDetails = () => {
                 <div className="details-hero-image-wrapper">
                     <img
                         className="details-hero-image"
-                        src={imageUrl(
-                            isMobile 
-                                ? (tv.poster_path || tv.backdrop_path) 
-                                : (tv.backdrop_path || tv.poster_path), 
-                            "original"
-                        )}
+                        src={imageUrl(tv.backdrop_path || tv.poster_path, "original")}
                         alt={title}
                     />
-                    {isMobile && textlessPoster && (
-                        <img
-                            className="details-hero-image"
-                            src={imageUrl(textlessPoster, "original")}
-                            alt={title}
-                            onLoad={() => setTextlessLoaded(true)}
-                            style={{
-                                opacity: textlessLoaded ? 1 : 0,
-                                transition: "opacity 0.8s ease-in-out"
-                            }}
-                        />
-                    )}
                 </div>
                 <div className="details-hero-shade" />
                 <div className="details-hero-content">
