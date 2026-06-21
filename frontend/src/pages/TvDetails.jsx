@@ -1,6 +1,6 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, Play, Star, ChevronDown } from "lucide-react";
+import { ChevronLeft, Play, Star, ChevronDown, LayoutGrid } from "lucide-react";
 import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
@@ -221,7 +221,8 @@ const TvDetails = () => {
                                 <span>Play</span>
                             </button>
                             <button className="details-action-btn" onClick={() => document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth' })}>
-                                Episodes
+                                <LayoutGrid size={20} />
+                                <span>Episodes</span>
                             </button>
                             <button className="details-action-btn" onClick={() => document.getElementById('similar')?.scrollIntoView({ behavior: 'smooth' })}>
                                 Similar
