@@ -819,7 +819,7 @@
     .details-hero { 
         height: auto; 
         min-height: 90vh; 
-        padding-top: clamp(180px, 25vh, 280px); /* Pushes poster down to "center" of screen */
+        padding-top: clamp(280px, 42vh, 450px); /* Pushes content down to show banner */
         padding-bottom: 40px; 
         align-items: flex-start;
     }
