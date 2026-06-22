@@ -28,8 +28,25 @@
     height: 100%;
     z-index: 0;
     overflow: hidden; /* Prevent scaling/glide overflow from showing past the wrapper boundary */
-    opacity: 0; /* Default to invisible to prevent flashing before load/animation starts */
-    animation: imageGlide 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; /* Soft, slow premium glide */
+    opacity: 1;
+}
+
+@keyframes detailsOpacityFade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slowZoomIn {
+    from {
+        transform: scale(1.02);
+    }
+    to {
+        transform: scale(1.08);
+    }
 }
 
 .details-hero-image {
@@ -40,6 +57,10 @@
     height: 85vh;
     object-fit: cover;
     object-position: center 20%;
+    transform-origin: center center;
+    opacity: 0;
+    animation: detailsOpacityFade 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+               slowZoomIn 8.5s linear forwards;
 }
 
 @keyframes imageGlide {
