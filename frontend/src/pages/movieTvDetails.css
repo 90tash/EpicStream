@@ -144,10 +144,10 @@
 
 .details-hero-genre {
     font-size: 15px;
-    font-weight: 550;
-    color: #94a3b8; /* Slate grey */
+    font-weight: 600;
+    color: #64748b;
     margin: 0;
-    letter-spacing: 0.02em;
+    letter-spacing: normal;
     order: 2;
 }
 
@@ -881,7 +881,7 @@
 
     /* Spacing overrides for details-hero-text children on mobile */
     .details-hero-genre {
-        letter-spacing: 0.04em;
+        letter-spacing: normal;
     }
     .director-synopsis-group {
         gap: 12px;
@@ -901,7 +901,7 @@
         justify-content: center;
         margin: 0;
     }
-    .hero-title-logo {
+    .details-hero-text .hero-title-logo {
         width: clamp(160px, 50vw, 280px);
         max-height: clamp(60px, 10vh, 100px);
         object-position: center;
