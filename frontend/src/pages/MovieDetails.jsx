@@ -95,6 +95,7 @@ const MovieDetails = () => {
     const [director, setDirector] = useState("");
     const [logoError, setLogoError] = useState(false);
     const [showFullOverview, setShowFullOverview] = useState(false);
+    const [logoFetched, setLogoFetched] = useState(false);
 
 
     // Collection states
@@ -150,6 +151,7 @@ const MovieDetails = () => {
         setDirector("");
         setLogoError(false);
         setShowFullOverview(false);
+        setLogoFetched(false);
 
         const fetchAllData = async () => {
             try {
@@ -166,6 +168,7 @@ const MovieDetails = () => {
                                   logos[0]?.file_path;
 
                 setMovie({ ...fullData, title_logo: titleLogo });
+                setLogoFetched(true); // De-couple title logo rendering from secondary data loading
 
                 // Fetch collection details if movie belongs to one
                 if (fullData.belongs_to_collection) {
@@ -193,6 +196,7 @@ const MovieDetails = () => {
                 setDirector(directorObj ? directorObj.name : "");
             } catch (error) {
                 console.error("Error fetching movie details:", error);
+                setLogoFetched(true);
                 if (!movie && !state?.movie) navigate("/", { replace: true });
             }
         };
@@ -245,9 +249,9 @@ const MovieDetails = () => {
                                     onError={() => setLogoError(true)}
                                 />
                             </div>
-                        ) : (
+                        ) : logoFetched ? (
                             <h1>{title}</h1>
-                        )}
+                        ) : null}
                         <div className="details-actions">
                             <button 
                                 className="details-play" 

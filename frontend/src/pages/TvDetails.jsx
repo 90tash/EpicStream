@@ -88,6 +88,7 @@ const TvDetails = () => {
     const [similarTv, setSimilarTv] = useState([]);
     const [logoError, setLogoError] = useState(false);
     const [showFullOverview, setShowFullOverview] = useState(false);
+    const [logoFetched, setLogoFetched] = useState(false);
 
     const seasonRef = useRef(null);
 
@@ -129,6 +130,7 @@ const TvDetails = () => {
         window.scrollTo(0, 0);
         setLogoError(false);
         setShowFullOverview(false);
+        setLogoFetched(false);
 
         const fetchAllData = async () => {
             try {
@@ -145,6 +147,7 @@ const TvDetails = () => {
                                   logos[0]?.file_path;
 
                 setTv({ ...fullTvData, title_logo: titleLogo });
+                setLogoFetched(true);
 
                 // Initialize first season
                 if (fullTvData.seasons?.length > 0) {
@@ -162,6 +165,7 @@ const TvDetails = () => {
                 setSimilarTv(recsData.slice(0, 10));
             } catch (error) {
                 console.error("Error fetching TV data:", error);
+                setLogoFetched(true);
                 if (!tv && !state?.movie) navigate("/", { replace: true });
             }
         };
@@ -221,9 +225,9 @@ const TvDetails = () => {
                                     onError={() => setLogoError(true)}
                                 />
                             </div>
-                        ) : (
+                        ) : logoFetched ? (
                             <h1>{title}</h1>
-                        )}
+                        ) : null}
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
