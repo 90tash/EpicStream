@@ -5,6 +5,21 @@ import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
 
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return "N/A";
+    try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        });
+    } catch {
+        return dateStr;
+    }
+};
+
 /* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate }) => {
     const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
@@ -71,9 +86,9 @@ const TvDetails = () => {
     const [tv, setTv] = useState(() => state?.movie || null);
     const [cast, setCast] = useState([]);
     const [similarTv, setSimilarTv] = useState([]);
+    const [logoError, setLogoError] = useState(false);
     const [showFullOverview, setShowFullOverview] = useState(false);
-    const [isOverflowing, setIsOverflowing] = useState(false);
-    const overviewRef = useRef(null);
+
     const seasonRef = useRef(null);
 
     // Episodes & Seasons State
@@ -89,13 +104,7 @@ const TvDetails = () => {
         }
     }, [id, state]);
 
-    // Detect if overview text overflows 3 lines
-    useEffect(() => {
-        if (overviewRef.current) {
-            const { scrollHeight, clientHeight } = overviewRef.current;
-            setIsOverflowing(scrollHeight > clientHeight);
-        }
-    }, [tv]);
+
 
     // 1. Always fetch full TV details (including seasons) on mount or ID change
 
@@ -118,12 +127,24 @@ const TvDetails = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        setLogoError(false);
+        setShowFullOverview(false);
 
         const fetchAllData = async () => {
             try {
-                // Fetch TV details
-                const fullTvData = await tmdbFetch(`/tv/${id}`);
-                setTv(fullTvData);
+                // Fetch TV details and images concurrently to prevent any delay
+                const [fullTvData, images] = await Promise.all([
+                    tmdbFetch(`/tv/${id}`),
+                    tmdbGetImages("tv", id)
+                ]);
+
+                // Find the best title logo (English first, then untagged/null, then any)
+                const logos = images.logos || [];
+                const titleLogo = logos.find(l => l.iso_639_1 === "en")?.file_path ||
+                                  logos.find(l => l.iso_639_1 === null)?.file_path ||
+                                  logos[0]?.file_path;
+
+                setTv({ ...fullTvData, title_logo: titleLogo });
 
                 // Initialize first season
                 if (fullTvData.seasons?.length > 0) {
@@ -147,6 +168,8 @@ const TvDetails = () => {
 
         fetchAllData();
     }, [id]);
+
+
 
     // 2. Fetch episodes whenever the selected season changes
     useEffect(() => {
@@ -188,48 +211,19 @@ const TvDetails = () => {
                 </div>
                 <div className="details-hero-shade" />
                 <div className="details-hero-content">
-                    <div className="details-hero-poster">
-                        <img 
-                            src={imageUrl(tv.poster_path, "w500")} 
-                            alt={title + " Poster"} 
-                            className="hero-poster-img"
-                        />
-                    </div>
                     <div className="details-hero-text">
-                        <h1>{title}</h1>
-                        <div className="details-hero-meta">
-                            {rating && (
-                                <span className="rating">
-                                    <Star size={15} fill="currentColor" />
-                                    {rating}
-                                </span>
-                            )}
-                            {releaseYear && <span>{releaseYear}</span>}
-                            <span>TV Show</span>
-                            <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
-                            <span className="hd-badge">HD</span>
-                        </div>
-                        <div className="details-hero-info-section">
-                            <p 
-                                ref={overviewRef}
-                                className={`details-hero-overview ${showFullOverview ? 'expanded' : ''} ${isOverflowing ? 'can-expand' : ''}`}
-                                onClick={() => isOverflowing && setShowFullOverview(!showFullOverview)}
-                                title={isOverflowing ? (showFullOverview ? "Click to shrink" : "Click to read more") : ""}
-                            >
-                                {tv.overview}
-                            </p>
-
-                            <div className="details-hero-side-bar">
-                                <div className="side-bar-item">
-                                    <span className="side-bar-label">Genre</span>
-                                    <span className="side-bar-value">{tv.genres?.map(g => g.name).slice(0, 3).join(", ")}</span>
-                                </div>
-                                <div className="side-bar-item">
-                                    <span className="side-bar-label">Status</span>
-                                    <span className="side-bar-value">{tv.status}</span>
-                                </div>
+                        {!logoError && tv?.title_logo ? (
+                            <div className="hero-logo-container">
+                                <img 
+                                    src={imageUrl(tv.title_logo, "w500")} 
+                                    alt={title} 
+                                    className="hero-title-logo"
+                                    onError={() => setLogoError(true)}
+                                />
                             </div>
-                        </div>
+                        ) : (
+                            <h1>{title}</h1>
+                        )}
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
@@ -248,6 +242,76 @@ const TvDetails = () => {
                             <button className="details-action-btn" onClick={() => document.getElementById('similar')?.scrollIntoView({ behavior: 'smooth' })}>
                                 Similar
                             </button>
+                        </div>
+                        <div className="details-hero-genre">
+                            {tv.genres?.map(g => g.name).join(" • ") || "N/A"}
+                        </div>
+                        <div className="details-hero-meta">
+                            {rating && (
+                                <span className="rating">
+                                    <Star size={15} fill="currentColor" />
+                                    {rating}
+                                </span>
+                            )}
+                            {releaseYear && <span>{releaseYear}</span>}
+                            <span>TV Show</span>
+                            <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
+                            <span className="hd-badge">HD</span>
+                        </div>
+                        <div className="director-synopsis-group">
+                            {tv.created_by?.length > 0 && (
+                                <div className="details-hero-director">
+                                    <span className="director-label">Creator:</span>
+                                    <span className="director-value">{tv.created_by.map(c => c.name).join(", ")}</span>
+                                </div>
+                            )}
+                            {tv.overview && (
+                                <div className="synopsis-container">
+                                    <p className="details-hero-overview">
+                                        {showFullOverview || tv.overview.length <= 240
+                                            ? tv.overview
+                                            : `${tv.overview.slice(0, 240)}...`}
+                                    </p>
+                                    {tv.overview.length > 240 && (
+                                        <button 
+                                            type="button"
+                                            className="read-more-btn"
+                                            onClick={() => setShowFullOverview(!showFullOverview)}
+                                        >
+                                            {showFullOverview ? "Read Less" : "Read More"}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="details-hero-side-bar">
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Status</span>
+                            <span className="side-bar-value">{tv.status || "N/A"}</span>
+                        </div>
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Language</span>
+                            <span className="side-bar-value">{(tv.original_language || "EN").toUpperCase()}</span>
+                        </div>
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">First Aired</span>
+                            <span className="side-bar-value">{formatDate(tv.first_air_date)}</span>
+                        </div>
+                        {tv.last_air_date && (
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Last Aired</span>
+                                <span className="side-bar-value">{formatDate(tv.last_air_date)}</span>
+                            </div>
+                        )}
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Seasons</span>
+                            <span className="side-bar-value">{tv.number_of_seasons || "N/A"}</span>
+                        </div>
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Episodes</span>
+                            <span className="side-bar-value">{tv.number_of_episodes || "N/A"}</span>
                         </div>
                     </div>
                 </div>

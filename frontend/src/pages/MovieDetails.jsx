@@ -5,6 +5,27 @@ import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
 
+const formatRuntime = (runtime) => {
+    if (!runtime) return "N/A";
+    const hours = Math.floor(runtime / 60);
+    const minutes = runtime % 60;
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+};
+
+const formatDate = (dateStr) => {
+    if (!dateStr) return "N/A";
+    try {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        });
+    } catch {
+        return dateStr;
+    }
+};
+
 /* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate }) => {
     const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
@@ -71,9 +92,10 @@ const MovieDetails = () => {
     const [movie, setMovie] = useState(() => state?.movie || null);
     const [cast, setCast] = useState([]);
     const [similarMovies, setSimilarMovies] = useState([]);
+    const [director, setDirector] = useState("");
+    const [logoError, setLogoError] = useState(false);
     const [showFullOverview, setShowFullOverview] = useState(false);
-    const [isOverflowing, setIsOverflowing] = useState(false);
-    const overviewRef = useRef(null);
+
 
     // Collection states
     const [collectionData, setCollectionData] = useState(null);
@@ -120,23 +142,30 @@ const MovieDetails = () => {
         }
     }, [id, state]);
 
-    // Detect if overview text overflows 3 lines
-    useEffect(() => {
-        if (overviewRef.current) {
-            const { scrollHeight, clientHeight } = overviewRef.current;
-            setIsOverflowing(scrollHeight > clientHeight);
-        }
-    }, [movie]);
+
 
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        setDirector("");
+        setLogoError(false);
+        setShowFullOverview(false);
 
         const fetchAllData = async () => {
             try {
-                // Fetch movie details
-                const fullData = await tmdbFetch(`/movie/${id}`);
-                setMovie(fullData);
+                // Fetch movie details and images concurrently to prevent any delay
+                const [fullData, images] = await Promise.all([
+                    tmdbFetch(`/movie/${id}`),
+                    tmdbGetImages("movie", id)
+                ]);
+
+                // Find the best title logo (English first, then untagged/null, then any)
+                const logos = images.logos || [];
+                const titleLogo = logos.find(l => l.iso_639_1 === "en")?.file_path ||
+                                  logos.find(l => l.iso_639_1 === null)?.file_path ||
+                                  logos[0]?.file_path;
+
+                setMovie({ ...fullData, title_logo: titleLogo });
 
                 // Fetch collection details if movie belongs to one
                 if (fullData.belongs_to_collection) {
@@ -159,6 +188,9 @@ const MovieDetails = () => {
                 
                 setCast(castData.cast.slice(0, 10));
                 setSimilarMovies(recsData.slice(0, 10));
+
+                const directorObj = castData.crew?.find(member => member.job === "Director");
+                setDirector(directorObj ? directorObj.name : "");
             } catch (error) {
                 console.error("Error fetching movie details:", error);
                 if (!movie && !state?.movie) navigate("/", { replace: true });
@@ -167,6 +199,8 @@ const MovieDetails = () => {
 
         fetchAllData();
     }, [id]);
+
+
 
     if (!movie) return null;
 
@@ -201,48 +235,19 @@ const MovieDetails = () => {
                 </div>
                 <div className="details-hero-shade" />
                 <div className="details-hero-content">
-                    <div className="details-hero-poster">
-                        <img 
-                            src={imageUrl(movie.poster_path, "w500")} 
-                            alt={title + " Poster"} 
-                            className="hero-poster-img"
-                        />
-                    </div>
                     <div className="details-hero-text">
-                        <h1>{title}</h1>
-                        <div className="details-hero-meta">
-                            {rating && (
-                                <span className="rating">
-                                    <Star size={15} fill="currentColor" />
-                                    {rating}
-                                </span>
-                            )}
-                            {releaseYear && <span>{releaseYear}</span>}
-                            <span>Movie</span>
-                            <span className="maturity">{movie.adult ? "18+" : "12+"}</span>
-                            <span className="hd-badge">HD</span>
-                        </div>
-                        <div className="details-hero-info-section">
-                            <p 
-                                ref={overviewRef}
-                                className={`details-hero-overview ${showFullOverview ? 'expanded' : ''} ${isOverflowing ? 'can-expand' : ''}`}
-                                onClick={() => isOverflowing && setShowFullOverview(!showFullOverview)}
-                                title={isOverflowing ? (showFullOverview ? "Click to shrink" : "Click to read more") : ""}
-                            >
-                                {movie.overview}
-                            </p>
-
-                            <div className="details-hero-side-bar">
-                                <div className="side-bar-item">
-                                    <span className="side-bar-label">Genre</span>
-                                    <span className="side-bar-value">{movie.genres?.map(g => g.name).slice(0, 3).join(", ")}</span>
-                                </div>
-                                <div className="side-bar-item">
-                                    <span className="side-bar-label">Status</span>
-                                    <span className="side-bar-value">{movie.status}</span>
-                                </div>
+                        {!logoError && movie?.title_logo ? (
+                            <div className="hero-logo-container">
+                                <img 
+                                    src={imageUrl(movie.title_logo, "w500")} 
+                                    alt={title} 
+                                    className="hero-title-logo"
+                                    onError={() => setLogoError(true)}
+                                />
                             </div>
-                        </div>
+                        ) : (
+                            <h1>{title}</h1>
+                        )}
                         <div className="details-actions">
                             <button 
                                 className="details-play" 
@@ -263,6 +268,64 @@ const MovieDetails = () => {
                             <button className="details-action-btn" onClick={() => document.getElementById('similar')?.scrollIntoView({ behavior: 'smooth' })}>
                                 Similar
                             </button>
+                        </div>
+                        <div className="details-hero-genre">
+                            {movie.genres?.map(g => g.name).join(" • ") || "N/A"}
+                        </div>
+                        <div className="details-hero-meta">
+                            {rating && (
+                                <span className="rating">
+                                    <Star size={15} fill="currentColor" />
+                                    {rating}
+                                </span>
+                            )}
+                            {releaseYear && <span>{releaseYear}</span>}
+                            <span>Movie</span>
+                            <span className="maturity">{movie.adult ? "18+" : "12+"}</span>
+                            <span className="hd-badge">HD</span>
+                        </div>
+                        <div className="director-synopsis-group">
+                            <div className="details-hero-director">
+                                <span className="director-label">Director:</span>
+                                <span className="director-value">{director || "N/A"}</span>
+                            </div>
+                            {movie.overview && (
+                                <div className="synopsis-container">
+                                    <p className="details-hero-overview">
+                                        {showFullOverview || movie.overview.length <= 240
+                                            ? movie.overview
+                                            : `${movie.overview.slice(0, 240)}...`}
+                                    </p>
+                                    {movie.overview.length > 240 && (
+                                        <button 
+                                            type="button"
+                                            className="read-more-btn"
+                                            onClick={() => setShowFullOverview(!showFullOverview)}
+                                        >
+                                            {showFullOverview ? "Read Less" : "Read More"}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="details-hero-side-bar">
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Status</span>
+                            <span className="side-bar-value">{movie.status || "N/A"}</span>
+                        </div>
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Runtime</span>
+                            <span className="side-bar-value">{formatRuntime(movie.runtime)}</span>
+                        </div>
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Language</span>
+                            <span className="side-bar-value">{(movie.spoken_languages?.[0]?.english_name || movie.original_language || "EN").toUpperCase()}</span>
+                        </div>
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Release Date</span>
+                            <span className="side-bar-value">{formatDate(movie.release_date)}</span>
                         </div>
                     </div>
                 </div>
