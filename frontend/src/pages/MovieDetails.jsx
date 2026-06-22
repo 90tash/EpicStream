@@ -283,10 +283,8 @@ const MovieDetails = () => {
                                     {rating}
                                 </span>
                             )}
-                            {releaseYear && <span>{releaseYear}</span>}
                             <span>Movie</span>
                             <span className="maturity">{movie.adult ? "18+" : "12+"}</span>
-                            <span className="hd-badge">HD</span>
                         </div>
                         <div className="director-synopsis-group">
                             <div className="details-hero-director">

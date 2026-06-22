@@ -257,10 +257,8 @@ const TvDetails = () => {
                                     {rating}
                                 </span>
                             )}
-                            {releaseYear && <span>{releaseYear}</span>}
                             <span>TV Show</span>
                             <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
-                            <span className="hd-badge">HD</span>
                         </div>
                         <div className="director-synopsis-group">
                             {tv.created_by?.length > 0 && (
