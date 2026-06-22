@@ -333,6 +333,7 @@ const HomeScreen = () => {
     const [isLoadingHero, setIsLoadingHero] = useState(true);
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [logoError, setLogoError] = useState(false);
     const navigate = useNavigate();
 
     // Initialize rows with history if available
@@ -423,8 +424,16 @@ const HomeScreen = () => {
                             // Look for English or null (textless) posters
                             const posters = images.posters || [];
                             const textlessPoster = posters.find(p => p.iso_639_1 === null)?.file_path;
-                            return { ...item, textless_poster: textlessPoster };
-                        } catch {
+                            
+                            // Find the best title logo (English first, then untagged/null, then any)
+                            const logos = images.logos || [];
+                            const titleLogo = logos.find(l => l.iso_639_1 === "en")?.file_path ||
+                                              logos.find(l => l.iso_639_1 === null)?.file_path ||
+                                              logos[0]?.file_path;
+                            
+                            return { ...item, textless_poster: textlessPoster, title_logo: titleLogo };
+                        } catch (error) {
+                            console.error("Error fetching images for hero candidate:", error);
                             return item;
                         }
                     }));
@@ -461,6 +470,7 @@ const HomeScreen = () => {
     useEffect(() => {
         if (heroCandidates.length > 0 && heroIndex >= 0) {
             setHeroContent(heroCandidates[heroIndex]);
+            setLogoError(false);
         }
     }, [heroIndex, heroCandidates]);
 
@@ -505,7 +515,18 @@ const HomeScreen = () => {
                     ))}
                     <div className="browse-hero-shade" />
                     <div key={heroContent?.id + "-content"} className="browse-hero-content">
-                        <h1>{title}</h1>
+                        {!logoError && heroContent?.title_logo ? (
+                            <div className="hero-logo-container">
+                                <img 
+                                    src={imageUrl(heroContent.title_logo, "w500")} 
+                                    alt={title} 
+                                    className="hero-title-logo"
+                                    onError={() => setLogoError(true)}
+                                />
+                            </div>
+                        ) : (
+                            <h1>{title}</h1>
+                        )}
                         <div className="browse-meta">
                             {rating && (
                                 <span className="rating"><Star size={15} fill="currentColor" /> {rating}</span>

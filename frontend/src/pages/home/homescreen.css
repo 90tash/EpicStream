@@ -88,6 +88,23 @@
     text-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
+.hero-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 22px;
+    max-width: 100%;
+}
+
+.hero-title-logo {
+    max-width: 100%;
+    width: clamp(220px, 35vw, 420px);
+    max-height: clamp(80px, 15vh, 160px);
+    object-fit: contain;
+    object-position: left center;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+}
+
 .browse-meta,
 .card-meta {
     display: flex;
@@ -766,6 +783,17 @@
         font-size: 34px;
         margin-bottom: 12px;
         padding: 0 8px;
+    }
+
+    .hero-logo-container {
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    .hero-title-logo {
+        width: clamp(160px, 50vw, 280px);
+        max-height: clamp(60px, 10vh, 100px);
+        object-position: center;
     }
 
     .browse-meta {
