@@ -320,12 +320,12 @@ const MovieDetails = () => {
                             <span className="side-bar-value">{movie.status || "N/A"}</span>
                         </div>
                         <div className="side-bar-item">
-                            <span className="side-bar-label">Runtime</span>
-                            <span className="side-bar-value">{formatRuntime(movie.runtime)}</span>
+                            <span className="side-bar-label">Language</span>
+                            <span className="side-bar-value">{(movie.original_language || "EN").slice(0, 2).toUpperCase()}</span>
                         </div>
                         <div className="side-bar-item">
-                            <span className="side-bar-label">Language</span>
-                            <span className="side-bar-value">{(movie.spoken_languages?.[0]?.english_name || movie.original_language || "EN").toUpperCase()}</span>
+                            <span className="side-bar-label">Runtime</span>
+                            <span className="side-bar-value">{formatRuntime(movie.runtime)}</span>
                         </div>
                         <div className="side-bar-item">
                             <span className="side-bar-label">Release Date</span>

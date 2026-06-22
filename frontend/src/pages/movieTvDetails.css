@@ -25,7 +25,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 85vh; /* Fixed height matching min-height of hero to prevent zoom on expand */
+    height: 100%;
     z-index: 0;
     overflow: hidden; /* Prevent scaling/glide overflow from showing past the wrapper boundary */
     opacity: 0; /* Default to invisible to prevent flashing before load/animation starts */
@@ -37,7 +37,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 85vh;
     object-fit: cover;
     object-position: center 20%;
 }
@@ -52,8 +52,8 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 85vh; /* Matches image wrapper to ensure perfect blend */
-    background: linear-gradient(180deg, rgba(5, 6, 7, 0) 10%, rgba(5, 6, 7, 0.3) 30%, rgba(5, 6, 7, 0.8) 55%, #050607 72%, #050607 100%);
+    height: 100%;
+    background: linear-gradient(180deg, rgba(5, 6, 7, 0) 0px, rgba(5, 6, 7, 0) 30vh, rgba(5, 6, 7, 0.3) 48vh, rgba(5, 6, 7, 0.8) 65vh, #050607 78vh, #050607 100%);
     z-index: 1;
     pointer-events: none;
     opacity: 1; /* Keep fully opaque to guarantee the bottom of the image is masked instantly on load */
@@ -100,6 +100,17 @@
     padding-bottom: 12px;
 }
 
+@keyframes titleEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .details-hero-content h1 {
     font-size: clamp(34px, 4.2vw, 62px);
     font-weight: 750;
@@ -108,32 +119,36 @@
     letter-spacing: -0.02em;
     color: #fff;
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    order: 1;
+    animation: titleEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.hero-logo-container {
+.details-hero-text .hero-logo-container {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-bottom: 12px;
+    margin: 0;
     max-width: 100%;
+    order: 1;
 }
 
-.hero-title-logo {
+.details-hero-text .hero-title-logo {
     max-width: 100%;
     width: clamp(220px, 35vw, 420px);
     max-height: clamp(80px, 15vh, 160px);
     object-fit: contain;
     object-position: left center;
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+    animation: titleEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .details-hero-genre {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 550;
     color: #94a3b8; /* Slate grey */
-    margin-top: 0;
-    margin-bottom: 2px;
+    margin: 0;
     letter-spacing: 0.02em;
+    order: 2;
 }
 
 .details-hero-director {
@@ -142,7 +157,7 @@
     gap: 6px;
     font-size: 15px;
     font-weight: 500;
-    margin-top: 4px;
+    margin: 0;
 }
 
 .director-label {
@@ -163,8 +178,9 @@
 .director-synopsis-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-top: 4px;
+    gap: 16px;
+    margin: 0;
+    order: 5;
 }
 
 .details-hero-overview {
@@ -206,6 +222,7 @@
     color: #cbd5e1;
     font-size: 15px;
     font-weight: 500;
+    order: 4;
 }
 
 .details-hero-meta .rating svg,
@@ -285,6 +302,7 @@
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    order: 3;
 }
 
 .details-play, .details-action-btn {
@@ -861,26 +879,12 @@
         margin-top: 24px;
     }
 
-    /* Reorder details-hero-text children on mobile */
-    .hero-logo-container,
-    .details-hero-text h1 {
-        order: 1;
-    }
+    /* Spacing overrides for details-hero-text children on mobile */
     .details-hero-genre {
-        order: 2;
-        font-size: 13px;
         letter-spacing: 0.04em;
     }
-    .details-actions {
-        order: 3;
-    }
-    .details-hero-meta {
-        order: 4;
-    }
     .director-synopsis-group {
-        order: 5;
         gap: 12px;
-        margin-top: 8px;
     }
 
     .details-hero-director {
@@ -893,9 +897,9 @@
         width: 100%;
         max-width: 450px;
     }
-    .hero-logo-container {
+    .details-hero-text .hero-logo-container {
         justify-content: center;
-        margin-bottom: 10px;
+        margin: 0;
     }
     .hero-title-logo {
         width: clamp(160px, 50vw, 280px);
