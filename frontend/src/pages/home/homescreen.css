@@ -284,7 +284,8 @@
     position: relative;
 }
 
-.history-remove-btn {
+.history-remove-btn,
+.history-info-btn {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -313,8 +314,36 @@
     pointer-events: auto;
 }
 
-.history-card:hover .history-remove-btn {
+.history-card:hover .history-remove-btn,
+.history-card:hover .history-info-btn {
     opacity: 1;
+}
+
+.history-card.editing .history-remove-btn {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    display: grid !important;
+}
+
+@keyframes historyWiggle {
+    0% { transform: rotate(0deg); }
+    3.5% { transform: rotate(1.2deg); }
+    7% { transform: rotate(-1.2deg); }
+    10.5% { transform: rotate(1.2deg); }
+    14% { transform: rotate(-1.2deg); }
+    17.5% { transform: rotate(1.2deg); }
+    21% { transform: rotate(-1.2deg); }
+    24.5% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+}
+
+.history-card.editing {
+    animation: historyWiggle 3.5s ease-in-out infinite;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.history-card.editing:nth-child(even) {
+    animation-delay: 1.2s;
 }
 
 .history-remove-btn:hover {
@@ -323,12 +352,19 @@
     transform: scale(1.1);
 }
 
-.history-remove-btn svg {
+.history-info-btn:hover {
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
+    transform: scale(1.1);
+}
+
+.history-remove-btn svg,
+.history-info-btn svg {
     display: block;
     margin: 0;
     padding: 0;
     pointer-events: none;
-    transition: none; /* No color transition needed if we just inherit */
+    transition: none;
 }
 
 .history-card .card-img-wrapper {
@@ -455,6 +491,45 @@
     justify-content: space-between;
     gap: 24px;
     padding-right: clamp(22px, 3vw, 56px);
+}
+
+.history-heading {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 18px !important;
+    margin-bottom: 20px;
+}
+
+.history-heading .section-title {
+    margin-bottom: 0 !important;
+}
+
+.row-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 10, 13, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    transition: all 0.2s ease;
+    margin-bottom: 0 !important;
+    pointer-events: auto;
+}
+
+.row-edit-btn:hover {
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
+    transform: scale(1.1);
+}
+
+.row-edit-btn:active {
+    transform: scale(0.95);
 }
 
 .section-title {
@@ -903,6 +978,24 @@
 
     .history-remove-btn {
         display: none !important;
+    }
+
+    .history-info-btn {
+        display: grid !important;
+        opacity: 0.9 !important;
+        top: 6px;
+        right: 6px;
+        width: 24px;
+        height: 24px;
+    }
+
+    .history-card.editing .history-remove-btn {
+        display: grid !important;
+        opacity: 0.9 !important;
+        top: 6px;
+        right: 6px;
+        width: 24px;
+        height: 24px;
     }
 }
 

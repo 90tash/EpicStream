@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
@@ -76,10 +76,19 @@ const RowSkeleton = ({ topTen }) => (
     </section>
 );
 
-const RowHeader = ({ row }) => {
+const RowHeader = ({ row, isEditing, onToggleEdit }) => {
     return (
-        <div className="row-heading">
+        <div className={`row-heading ${row.isHistory ? "history-heading" : ""}`}>
             {row.title && <h2 className="section-title">{row.title}</h2>}
+            {row.isHistory && (
+                <button 
+                    className="row-edit-btn" 
+                    onClick={onToggleEdit}
+                    aria-label={isEditing ? "Done editing" : "Edit history"}
+                >
+                    {isEditing ? <Check size={16} /> : <Pencil size={16} />}
+                </button>
+            )}
         </div>
     );
 };
@@ -98,64 +107,18 @@ const getRelativeTime = (timestamp) => {
     return `${days}d ago`;
 };
 
-const HistoryCard = ({ item, openDetails, onRemove }) => {
+const HistoryCard = ({ item, openWatch, openDetails, onRemove, isEditing }) => {
     const type = item.type || getMediaType(item);
     const progress = item.percentage || 0;
     const timeAgo = getRelativeTime(item.timestamp);
     const bottomInfo = type === "tv" ? `S${item.season}:E${item.episode}` : (item.timeStr || "");
 
-    // Mobile Swipe-to-Delete States
-    const [startX, setStartX] = useState(0);
-    const [currentX, setCurrentX] = useState(0);
-    const [isSwiping, setIsSwiping] = useState(false);
-    const [isRemoving, setIsRemoving] = useState(false);
-
-    const handleTouchStart = (e) => {
-        if (isRemoving) return;
-        setStartX(e.touches[0].clientX);
-        setIsSwiping(true);
-    };
-
-    const handleTouchMove = (e) => {
-        if (!isSwiping || isRemoving) return;
-        const diffX = e.touches[0].clientX - startX;
-        
-        // Only allow swiping to the left (negative translation)
-        if (diffX < 0) {
-            setCurrentX(diffX);
-        }
-    };
-
-    const handleTouchEnd = () => {
-        if (isRemoving) return;
-        setIsSwiping(false);
-        
-        // If swiped left more than 60px, swipe it off-screen and remove
-        if (currentX < -60) {
-            setIsRemoving(true);
-            setCurrentX(-300); // Slide off-screen
-            setTimeout(() => {
-                onRemove(item.id);
-            }, 200); // Delay to match the transition duration
-        } else {
-            setCurrentX(0);
-        }
-    };
-
     return (
         <div 
-            className="browse-card history-card" 
+            className={`browse-card history-card ${isEditing ? "editing" : ""}`} 
             key={`history-${item.id}`}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            style={{
-                transform: currentX !== 0 ? `translateX(${currentX}px)` : undefined,
-                opacity: currentX !== 0 ? Math.max(0, 1 - Math.abs(currentX) / 200) : undefined,
-                transition: isSwiping ? 'none' : 'transform 0.2s ease, opacity 0.2s ease'
-            }}
         >
-            <div className="card-img-wrapper" onClick={() => openDetails(item)}>
+            <div className="card-img-wrapper" onClick={() => openWatch(item)}>
                 <img 
                     src={imageUrl(item.poster_path || item.backdrop_path, "w500")} 
                     alt={item.title} 
@@ -168,18 +131,31 @@ const HistoryCard = ({ item, openDetails, onRemove }) => {
                 )}
             </div>
             
-            <button 
-                className="history-remove-btn" 
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove(item.id);
-                }}
-                aria-label="Remove from history"
-            >
-                <X size={14} />
-            </button>
+            {isEditing ? (
+                <button 
+                    className="history-remove-btn" 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(item.id);
+                    }}
+                    aria-label="Remove from history"
+                >
+                    <X size={14} />
+                </button>
+            ) : (
+                <button 
+                    className="history-info-btn" 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        openDetails(item);
+                    }}
+                    aria-label="View details"
+                >
+                    <Info size={14} />
+                </button>
+            )}
 
-            <div className="history-card-info" onClick={() => openDetails(item)}>
+            <div className="history-card-info" onClick={() => openWatch(item)}>
                 <div className="history-info-top">
                     <span className="history-title">{item.title}</span>
                     <span className="history-percentage">{progress}%</span>
@@ -238,12 +214,13 @@ const MovieCard = ({ item, row, index, openDetails }) => {
     );
 };
 
-const MovieRow = ({ row, openDetails, onRemoveHistory }) => {
+const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory }) => {
     const sliderRef = useRef(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(false);
     const [items, setItems] = useState(row.items || []);
     const [isLoading, setIsLoading] = useState(!row.items);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         if (row.items) {
@@ -280,8 +257,12 @@ const MovieRow = ({ row, openDetails, onRemoveHistory }) => {
     if (isLoading) return <RowSkeleton topTen={row.topTen} />;
 
     return (
-        <section className="browse-row">
-            <RowHeader row={row} />
+        <section className={`browse-row ${isEditing ? "row-editing" : ""}`}>
+            <RowHeader 
+                row={row} 
+                isEditing={isEditing} 
+                onToggleEdit={() => setIsEditing(!isEditing)} 
+            />
             <div className="slider-wrapper">
                 {showLeftArrow && (
                     <button className="row-arrow left" onClick={() => scroll("left")} aria-label="Scroll left">
@@ -300,8 +281,10 @@ const MovieRow = ({ row, openDetails, onRemoveHistory }) => {
                                 key={`history-${item.id}`} 
                                 item={item} 
                                 index={index}
+                                openWatch={openWatch}
                                 openDetails={openDetails} 
                                 onRemove={onRemoveHistory}
+                                isEditing={isEditing}
                             />
                         ) : (
                             <MovieCard 
@@ -582,7 +565,8 @@ const HomeScreen = () => {
                     <MovieRow 
                         key={row.title} 
                         row={row} 
-                        openDetails={row.isHistory ? openWatch : openDetails} 
+                        openDetails={openDetails} 
+                        openWatch={openWatch}
                         onRemoveHistory={handleRemoveFromHistory}
                     />
                 ))}
