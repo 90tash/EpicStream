@@ -342,9 +342,6 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-.history-card.editing:nth-child(even) {
-    animation-delay: 1.2s;
-}
 
 .history-remove-btn:hover {
     border-color: rgba(255, 38, 51, 0.4);
