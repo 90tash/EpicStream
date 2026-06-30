@@ -924,8 +924,8 @@
         margin: 0;
     }
     .details-hero-text .hero-title-logo {
-        width: clamp(160px, 50vw, 280px);
-        max-height: clamp(60px, 10vh, 100px);
+        width: clamp(200px, 60vw, 340px);
+        max-height: clamp(80px, 12vh, 120px);
         object-position: center;
     }
 
