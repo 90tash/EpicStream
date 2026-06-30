@@ -14,6 +14,17 @@ const PeopleDetails = () => {
   const [isLoading, setIsLoading] = useState(!state?.person);
 
   useEffect(() => {
+    if (details?.name) {
+      document.title = `${details.name} - EpicStream`;
+    } else {
+      document.title = "EpicStream";
+    }
+    return () => {
+      document.title = "EpicStream";
+    };
+  }, [details]);
+
+  useEffect(() => {
     window.scrollTo(0, 0);
     
     const fetchAllData = async () => {

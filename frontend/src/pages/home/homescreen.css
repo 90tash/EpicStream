@@ -282,6 +282,8 @@
     flex-direction: column;
     gap: 8px;
     position: relative;
+    flex: 0 0 clamp(240px, 20vw, 320px) !important;
+    max-width: clamp(240px, 20vw, 320px) !important;
 }
 
 .history-remove-btn,
@@ -366,6 +368,7 @@
 
 .history-card .card-img-wrapper {
     position: relative;
+    aspect-ratio: 16 / 9 !important;
 }
 
 .card-progress-bar {

@@ -113,17 +113,50 @@ const HistoryCard = ({ item, openWatch, openDetails, onRemove, isEditing }) => {
     const timeAgo = getRelativeTime(item.timestamp);
     const bottomInfo = type === "tv" ? `S${item.season}:E${item.episode}` : (item.timeStr || "");
 
+    const [bannerUrl, setBannerUrl] = useState(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchTitledBanner = async () => {
+            try {
+                const data = await tmdbGetImages(type, item.id);
+                if (!isMounted) return;
+                if (data.backdrops && data.backdrops.length > 0) {
+                    const titledBackdrops = data.backdrops.filter(b => b.iso_639_1 !== null);
+                    if (titledBackdrops.length > 0) {
+                        const enTitled = titledBackdrops.find(b => b.iso_639_1 === 'en');
+                        const selected = enTitled || titledBackdrops[0];
+                        setBannerUrl(imageUrl(selected.file_path, "w780"));
+                        return;
+                    }
+                }
+                setBannerUrl(imageUrl(item.backdrop_path || item.poster_path, "w780"));
+            } catch (error) {
+                console.error("Error fetching images for history item:", error);
+                if (isMounted) {
+                    setBannerUrl(imageUrl(item.backdrop_path || item.poster_path, "w780"));
+                }
+            }
+        };
+        fetchTitledBanner();
+        return () => {
+            isMounted = false;
+        };
+    }, [item.id, type]);
+
     return (
         <div 
             className={`browse-card history-card ${isEditing ? "editing" : ""}`} 
             key={`history-${item.id}`}
         >
             <div className="card-img-wrapper" onClick={() => openWatch(item)}>
-                <img 
-                    src={imageUrl(item.poster_path || item.backdrop_path, "w500")} 
-                    alt={item.title} 
-                    loading="lazy"
-                />
+                {bannerUrl && (
+                    <img 
+                        src={bannerUrl} 
+                        alt={item.title} 
+                        loading="lazy"
+                    />
+                )}
                 {progress > 0 && (
                     <div className="card-progress-bar">
                         <div className="progress-fill" style={{ width: `${progress}%` }} />

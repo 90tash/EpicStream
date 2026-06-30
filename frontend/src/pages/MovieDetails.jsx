@@ -28,12 +28,14 @@ const formatDate = (dateStr) => {
 
 /* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate }) => {
-    const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
+    const [bannerUrl, setBannerUrl] = useState(null);
 
     useEffect(() => {
+        let isMounted = true;
         const fetchTitledBanner = async () => {
             try {
                 const data = await tmdbGetImages(type, item.id);
+                if (!isMounted) return;
                 if (data.backdrops && data.backdrops.length > 0) {
                     // Filter for backdrops that are NOT textless (iso_639_1 is not null)
                     const titledBackdrops = data.backdrops.filter(b => b.iso_639_1 !== null);
@@ -42,13 +44,21 @@ const SimilarCard = ({ item, type, navigate }) => {
                         const enTitled = titledBackdrops.find(b => b.iso_639_1 === 'en');
                         const selected = enTitled || titledBackdrops[0];
                         setBannerUrl(imageUrl(selected.file_path, "w780"));
+                        return;
                     }
                 }
+                setBannerUrl(imageUrl(item.backdrop_path || item.poster_path, "w780"));
             } catch (error) {
                 console.error("Error fetching images for similar item:", error);
+                if (isMounted) {
+                    setBannerUrl(imageUrl(item.backdrop_path || item.poster_path, "w780"));
+                }
             }
         };
         fetchTitledBanner();
+        return () => {
+            isMounted = false;
+        };
     }, [item.id, type]);
 
     return (
@@ -60,11 +70,13 @@ const SimilarCard = ({ item, type, navigate }) => {
             }}
         >
             <div className="similar-card-img-wrapper">
-                <img
-                    src={bannerUrl}
-                    alt={getTitle(item)}
-                    loading="lazy"
-                />
+                {bannerUrl && (
+                    <img
+                        src={bannerUrl}
+                        alt={getTitle(item)}
+                        loading="lazy"
+                    />
+                )}
                 <div className="similar-card-shade" />
             </div>
             <span className="similar-card-title">{getTitle(item)}</span>
@@ -143,7 +155,16 @@ const MovieDetails = () => {
         }
     }, [id, state]);
 
-
+    useEffect(() => {
+        if (movie) {
+            document.title = `${getTitle(movie)} - EpicStream`;
+        } else {
+            document.title = "EpicStream";
+        }
+        return () => {
+            document.title = "EpicStream";
+        };
+    }, [movie]);
 
 
     useEffect(() => {

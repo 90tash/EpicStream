@@ -1,6 +1,6 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getPlayerUrl, tmdbFetch } from "../utils/tmdb";
+import { getPlayerUrl, tmdbFetch, getTitle } from "../utils/tmdb";
 import { updateHistoryProgress } from "../utils/history";
 import { isAnime } from "../utils/anilist";
 
@@ -22,6 +22,7 @@ const WatchPage = () => {
     const episode = searchParams.get("episode") || 1;
 
     const [showPopup, setShowPopup] = useState(false);
+    const [details, setDetails] = useState(null);
 
     // Default Player URL (Uses TMDB ID directly)
     const playerUrl = getPlayerUrl(type, id, season, episode);
@@ -87,10 +88,11 @@ const WatchPage = () => {
 
         const checkAnimeDetails = async () => {
             try {
-                const details = await tmdbFetch(`/${type}/${id}`);
+                const detailsData = await tmdbFetch(`/${type}/${id}`);
                 if (!isMounted) return;
+                setDetails(detailsData);
 
-                if (isAnime(details)) {
+                if (isAnime(detailsData)) {
                     const dismissed = sessionStorage.getItem("cypher-popup-dismissed");
                     if (!dismissed) {
                         // Delay by 1.5 seconds for a smooth entry
@@ -113,6 +115,22 @@ const WatchPage = () => {
             if (timeoutId) clearTimeout(timeoutId);
         };
     }, [type, id]);
+
+    useEffect(() => {
+        if (details) {
+            const title = getTitle(details);
+            if (type === "tv") {
+                document.title = `${title} S${season}:E${episode} - EpicStream`;
+            } else {
+                document.title = `${title} - EpicStream`;
+            }
+        } else {
+            document.title = "EpicStream";
+        }
+        return () => {
+            document.title = "EpicStream";
+        };
+    }, [details, type, season, episode]);
 
     // History and player messages tracking hook
     useEffect(() => {

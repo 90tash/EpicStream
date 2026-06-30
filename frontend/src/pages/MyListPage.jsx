@@ -1,9 +1,17 @@
+import { useEffect } from "react";
 import { BookmarkPlus, Search, ChevronLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import "./myList.css";
 
 const MyListPage = () => {
     const navigate = useNavigate();
+
+    useEffect(() => {
+        document.title = "My List - EpicStream";
+        return () => {
+            document.title = "EpicStream";
+        };
+    }, []);
 
     return (
         <div className="my-list-page">
