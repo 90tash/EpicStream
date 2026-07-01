@@ -12,7 +12,14 @@
     margin: 0 auto;
     padding: 40px 4%;
     display: flex;
+    flex-direction: column;
     gap: 48px;
+}
+
+.people-top-section {
+    display: flex;
+    gap: 48px;
+    width: 100%;
 }
 
 .people-sidebar {
@@ -21,37 +28,36 @@
 
 .people-sidebar img {
     width: 100%;
-    border-radius: 12px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 50%;
     box-shadow: 0 8px 24px rgba(0,0,0,0.6);
     margin-bottom: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 4px solid var(--accent);
 }
 
-.people-sidebar h2 {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 18px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 10px;
-}
-
-.info-item {
-    margin-bottom: 18px;
-}
-
-.info-item label {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
+.people-metadata {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 15px;
     color: #94a3b8;
-    margin-bottom: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    margin-bottom: 32px;
 }
 
-.info-item p {
-    font-size: 16px;
-    color: #cbd5e1;
+.people-metadata.desktop {
+    display: flex;
+}
+
+.people-metadata.mobile {
+    display: none;
+}
+
+.people-metadata .bullet {
+    color: rgba(255, 255, 255, 0.15);
+    font-weight: bold;
+    margin: 0 4px;
 }
 
 .people-main {
@@ -61,11 +67,12 @@
 .people-main h1 {
     font-size: clamp(32px, 4vw, 56px);
     font-weight: 800;
-    margin-bottom: 24px;
+    margin-bottom: 8px;
     letter-spacing: -0.02em;
 }
 
 .biography {
+    margin-top: 24px;
     margin-bottom: 48px;
 }
 
@@ -85,11 +92,38 @@
     border-radius: 999px;
     background: var(--accent);
 }
+.biography-container {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0;
+}
 
-.biography p {
-    font-size: 18px;
-    line-height: 1.7;
+.people-biography-text {
+    font-size: 15px;
+    line-height: 1.6;
     color: #cbd5e1;
+    margin: 0;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.read-more-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.2s ease;
+}
+
+.read-more-btn:hover {
+    color: #fff;
+    text-decoration: underline;
 }
 
 .known-for h2 {
@@ -160,16 +194,134 @@
     line-height: 1.25;
     padding: 0 4px;
     transition: color 0.2s ease;
+    
+    /* 1-line truncation */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .credit-item:hover .credit-title {
     color: var(--accent);
 }
 
+.credit-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 0 4px;
+    margin-top: 4px;
+}
+
+.credit-meta .rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--accent);
+}
+
+.credit-meta .rating svg {
+    margin-bottom: 0.5px;
+}
+
+.credit-meta .bullet {
+    color: rgba(255, 255, 255, 0.15);
+    font-weight: bold;
+}
+
+/* Filmography Section styling */
+.filmography-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.filmography-header h2 {
+    font-size: 24px;
+    font-weight: 750;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filmography-header h2::before {
+    content: "";
+    width: 3px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--accent);
+}
+
+.media-toggle-container {
+    position: relative;
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 4px;
+    border-radius: 999px;
+    width: 240px;
+    height: 38px;
+    box-sizing: border-box;
+}
+
+.media-toggle-btn {
+    position: relative;
+    flex: 1;
+    background: transparent;
+    border: 0;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 2;
+    transition: color 0.3s ease;
+    border-radius: 999px;
+}
+
+.media-toggle-btn.active {
+    color: #fff;
+}
+
+.media-toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    height: calc(100% - 6px);
+    background: var(--accent);
+    border-radius: 999px;
+    z-index: 1;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(255, 38, 51, 0.15);
+}
+
+.media-toggle-slider.tv {
+    transform: translateX(100%);
+}
+
+.people-name-mobile {
+    display: none;
+}
+
+.people-name-desktop {
+    display: block;
+}
+
 @media (max-width: 900px) {
     .people-container {
+        gap: 32px;
+    }
+    .people-top-section {
         flex-direction: column;
         gap: 32px;
+        width: 100%;
     }
     .people-sidebar {
         flex: none;
@@ -178,14 +330,57 @@
         margin: 0 auto;
         text-align: center;
     }
-    .people-sidebar h2 {
-        text-align: left;
-    }
-    .info-item {
-        text-align: left;
-    }
-    .people-main h1 {
+    .people-name-mobile {
+        display: block;
+        font-size: clamp(28px, 5vw, 36px);
+        font-weight: 800;
+        margin-top: 16px;
+        margin-bottom: 8px;
         text-align: center;
+        letter-spacing: -0.02em;
+    }
+    .people-name-desktop {
+        display: none;
+    }
+    .people-metadata.desktop {
+        display: none;
+    }
+    .people-metadata.mobile {
+        display: flex;
+        justify-content: center;
+        margin-top: 0;
+        margin-bottom: 4px;
+    }
+    .biography {
+        margin-top: 0;
+    }
+    .biography h2 {
+        justify-content: center;
+    }
+    .filmography-header {
+        justify-content: center;
+        text-align: center;
+    }
+    .filmography-header h2 {
+        justify-content: center;
+    }
+    .filmography-header h2::before {
+        display: none;
+    }
+    .people-biography-text {
+        text-align: center;
+    }
+    .biography-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .read-more-btn {
+        align-self: center;
+    }
+    .credit-item {
+        text-align: left;
     }
 }
 

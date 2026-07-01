@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Star } from "lucide-react";
 import "./peopleDetails.css";
 import { getTitle, imageUrl, tmdbFetch } from "../utils/tmdb";
 
@@ -10,8 +10,10 @@ const PeopleDetails = () => {
   const navigate = useNavigate();
   
   const [details, setDetails] = useState(state?.person || null);
-  const [credits, setCredits] = useState([]);
+  const [allCredits, setAllCredits] = useState([]);
   const [isLoading, setIsLoading] = useState(!state?.person);
+  const [showFullBiography, setShowFullBiography] = useState(false);
+  const [mediaType, setMediaType] = useState("movie");
 
   useEffect(() => {
     if (details?.name) {
@@ -86,7 +88,7 @@ const PeopleDetails = () => {
           return (b.vote_count || 0) - (a.vote_count || 0);
         });
 
-        setCredits(sortedCredits.slice(0, 20));
+        setAllCredits(sortedCredits);
       } catch (error) {
         console.error("Error fetching person details:", error);
       } finally {
@@ -102,6 +104,34 @@ const PeopleDetails = () => {
     navigate(`/${type}/${movie.id}`, { state: { movie } });
   };
 
+  const renderMetadata = (isMobile) => {
+    const parts = [];
+    if (details.known_for_department) {
+      parts.push(details.known_for_department);
+    }
+    if (details.birthday) {
+      const birthYear = new Date(details.birthday).getFullYear();
+      const age = new Date().getFullYear() - birthYear;
+      parts.push(`${birthYear} (${age} years old)`);
+    }
+    if (details.place_of_birth) {
+      parts.push(details.place_of_birth);
+    }
+    
+    if (parts.length === 0) return null;
+
+    return (
+      <div className={`people-metadata ${isMobile ? 'mobile' : 'desktop'}`}>
+        {parts.map((part, index) => (
+          <span key={index} className="metadata-item">
+            {part}
+            {index < parts.length - 1 && <span className="bullet"> • </span>}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   if (isLoading) return <div className="people-details-page"><p style={{textAlign:'center', padding:'100px'}}>Loading...</p></div>;
   if (!details) return null;
 
@@ -112,44 +142,71 @@ const PeopleDetails = () => {
       </button>
       
       <main className="people-container">
-        <aside className="people-sidebar">
-          <img
-            src={imageUrl(details.profile_path, "h632", "/avatar1.png")}
-            alt={details.name}
-          />
-          <h2>Personal Info</h2>
-          <div className="info-item">
-            <label>Known For</label>
-            <p>{details.known_for_department}</p>
-          </div>
-          <div className="info-item">
-            <label>Gender</label>
-            <p>{details.gender === 1 ? "Female" : details.gender === 2 ? "Male" : "Not specified"}</p>
-          </div>
-          {details.birthday && (
-            <div className="info-item">
-              <label>Birthday</label>
-              <p>{details.birthday} ({new Date().getFullYear() - new Date(details.birthday).getFullYear()} years old)</p>
+        <div className="people-top-section">
+          <aside className="people-sidebar">
+            <img
+              src={imageUrl(details.profile_path, "h632", "/avatar1.png")}
+              alt={details.name}
+            />
+            <h1 className="people-name-mobile">{details.name}</h1>
+            {renderMetadata(true)}
+          </aside>
+
+          <section className="people-main">
+            <h1 className="people-name-desktop">{details.name}</h1>
+            {renderMetadata(false)}
+            
+            <div className="biography">
+              {details.biography ? (
+                <div className="biography-container">
+                  <p className="people-biography-text">
+                    {showFullBiography || details.biography.length <= 400
+                      ? details.biography
+                      : `${details.biography.slice(0, 400)}...`}
+                  </p>
+                  {details.biography.length > 400 && (
+                    <button 
+                      type="button"
+                      className="read-more-btn"
+                      onClick={() => setShowFullBiography(!showFullBiography)}
+                    >
+                      {showFullBiography ? "Read Less" : "Read More"}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="people-biography-text">We don't have a biography for {details.name}.</p>
+              )}
             </div>
-          )}
-          <div className="info-item">
-            <label>Place of Birth</label>
-            <p>{details.place_of_birth || "N/A"}</p>
-          </div>
-        </aside>
+          </section>
+        </div>
 
-        <section className="people-main">
-          <h1>{details.name}</h1>
-          
-          <div className="biography">
-            <h2>Biography</h2>
-            <p>{details.biography || `We don't have a biography for ${details.name}.`}</p>
+        <section className="known-for">
+          <div className="filmography-header">
+            <h2>Filmography</h2>
+            <div className="media-toggle-container">
+              <div className={`media-toggle-slider ${mediaType}`} />
+              <button 
+                type="button"
+                className={`media-toggle-btn ${mediaType === 'movie' ? 'active' : ''}`}
+                onClick={() => setMediaType('movie')}
+              >
+                Movies
+              </button>
+              <button 
+                type="button"
+                className={`media-toggle-btn ${mediaType === 'tv' ? 'active' : ''}`}
+                onClick={() => setMediaType('tv')}
+              >
+                TV Shows
+              </button>
+            </div>
           </div>
-
-          <div className="known-for">
-            <h2>Known For</h2>
-            <div className="credits-grid">
-              {credits.map((credit) => (
+          <div className="credits-grid">
+            {allCredits
+              .filter((c) => c.media_type === mediaType)
+              .slice(0, 20)
+              .map((credit) => (
                 <div
                   key={credit.id + credit.media_type}
                   className="credit-item"
@@ -162,9 +219,22 @@ const PeopleDetails = () => {
                     />
                   </div>
                   <p className="credit-title">{getTitle(credit)}</p>
+                  <div className="credit-meta">
+                    {credit.vote_average > 0 && (
+                      <span className="rating">
+                        <Star size={11} fill="currentColor" />
+                        {credit.vote_average.toFixed(1)}
+                      </span>
+                    )}
+                    {(credit.release_date || credit.first_air_date) && (
+                      <span>
+                        {credit.vote_average > 0 && <span className="bullet"> • </span>}
+                        {(credit.release_date || credit.first_air_date || "").slice(0, 4)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))}
-            </div>
           </div>
         </section>
       </main>
