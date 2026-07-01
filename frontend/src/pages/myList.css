@@ -1,8 +1,6 @@
 .my-list-page {
     min-height: 100vh;
-    background:
-        radial-gradient(circle at 70% 18%, rgba(255, 38, 51, 0.14), transparent 28%),
-        var(--bg);
+    background: transparent;
     color: var(--text);
     display: flex;
     flex-direction: column;
@@ -10,64 +8,262 @@
 
 .my-list-empty {
     flex: 1;
-    width: min(720px, calc(100% - 36px));
+    width: 100%;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 180px 0 96px;
+    min-height: 100vh;
+    padding: 70px 48px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    text-align: center;
+}
+
+.my-list-empty-topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.my-list-empty-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    text-align: left;
+}
+
+.my-list-empty-header h1 {
+    margin: 0;
+    font-size: clamp(26px, 3vw, 32px);
+    line-height: 1.02;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.my-list-empty-header p {
+    margin: 0;
+    color: rgba(246, 247, 251, 0.55);
+    font-size: clamp(13px, 1.4vw, 14px);
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.my-list-empty-state {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    text-align: center;
+    padding-top: 0;
+    padding-bottom: 60px;
 }
 
-.my-list-icon {
-    width: 96px;
-    height: 96px;
-    border-radius: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    background: linear-gradient(135deg, var(--accent), #8f0007);
-    box-shadow: 0 24px 70px rgba(229, 9, 20, 0.28);
-    margin-bottom: 28px;
+.my-list-empty-state svg {
+    color: rgba(246, 247, 251, 0.46);
+    width: 40px;
+    height: 40px;
+    margin-bottom: 10px;
 }
 
-.my-list-kicker {
-    color: var(--accent);
-    font-size: 13px; /* Reduced from 14px */
-    font-weight: 750; /* Reduced from 900 */
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 12px;
+.my-list-empty-state h2 {
+    margin: 0;
+    font-size: clamp(26px, 3vw, 32px);
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: 0;
 }
 
-.my-list-empty h1 {
-    font-size: clamp(32px, 4.5vw, 64px); /* Slightly smaller */
-    line-height: 1.05;
-    font-weight: 750; /* Reduced from 900 */
-    letter-spacing: -0.015em;
-    margin: 0 0 18px;
+.my-list-empty-state p {
+    max-width: 440px;
+    margin: 6px 0 0;
+    color: rgba(154, 163, 178, 0.9);
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 400;
 }
 
-.my-list-empty p {
-    max-width: 560px;
-    color: var(--muted);
-    font-size: 18px;
-    line-height: 1.6;
-    margin: 0 0 28px;
+.my-list-empty-state p + .my-list-action,
+.my-list-empty-state p + button {
+    margin-top: 12px;
 }
 
 .my-list-action {
-    min-height: 50px;
+    min-height: 49px;
     border-radius: 999px;
-    padding: 0 24px;
+    padding: 0 26px;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    gap: 8px;
     background: #fff;
     color: #050607;
-    font-size: 16px;
-    font-weight: 900;
+    font-size: 15px;
+    font-weight: 700;
     text-decoration: none;
+    box-shadow: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.my-list-action:hover {
+    background: rgba(255, 255, 255, 0.88);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+    .my-list-empty {
+        padding: 44px 20px 16px;
+    }
+
+    .my-list-empty-topbar {
+        margin-bottom: 16px;
+    }
+
+    .my-list-empty-header h1 {
+        font-size: 20px;
+    }
+
+    .my-list-empty-header p {
+        font-size: 12px;
+    }
+
+    .my-list-empty-state {
+        padding-bottom: 40px;
+    }
+
+    .my-list-empty-state svg {
+        width: 36px;
+        height: 36px;
+        margin-bottom: 8px;
+    }
+
+    .my-list-empty-state h2 {
+        font-size: 22px;
+    }
+
+    .my-list-empty-state p {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .my-list-action {
+        min-height: 44px;
+        padding: 0 18px;
+        font-size: 14px;
+    }
+}
+
+/* Populated List Styles */
+.my-list-container {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 48px 4% 32px;
+}
+
+.my-list-container h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.my-list-container h1::before {
+    content: "";
+    width: 4px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--accent);
+}
+
+.my-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+}
+
+.my-list-item {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.my-list-item .card-img-wrapper {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.3s ease;
+}
+
+.my-list-item:hover .card-img-wrapper {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+}
+
+.my-list-item img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+.my-list-item:hover img {
+    transform: scale(1.06);
+}
+
+.my-list-title {
+    margin-top: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    line-height: 1.25;
+    padding: 0 4px;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.my-list-item:hover .my-list-title {
+    color: var(--accent);
+}
+
+.my-list-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 0 4px;
+    margin-top: 4px;
+}
+
+.my-list-meta .rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--accent);
+}
+
+.my-list-meta .rating svg {
+    margin-bottom: 0.5px;
+}
+
+.my-list-meta .bullet {
+    color: rgba(255, 255, 255, 0.15);
+    font-weight: bold;
 }

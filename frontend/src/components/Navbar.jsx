@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './navbar.css';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, Bookmark } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 
 const Navbar = () => {
@@ -37,6 +37,9 @@ const Navbar = () => {
                 </Link>
             </div>
             <div className="right-header-items">
+                <Link to="/mylist" className="bookmark-button-link" aria-label="My List">
+                    <Bookmark className="bookmark-icon" />
+                </Link>
                 <a href="#" className='search-button-link' onClick={handleSearchClick} aria-label="Search">
                     <Search className='search-icon' />
                 </a>

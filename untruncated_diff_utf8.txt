@@ -1,0 +1,1 @@
+﻿I will read the untruncated full transcript from the logs directory to retrieve the complete `git diff` output. This will allow us to restore all the user's custom button designs (play buttons, "+ | info" groups, collection buttons) to their exact state at 21:00.

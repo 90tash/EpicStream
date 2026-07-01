@@ -1,11 +1,12 @@
 /* eslint-disable react/prop-types */
-import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
 import { addToHistory, getHistory, removeFromHistory } from "../../utils/history";
+import { useWatchlistStore } from "../../stores/watchlist";
 import "./homescreen.css";
 
 const today = new Date().toISOString().split("T")[0];
@@ -351,6 +352,7 @@ const HomeScreen = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [logoError, setLogoError] = useState(false);
     const navigate = useNavigate();
+    const { toggleItem, isItemInList } = useWatchlistStore();
 
     // Initialize rows with history if available
     useEffect(() => {
@@ -507,6 +509,8 @@ const HomeScreen = () => {
     const title = getTitle(heroContent);
     const releaseYear = getYear(heroContent);
     const rating = getRating(heroContent);
+    const heroType = heroContent ? getMediaType(heroContent) : "movie";
+    const heroInList = heroContent ? isItemInList(heroContent.id) : false;
 
     return (
         <div className="epicstream-home">
@@ -564,10 +568,27 @@ const HomeScreen = () => {
                                 <Play size={20} fill="currentColor" />
                                 Play
                             </button>
-                            <button type="button" className="browse-info" onClick={() => openDetails(heroContent)}>
-                                <Info size={20} />
-                                See More
-                            </button>
+                            <div className="browse-action-group">
+                                <button
+                                    type="button"
+                                    className={`browse-group-btn add-list-btn ${heroInList ? "active" : ""}`}
+                                    onClick={() => toggleItem(heroContent, heroType)}
+                                    title={heroInList ? "Remove from List" : "Add to List"}
+                                    aria-label={heroInList ? "Remove from List" : "Add to List"}
+                                >
+                                    {heroInList ? <Check size={20} /> : <Plus size={20} />}
+                                </button>
+                                <span className="browse-divider" />
+                                <button
+                                    type="button"
+                                    className="browse-group-btn"
+                                    onClick={() => openDetails(heroContent)}
+                                    title="View details"
+                                    aria-label="View details"
+                                >
+                                    <Info size={20} />
+                                </button>
+                            </div>
                         </div>
                     </div>
 

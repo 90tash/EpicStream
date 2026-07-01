@@ -1,9 +1,10 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, Play, Star, ChevronDown, LayoutGrid } from "lucide-react";
+import { ChevronLeft, Star, ChevronDown, LayoutGrid, Plus, Check } from "lucide-react";
 import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
+import { useWatchlistStore } from "../stores/watchlist";
 
 
 const formatDate = (dateStr) => {
@@ -101,6 +102,8 @@ const TvDetails = () => {
     const [logoError, setLogoError] = useState(false);
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [logoFetched, setLogoFetched] = useState(false);
+
+    const { toggleItem, isItemInList } = useWatchlistStore();
 
     const seasonRef = useRef(null);
 
@@ -217,6 +220,7 @@ const TvDetails = () => {
     const title = getTitle(tv);
     const releaseYear = (tv.first_air_date || tv.release_date || "").slice(0, 4);
     const rating = tv.vote_average ? tv.vote_average.toFixed(1) : null;
+    const inList = isItemInList(tv.id);
 
     // Filter for the dropdown
     const seasonsList = tv.seasons?.filter(s => s.season_number > 0) || [];
@@ -259,16 +263,31 @@ const TvDetails = () => {
                                     navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`);
                                 }}
                             >
-                                <Play size={20} fill="currentColor" />
+                                <svg viewBox="0 0 24 24" width={20} height={20} fill="currentColor">
+                                    <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
+                                </svg>
                                 <span>Play</span>
                             </button>
-                            <button className="details-action-btn" onClick={() => document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth' })}>
-                                <LayoutGrid size={20} />
-                                <span>Episodes</span>
-                            </button>
-                            <button className="details-action-btn" onClick={() => document.getElementById('similar')?.scrollIntoView({ behavior: 'smooth' })}>
-                                Similar
-                            </button>
+
+                            <div className="details-action-group">
+                                <button 
+                                    className={`details-group-btn add-list-btn ${inList ? 'active' : ''}`}
+                                    onClick={() => toggleItem(tv, "tv")}
+                                    title={inList ? "Remove from List" : "Add to List"}
+                                    aria-label={inList ? "Remove from List" : "Add to List"}
+                                >
+                                    {inList ? <Check size={20} /> : <Plus size={20} />}
+                                </button>
+                                <span className="details-divider" />
+                                <button 
+                                    className="details-group-btn" 
+                                    onClick={() => document.getElementById('episodes')?.scrollIntoView({ behavior: 'smooth' })}
+                                    title="View Episodes"
+                                    aria-label="View Episodes"
+                                >
+                                    <LayoutGrid size={20} />
+                                </button>
+                            </div>
                         </div>
                         <div className="details-hero-genre">
                             {tv.genres?.map(g => g.name).join(" • ") || "N/A"}

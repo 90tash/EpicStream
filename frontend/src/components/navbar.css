@@ -47,7 +47,8 @@
     gap: 24px; /* Increased from 20px */
 }
 
-.search-button-link {
+.search-button-link,
+.bookmark-button-link {
     background: transparent !important; 
     padding: 8px; /* Increased padding for better border appearance */
     border: 1px solid transparent; /* Initial transparent border */
@@ -59,17 +60,20 @@
     justify-content: center;
 }
 
-.search-button-link:hover {
+.search-button-link:hover,
+.bookmark-button-link:hover {
     transform: scale(1.1);
     opacity: 1;
     border-color: rgba(255, 38, 51, 0.4);
 }
 
-.search-button-link:hover .search-icon {
+.search-button-link:hover .search-icon,
+.bookmark-button-link:hover .bookmark-icon {
     color: var(--accent);
 }
 
 .search-icon,
+.bookmark-icon,
 .menu {
     width: 22px; /* Increased from 18px */
     height: 22px;

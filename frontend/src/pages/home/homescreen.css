@@ -1,6 +1,6 @@
 .epicstream-home {
     min-height: 100vh;
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     overflow-x: hidden;
 }
@@ -149,55 +149,108 @@
     overflow: hidden;
 }
 
-.browse-actions,
-.details-actions {
+.browse-actions {
     display: flex;
-    gap: 12px;
+    gap: 16px;
+    align-items: center;
     flex-wrap: wrap;
 }
 
-.browse-actions button,
-.details-actions button {
-    min-height: 44px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    padding: 0 24px;
+.browse-actions .browse-play {
+    height: 54px; /* Matching height */
+    background: #fff; /* White background */
+    border: none; /* No border */
+    border-radius: 9999px; /* Fully rounded pill shape */
+    padding: 0 28px; /* Balanced horizontal padding */
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    font-size: 16px;
-    font-weight: 700;
+    justify-content: center;
+    gap: 10px; /* Proportional gap */
+    font-size: 17px; /* Balanced font size */
+    font-weight: 600; /* Semi-bold text matching general UI density */
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #000; /* Black text/icon */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.browse-actions button:hover,
-.details-actions button:hover {
-    transform: scale(1.02);
-    background: #fff;
-    color: #000;
-    border-color: #fff;
+.browse-actions .browse-play:hover {
+    background: rgba(255, 255, 255, 0.9); /* Slightly darker white on hover */
+    transform: scale(1.03); /* Slight scale on hover */
 }
 
-.browse-play,
-.details-play {
-    background: #fff;
-    color: #000;
+.browse-action-group {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Outer border only */
+    border-radius: 9999px; /* Rounded pill shape */
+    height: 54px; /* Same height as Play button */
+    box-sizing: border-box;
+    overflow: hidden; /* Clips children to curved border */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    padding: 0; /* Remove internal padding to allow full edge-to-edge hover */
+    transition: all 0.2s ease;
+    position: relative; /* For absolutely positioned divider */
+}
+
+.browse-action-group:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.browse-actions .browse-action-group .browse-group-btn {
+    background: transparent;
     border: none !important;
-}
-
-.browse-info,
-.details-info {
-    background: rgba(107, 114, 128, 0.4);
+    height: 100%; /* Stretch to fill container height */
+    min-height: unset;
+    flex: 1; /* Make buttons share equal width */
     color: #fff;
-    backdrop-filter: blur(8px);
-    border: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0 22px; /* Internal horizontal padding */
+    transition: background 200ms ease, color 200ms ease; /* Smooth transition */
+    outline: none;
+    box-sizing: border-box;
+    box-shadow: none;
+    transform: none !important;
+    font-size: 16px;
+    font-weight: 600;
 }
 
-.browse-info:hover,
-.details-info:hover {
-    background: rgba(107, 114, 128, 0.6) !important;
-    color: #fff !important;
+/* Ensure the hover backgrounds perfectly match the outer pill shape curves */
+.browse-actions .browse-action-group .browse-group-btn:first-child {
+    border-radius: 9999px 0 0 9999px;
+    padding-left: 28px;
+}
+
+.browse-actions .browse-action-group .browse-group-btn:last-child {
+    border-radius: 0 9999px 9999px 0;
+    padding-right: 28px;
+}
+
+.browse-actions .browse-action-group .browse-group-btn:hover {
+    background: rgba(255, 255, 255, 0.1); /* Subtle hover background */
+}
+
+.browse-actions .browse-action-group .browse-group-btn.add-list-btn.active {
+    color: var(--accent);
+}
+
+.browse-divider {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 1px; /* Matches divider thickness */
+    height: 100%; /* Full height vertical line */
+    background: rgba(255, 255, 255, 0.08);
+    box-sizing: border-box;
+    pointer-events: none; /* Prevent divider from blocking clicks */
 }
 
 .hero-orbit {
@@ -890,15 +943,46 @@
         width: 100%;
         justify-content: center;
         gap: 8px;
+        flex-wrap: nowrap;
     }
 
-    .browse-actions button {
-        flex: 1;
-        max-width: 160px;
-        min-height: 48px;
-        padding: 0 16px;
+    .browse-actions .browse-play {
+        flex: 1 1 auto;
+        max-width: 180px;
+        height: 48px;
+        min-height: unset;
+        padding: 0 20px;
         font-size: 15px;
         justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 9999px;
+    }
+
+    .browse-action-group {
+        flex: 1 1 100%;
+        height: 48px;
+        font-size: 14px;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        border-radius: 9999px;
+    }
+
+    .browse-actions .browse-action-group .browse-group-btn {
+        height: 100%;
+        padding: 0 20px;
+    }
+
+    .browse-actions .browse-action-group .browse-group-btn:first-child {
+        border-radius: 9999px 0 0 9999px;
+        padding-left: 24px;
+    }
+
+    .browse-actions .browse-action-group .browse-group-btn:last-child {
+        border-radius: 0 9999px 9999px 0;
+        padding-right: 24px;
     }
 
     .hero-pagination-container {

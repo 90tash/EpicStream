@@ -1,6 +1,6 @@
 .people-details-page {
     min-height: 100vh;
-    background: var(--bg);
+    background: transparent;
     color: var(--text);
     padding-top: 80px;
     position: relative;

@@ -1,9 +1,10 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, Play, Star, X, LayoutGrid } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, X, LayoutGrid, Plus, Check } from "lucide-react";
 import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
+import { useWatchlistStore } from "../stores/watchlist";
 
 const formatRuntime = (runtime) => {
     if (!runtime) return "N/A";
@@ -108,6 +109,8 @@ const MovieDetails = () => {
     const [logoError, setLogoError] = useState(false);
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [logoFetched, setLogoFetched] = useState(false);
+
+    const { toggleItem, isItemInList } = useWatchlistStore();
 
 
     // Collection states
@@ -232,6 +235,7 @@ const MovieDetails = () => {
     const title = getTitle(movie);
     const releaseYear = (movie.release_date || movie.first_air_date || "").slice(0, 4);
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : null;
+    const inList = isItemInList(movie.id);
 
     // Sort parts of the collection based on user preference
     const sortedParts = collectionData?.parts ? [...collectionData.parts].sort((a, b) => {
@@ -281,18 +285,41 @@ const MovieDetails = () => {
                                     navigate(`/watch/movie/${id}`);
                                 }}
                             >
-                                <Play size={20} fill="currentColor" />
+                                <svg viewBox="0 0 24 24" width={20} height={20} fill="currentColor">
+                                    <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
+                                </svg>
                                 <span>Play</span>
                             </button>
-                            {collectionData && (
-                                <button className="details-action-btn" onClick={() => setShowCollectionModal(true)}>
-                                    <LayoutGrid size={20} />
-                                    <span>Collection</span>
+                            {collectionData ? (
+                                <div className="details-action-group">
+                                    <button 
+                                        className={`details-group-btn add-list-btn ${inList ? 'active' : ''}`}
+                                        onClick={() => toggleItem(movie, "movie")}
+                                        title={inList ? "Remove from List" : "Add to List"}
+                                        aria-label={inList ? "Remove from List" : "Add to List"}
+                                    >
+                                        {inList ? <Check size={20} /> : <Plus size={20} />}
+                                    </button>
+                                    <span className="details-divider" />
+                                    <button 
+                                        className="details-group-btn" 
+                                        onClick={() => setShowCollectionModal(true)}
+                                        title="Collection"
+                                        aria-label="Collection"
+                                    >
+                                        <LayoutGrid size={20} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <button 
+                                    className={`details-action-btn add-list-btn ${inList ? 'active' : ''}`}
+                                    onClick={() => toggleItem(movie, "movie")}
+                                    title={inList ? "Remove from List" : "Add to List"}
+                                    aria-label={inList ? "Remove from List" : "Add to List"}
+                                >
+                                    {inList ? <Check size={20} /> : <Plus size={20} />}
                                 </button>
                             )}
-                            <button className="details-action-btn" onClick={() => document.getElementById('similar')?.scrollIntoView({ behavior: 'smooth' })}>
-                                Similar
-                            </button>
                         </div>
                         <div className="details-hero-genre">
                             {movie.genres?.map(g => g.name).join(" • ") || "N/A"}
