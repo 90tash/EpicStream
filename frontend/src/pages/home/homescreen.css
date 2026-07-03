@@ -942,26 +942,28 @@
     .browse-actions {
         width: 100%;
         justify-content: center;
-        gap: 8px;
+        gap: 12px;
         flex-wrap: nowrap;
     }
 
     .browse-actions .browse-play {
         flex: 1 1 auto;
-        max-width: 180px;
+        max-width: 160px;
         height: 48px;
         min-height: unset;
         padding: 0 20px;
         font-size: 15px;
+        font-weight: 700;
         justify-content: center;
         display: inline-flex;
         align-items: center;
         gap: 10px;
         border-radius: 9999px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     }
 
     .browse-action-group {
-        flex: 1 1 100%;
+        flex: 0 0 auto;
         height: 48px;
         font-size: 14px;
         justify-content: center;
@@ -972,17 +974,17 @@
 
     .browse-actions .browse-action-group .browse-group-btn {
         height: 100%;
-        padding: 0 20px;
+        padding: 0 18px;
     }
 
     .browse-actions .browse-action-group .browse-group-btn:first-child {
         border-radius: 9999px 0 0 9999px;
-        padding-left: 24px;
+        padding-left: 22px;
     }
 
     .browse-actions .browse-action-group .browse-group-btn:last-child {
         border-radius: 0 9999px 9999px 0;
-        padding-right: 24px;
+        padding-right: 22px;
     }
 
     .hero-pagination-container {

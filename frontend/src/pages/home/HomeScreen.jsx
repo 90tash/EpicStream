@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check, Plus, Bookmark } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
@@ -576,7 +576,7 @@ const HomeScreen = () => {
                                     title={heroInList ? "Remove from List" : "Add to List"}
                                     aria-label={heroInList ? "Remove from List" : "Add to List"}
                                 >
-                                    {heroInList ? <Check size={20} /> : <Plus size={20} />}
+                                    {heroInList ? <Bookmark size={20} fill="currentColor" /> : <Plus size={20} />}
                                 </button>
                                 <span className="browse-divider" />
                                 <button

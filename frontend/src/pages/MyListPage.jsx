@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, ChevronDown, List, Plus, Star, Shuffle, Trash2, FolderClosed, Pencil, Check } from "lucide-react";
+import { ChevronLeft, ChevronDown, List, Plus, Star, Shuffle, Trash2, FolderClosed, Pencil, Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
@@ -84,7 +84,6 @@ const MyListPage = () => {
     const handleDeleteList = (id, name) => {
         if (window.confirm(`Are you sure you want to delete the list "${name}"?`)) {
             deleteList(id);
-            toast.success(`List "${name}" deleted.`);
             if (expandedListId === id) {
                 setExpandedListId(null);
             }
@@ -154,7 +153,7 @@ const MyListPage = () => {
                                 onClick={handleShuffleName}
                                 title="Suggest a random list name"
                             >
-                                <Shuffle size={18} />
+                                <Shuffle size={14} />
                             </button>
                             <button
                                 type="submit"
@@ -183,37 +182,24 @@ const MyListPage = () => {
                                     className="list-row-item"
                                     onClick={() => setExpandedListId(isExpanded ? null : list.id)}
                                 >
-                                    <div className="row-preview-container">
-                                        {bgPoster ? (
-                                            <img src={bgPoster} alt="" className="row-bg-poster" />
-                                        ) : (
-                                            <div className="row-gradient-bg">
-                                                <FolderClosed size={20} />
-                                            </div>
-                                        )}
-                                    </div>
-                                    
                                     <div className="row-details">
                                         <h3 className="row-name">{list.name}</h3>
                                         <p className="row-meta">
-                                            {list.isDefault ? "Default list" : "Custom list"} • {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
+                                            {list.isDefault ? "Default list • " : ""}
+                                            {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
                                         </p>
                                     </div>
 
-                                    <div className="row-arrow">
-                                        <ChevronDown size={22} strokeWidth={2.5} />
-                                    </div>
-                                </div>
-
-                                {isExpanded && (
-                                    <div className="row-expanded-content">
-                                        <div className="expanded-actions-header">
-                                            <span className="expanded-section-title">List Items</span>
-                                            <div className="expanded-actions-buttons">
+                                    <div className="list-row-right-corner">
+                                        {isExpanded && (
+                                            <div className="expanded-actions-buttons" onClick={(e) => e.stopPropagation()}>
                                                 {list.items.length > 0 && (
                                                     <button 
                                                         className={`expanded-action-btn edit-btn ${isEditingList ? 'active' : ''}`}
-                                                        onClick={() => setIsEditingList(!isEditingList)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setIsEditingList(!isEditingList);
+                                                        }}
                                                         title={isEditingList ? "Done editing" : "Edit list items"}
                                                     >
                                                         {isEditingList ? <Check size={16} /> : <Pencil size={16} />}
@@ -222,14 +208,25 @@ const MyListPage = () => {
                                                 {!list.isDefault && (
                                                     <button 
                                                         className="expanded-action-btn delete-list-btn"
-                                                        onClick={() => handleDeleteList(list.id, list.name)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteList(list.id, list.name);
+                                                        }}
                                                         title="Delete entire list"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
                                                 )}
                                             </div>
+                                        )}
+                                        <div className="list-row-arrow">
+                                            <ChevronDown size={22} strokeWidth={2.5} />
                                         </div>
+                                    </div>
+                                </div>
+
+                                {isExpanded && (
+                                    <div className="row-expanded-content">
 
                                         {list.items.length === 0 ? (
                                             <div className="row-empty-content">
@@ -257,31 +254,21 @@ const MyListPage = () => {
                                                                 alt={item.title} 
                                                                 loading="lazy"
                                                             />
-                                                            <button
-                                                                className="remove-item-badge"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    toggleItemInList(list.id, item, item.type);
-                                                                    toast.success(`Removed from "${list.name}"`);
-                                                                }}
-                                                                title="Remove from list"
-                                                            >
-                                                                &times;
-                                                            </button>
+                                                            {isEditingList && (
+                                                                <button
+                                                                    className="remove-item-badge"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        toggleItemInList(list.id, item, item.type);
+                                                                        toast.success(`Removed from "${list.name}"`);
+                                                                    }}
+                                                                    title="Remove from list"
+                                                                >
+                                                                    <X size={14} />
+                                                                </button>
+                                                            )}
                                                         </div>
                                                         <span className="my-list-title">{item.title}</span>
-                                                        <div className="my-list-meta">
-                                                            {item.vote_average > 0 && (
-                                                                <span className="rating">
-                                                                    <Star size={11} fill="currentColor" />
-                                                                    {item.vote_average.toFixed(1)}
-                                                                </span>
-                                                            )}
-                                                            <span>
-                                                                {item.vote_average > 0 && <span className="bullet"> • </span>}
-                                                                {item.type === "movie" ? "Movie" : "TV Show"}
-                                                            </span>
-                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>

@@ -1,6 +1,6 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef, Fragment } from "react";
-import { ChevronLeft, Star, ChevronDown, LayoutGrid, Plus, Check, X } from "lucide-react";
+import { ChevronLeft, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark } from "lucide-react";
 import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
@@ -336,14 +336,14 @@ const TvDetails = () => {
                                 <span>Play</span>
                             </button>
 
-                            <div className="add-to-list-wrapper" ref={dropdownRef} style={{ position: 'relative', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                            <div className="add-to-list-wrapper" ref={dropdownRef}>
                                 <button 
                                     className={`details-action-btn add-list-btn ${inAnyList ? 'active' : ''}`}
                                     onClick={() => setShowListDropdown(!showListDropdown)}
                                     title="Add to List"
                                     aria-label="Add to List"
                                 >
-                                    {inAnyList ? <Check size={20} /> : <Plus size={20} />}
+                                    {inAnyList ? <Bookmark size={20} fill="currentColor" /> : <Plus size={20} />}
                                 </button>
 
                                 <button 
@@ -363,7 +363,7 @@ const TvDetails = () => {
                                                 onClick={() => toggleItemInList("watchlist", tv, "tv")}
                                             >
                                                 <span className="season-option-text">My Watchlist</span>
-                                                {activeLists.includes("watchlist") && <div className="active-dot" />}
+                                                {activeLists.includes("watchlist") && <Check size={16} className="active-tick" />}
                                             </button>
 
                                             {customLists.map(list => (
@@ -373,7 +373,7 @@ const TvDetails = () => {
                                                     onClick={() => toggleItemInList(list.id, tv, "tv")}
                                                 >
                                                     <span className="season-option-text">{list.name}</span>
-                                                    {activeLists.includes(list.id) && <div className="active-dot" />}
+                                                    {activeLists.includes(list.id) && <Check size={16} className="active-tick" />}
                                                 </button>
                                             ))}
                                         </div>
@@ -615,7 +615,7 @@ const TvDetails = () => {
                                 onClick={() => toggleItemInList("watchlist", tv, "tv")}
                             >
                                 <span className="season-option-text">My Watchlist</span>
-                                {activeLists.includes("watchlist") && <div className="active-dot" />}
+                                {activeLists.includes("watchlist") && <Check size={16} className="active-tick" />}
                             </button>
 
                             {customLists.map(list => (
@@ -625,7 +625,7 @@ const TvDetails = () => {
                                     onClick={() => toggleItemInList(list.id, tv, "tv")}
                                 >
                                     <span className="season-option-text">{list.name}</span>
-                                    {activeLists.includes(list.id) && <div className="active-dot" />}
+                                    {activeLists.includes(list.id) && <Check size={16} className="active-tick" />}
                                 </button>
                             ))}
                         </div>

@@ -37,12 +37,15 @@ const Navbar = () => {
                 </Link>
             </div>
             <div className="right-header-items">
-                <Link to="/mylist" className="bookmark-button-link" aria-label="My List">
-                    <Bookmark className="bookmark-icon" />
-                </Link>
-                <a href="#" className='search-button-link' onClick={handleSearchClick} aria-label="Search">
-                    <Search className='search-icon' />
-                </a>
+                <div className="navbar-pill-group">
+                    <Link to="/mylist" className="navbar-pill-btn bookmark-btn" aria-label="My List">
+                        <Bookmark className="bookmark-icon" />
+                    </Link>
+                    <span className="navbar-pill-divider" />
+                    <a href="#" className="navbar-pill-btn search-btn" onClick={handleSearchClick} aria-label="Search">
+                        <Search className="search-icon" />
+                    </a>
+                </div>
             </div>
         </header>
     );

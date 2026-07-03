@@ -584,6 +584,11 @@
     border-radius: 50%;
 }
 
+.active-tick {
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
 .episode-list {
     display: flex;
     flex-direction: column;
@@ -1053,18 +1058,20 @@
     .details-hero-meta { justify-content: center; gap: 10px; font-size: 12px; }
     .details-hero-overview { font-size: 13.5px; -webkit-line-clamp: 3; margin: 0; }
     .details-actions {
-        width: 90%;
-        max-width: 400px;
+        width: 100%;
+        max-width: 440px;
         display: flex;
         flex-wrap: nowrap;
         justify-content: center;
         gap: 8px;
-        margin: 8px 0; /* Specific gap on mobile to separate from genre and rating text */
+        margin: 12px auto;
+        padding: 0 16px;
+        box-sizing: border-box;
     }
     .details-actions .details-play {
-        flex: 1 1 auto;
-        max-width: 180px;
-        height: 48px; /* Defined mobile height */
+        flex: 1;
+        max-width: none;
+        height: 48px;
         min-height: unset;
         padding: 0 20px;
         font-size: 15px;
@@ -1072,20 +1079,11 @@
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        border-radius: 9999px; /* Ensure fully rounded on mobile */
+        border-radius: 9999px;
     }
-    .details-action-group {
-        flex: 1 1 100%; /* Full width on mobile to stack neatly */
-        height: 48px; /* Matching mobile height */
-        font-size: 14px;
-        justify-content: center;
-        display: flex;
-        align-items: center;
-        border-radius: 9999px; /* Ensure fully rounded on mobile */
-    }
-    .details-group-btn {
-        height: 100%;
-        padding: 0 20px;
+    .add-to-list-wrapper {
+        gap: 8px;
+        flex-shrink: 0;
     }
     .details-group-btn:first-child {
         border-radius: 9999px 0 0 9999px;
@@ -1550,6 +1548,10 @@
 
 /* Make sure dropdown does not get clipped on detail screens */
 .add-to-list-wrapper {
+    position: relative;
+    display: flex;
+    gap: 16px;
+    align-items: center;
     z-index: 50;
 }
 

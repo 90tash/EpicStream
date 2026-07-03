@@ -39,6 +39,10 @@
 }
 
 .my-list-empty-header h1 {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
     margin: 0;
     font-size: clamp(26px, 3vw, 32px);
     line-height: 1.02;
@@ -46,9 +50,17 @@
     letter-spacing: 0;
 }
 
+.my-list-empty-header h1::before {
+    content: "";
+    width: 4px;
+    height: 0.85em;
+    border-radius: 4px;
+    background: var(--accent);
+}
+
 .my-list-empty-header p {
     margin: 0;
-    color: rgba(246, 247, 251, 0.55);
+    color: var(--accent);
     font-size: clamp(13px, 1.4vw, 14px);
     line-height: 1.4;
     font-weight: 500;
@@ -94,28 +106,32 @@
 }
 
 .my-list-action {
-    min-height: 49px;
+    min-height: 40px;
     border-radius: 999px;
-    padding: 0 26px;
+    padding: 0 18px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     background: #fff;
     color: #050607;
-    font-size: 15px;
+    font-size: 13.5px;
     font-weight: 700;
     text-decoration: none;
     box-shadow: none;
-    border: none;
+    border: 1px solid transparent;
     outline: none;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition: all 0.2s ease;
+    transform: scale(1);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .my-list-action:hover {
     background: rgba(255, 255, 255, 0.88);
-    transform: translateY(-1px);
+    transform: scale(1.03) translateY(-1px);
 }
 
 @media (max-width: 640px) {
@@ -155,9 +171,9 @@
     }
 
     .my-list-action {
-        min-height: 44px;
-        padding: 0 18px;
-        font-size: 14px;
+        min-height: 34px;
+        padding: 0 14px;
+        font-size: 12px;
     }
 }
 
@@ -299,13 +315,14 @@
     margin: 12px 0 32px;
     width: 100%;
     box-sizing: border-box;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.2s ease;
     animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .inline-creation-bar:focus-within {
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+    background: rgba(255, 38, 51, 0.08);
+    border-color: rgba(255, 38, 51, 0.2);
+    box-shadow: 0 0 0 3px rgba(255, 38, 51, 0.06);
 }
 
 .inline-creation-input {
@@ -333,8 +350,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 12px;
@@ -344,8 +361,9 @@
 }
 
 .shuffle-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    background: rgba(255, 38, 51, 0.1);
+    color: var(--accent);
+    border-color: rgba(255, 38, 51, 0.2);
     transform: scale(1.05);
 }
 
@@ -354,27 +372,28 @@
 }
 
 .create-btn {
-    height: 42px;
-    padding: 0 24px;
+    height: 36px;
+    padding: 0 18px;
     border-radius: 999px;
     font-weight: 700;
-    font-size: 14px;
-    background: #fff;
-    color: #050607;
-    border: none;
+    font-size: 13px;
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid transparent;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .create-btn:disabled {
-    background: rgba(255, 255, 255, 0.3);
-    color: rgba(0, 0, 0, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.05);
     cursor: not-allowed;
 }
 
 .create-btn:not(:disabled):hover {
-    background: rgba(255, 255, 255, 0.9);
-    transform: scale(1.02);
+    background: #ff4754;
+    transform: scale(1.03) translateY(-1px);
 }
 
 .create-btn:not(:disabled):active {
@@ -581,38 +600,37 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background: rgba(5, 6, 7, 0.85);
+    background: rgba(5, 6, 7, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 18px;
-    font-weight: 300;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: #fff;
+    display: grid;
+    place-items: center;
     cursor: pointer;
-    opacity: 0;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 10;
-}
-
-.my-list-item:hover .remove-item-badge {
-    opacity: 1;
+    transition: all 0.2s ease;
+    transform: scale(1);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .remove-item-badge:hover {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-    transform: scale(1.08);
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
+    transform: scale(1.1);
 }
 
 .my-list-action.active {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
     color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.my-list-action.active:hover {
+    background: rgba(255, 255, 255, 0.18);
 }
 
 /* Vertical List View Styles */
@@ -648,12 +666,8 @@
     color: var(--accent);
 }
 
-.list-row-item:hover .row-arrow {
+.list-row-item:hover .list-row-arrow {
     color: var(--accent);
-}
-
-.list-row-container:not(.expanded) .list-row-item:hover .row-arrow {
-    transform: translateX(4px);
 }
 
 .row-preview-container {
@@ -687,7 +701,7 @@
 
 .row-details {
     flex: 1;
-    margin-left: 16px;
+    margin-left: 0;
     text-align: left;
     min-width: 0;
 }
@@ -713,12 +727,25 @@
     text-overflow: ellipsis;
 }
 
-.row-arrow {
+.list-row-right-corner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.list-row-arrow {
     color: rgba(255, 255, 255, 0.65);
     display: flex;
     align-items: center;
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
     flex-shrink: 0;
+}
+
+.list-row-arrow svg {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: center;
 }
 
 .list-row-container {
@@ -735,13 +762,16 @@
     border-bottom: none;
 }
 
-.list-row-item:hover .row-arrow {
+.list-row-item:hover .list-row-arrow {
     color: var(--accent);
 }
 
-.list-row-container.expanded .row-arrow {
-    transform: rotate(180deg);
+.list-row-container.expanded .list-row-arrow {
     color: var(--accent);
+}
+
+.list-row-container.expanded .list-row-arrow svg {
+    transform: rotate(180deg);
 }
 
 .expanded-actions-header {
@@ -772,18 +802,23 @@
     justify-content: center;
     width: 36px;
     height: 36px;
+    padding: 0 !important;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(255, 255, 255, 0.04);
     color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s ease;
+    transform: scale(1);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .expanded-action-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    transform: scale(1.06);
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
+    transform: scale(1.1);
 }
 
 .expanded-action-btn:active {
@@ -797,47 +832,34 @@
 }
 
 .expanded-action-btn.delete-list-btn {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.08);
-    border-color: rgba(239, 68, 68, 0.15);
+    color: var(--accent);
+    background: rgba(255, 38, 51, 0.08);
+    border-color: rgba(255, 38, 51, 0.15);
 }
 
 .expanded-action-btn.delete-list-btn:hover {
-    background: #ef4444;
+    background: var(--accent);
     color: #fff;
-    border-color: #ef4444;
+    border-color: var(--accent);
 }
 
 /* Edit Mode styling for grid items */
 .row-items-grid.grid-editing .my-list-item {
     cursor: pointer;
+    animation: listWiggle 3.5s ease-in-out infinite;
 }
 
-.row-items-grid.grid-editing .my-list-item:hover .card-img-wrapper {
-    border-color: rgba(239, 68, 68, 0.45);
-    box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
-}
 
-.row-items-grid.grid-editing .remove-item-badge {
-    opacity: 1 !important;
-    background: #ef4444 !important;
-    color: #fff !important;
-    border-color: #ef4444 !important;
-    transform: scale(1.15);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-    animation: pulseRemove 1.5s infinite;
-}
-
-@keyframes pulseRemove {
-    0% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
-    }
-    70% {
-        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-    }
+@keyframes listWiggle {
+    0% { transform: rotate(0deg); }
+    3.5% { transform: rotate(1.2deg); }
+    7% { transform: rotate(-1.2deg); }
+    10.5% { transform: rotate(1.2deg); }
+    14% { transform: rotate(-1.2deg); }
+    17.5% { transform: rotate(1.2deg); }
+    21% { transform: rotate(-1.2deg); }
+    24.5% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
 }
 
 .row-expanded-content {
@@ -917,32 +939,39 @@
     }
 
     .inline-creation-bar {
-        flex-direction: column;
-        align-items: stretch;
-        border-radius: 20px;
-        padding: 16px;
-        gap: 12px;
-    }
-    
-    .inline-creation-input {
-        padding: 4px 8px;
-        font-size: 15px;
-    }
-
-    .inline-creation-actions {
-        justify-content: flex-end;
+        flex-direction: row;
+        align-items: center;
+        border-radius: 999px;
+        padding: 6px 6px 6px 16px;
         gap: 8px;
     }
     
-    .shuffle-btn, .create-btn {
-        height: 38px;
+    .inline-creation-input {
+        padding: 4px 0;
+        font-size: 14px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .inline-creation-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    
+    .shuffle-btn {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
     }
     
     .create-btn {
-        padding: 0 18px;
-        font-size: 13px;
-        flex: 1;
-        max-width: 120px;
+        height: 30px;
+        padding: 0 12px;
+        font-size: 12px;
+        flex: none;
+        max-width: none;
     }
     
     .lists-vertical-list {
