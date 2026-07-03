@@ -5,6 +5,7 @@ import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
+import { useCustomListsStore } from "../stores/customLists";
 
 const formatRuntime = (runtime) => {
     if (!runtime) return "N/A";
@@ -111,6 +112,32 @@ const MovieDetails = () => {
     const [logoFetched, setLogoFetched] = useState(false);
 
     const { toggleItem, isItemInList } = useWatchlistStore();
+    const { customLists, toggleItemInList, getListsForItem, createList } = useCustomListsStore();
+    const [showListDropdown, setShowListDropdown] = useState(false);
+    const [isCreatingInline, setIsCreatingInline] = useState(false);
+    const [newListNameInline, setNewListNameInline] = useState("");
+    const dropdownRef = useRef(null);
+    const inlineInputRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowListDropdown(false);
+                setIsCreatingInline(false);
+                setNewListNameInline("");
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (isCreatingInline && inlineInputRef.current) {
+            inlineInputRef.current.focus();
+        }
+    }, [isCreatingInline]);
 
 
     // Collection states
@@ -235,7 +262,24 @@ const MovieDetails = () => {
     const title = getTitle(movie);
     const releaseYear = (movie.release_date || movie.first_air_date || "").slice(0, 4);
     const rating = movie.vote_average ? movie.vote_average.toFixed(1) : null;
+    const activeLists = getListsForItem(movie.id);
+    const inAnyList = activeLists.length > 0;
     const inList = isItemInList(movie.id);
+
+    const handleCreateListInline = (e) => {
+        if (e) e.preventDefault();
+        const trimmed = newListNameInline.trim();
+        if (!trimmed) return;
+        const res = createList(trimmed);
+        if (res.success) {
+            toast.success(`List "${res.list.name}" created!`);
+            toggleItemInList(res.list.id, movie, "movie");
+            setNewListNameInline("");
+            setIsCreatingInline(false);
+        } else {
+            toast.error(res.error || "Failed to create list.");
+        }
+    };
 
     // Sort parts of the collection based on user preference
     const sortedParts = collectionData?.parts ? [...collectionData.parts].sort((a, b) => {
@@ -290,36 +334,88 @@ const MovieDetails = () => {
                                 </svg>
                                 <span>Play</span>
                             </button>
-                            {collectionData ? (
-                                <div className="details-action-group">
+                            <div className="add-to-list-wrapper" ref={dropdownRef} style={{ position: 'relative', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                                <button 
+                                    className={`details-action-btn add-list-btn ${inAnyList ? 'active' : ''}`}
+                                    onClick={() => setShowListDropdown(!showListDropdown)}
+                                    title="Add to List"
+                                    aria-label="Add to List"
+                                >
+                                    {inAnyList ? <Check size={20} /> : <Plus size={20} />}
+                                </button>
+
+                                {collectionData && (
                                     <button 
-                                        className={`details-group-btn add-list-btn ${inList ? 'active' : ''}`}
-                                        onClick={() => toggleItem(movie, "movie")}
-                                        title={inList ? "Remove from List" : "Add to List"}
-                                        aria-label={inList ? "Remove from List" : "Add to List"}
-                                    >
-                                        {inList ? <Check size={20} /> : <Plus size={20} />}
-                                    </button>
-                                    <span className="details-divider" />
-                                    <button 
-                                        className="details-group-btn" 
+                                        className="details-action-btn" 
                                         onClick={() => setShowCollectionModal(true)}
                                         title="Collection"
                                         aria-label="Collection"
                                     >
                                         <LayoutGrid size={20} />
                                     </button>
-                                </div>
-                            ) : (
-                                <button 
-                                    className={`details-action-btn add-list-btn ${inList ? 'active' : ''}`}
-                                    onClick={() => toggleItem(movie, "movie")}
-                                    title={inList ? "Remove from List" : "Add to List"}
-                                    aria-label={inList ? "Remove from List" : "Add to List"}
-                                >
-                                    {inList ? <Check size={20} /> : <Plus size={20} />}
-                                </button>
-                            )}
+                                )}
+
+                                {showListDropdown && (
+                                    <div className="lists-dropdown-portal-wrapper">
+                                        <div className="lists-dropdown-overlay" onClick={() => setShowListDropdown(false)} />
+                                        <div className="season-dropdown-menu lists-menu">
+                                            <div className="dropdown-title">Add to List</div>
+                                            <div className="dropdown-options">
+                                                <button 
+                                                    className={`season-option ${activeLists.includes("watchlist") ? 'active' : ''}`}
+                                                    onClick={() => toggleItemInList("watchlist", movie, "movie")}
+                                                >
+                                                    <span className="season-option-text">My Watchlist</span>
+                                                    {activeLists.includes("watchlist") && <div className="active-dot" />}
+                                                </button>
+
+                                                {customLists.map(list => (
+                                                    <button 
+                                                        key={list.id}
+                                                        className={`season-option ${activeLists.includes(list.id) ? 'active' : ''}`}
+                                                        onClick={() => toggleItemInList(list.id, movie, "movie")}
+                                                    >
+                                                        <span className="season-option-text">{list.name}</span>
+                                                        {activeLists.includes(list.id) && <div className="active-dot" />}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            <div className="dropdown-divider" />
+
+                                            {isCreatingInline ? (
+                                                <form className="dropdown-inline-create" onSubmit={handleCreateListInline}>
+                                                    <input 
+                                                        ref={inlineInputRef}
+                                                        type="text"
+                                                        className="inline-create-input"
+                                                        placeholder="New list name..."
+                                                        value={newListNameInline}
+                                                        onChange={(e) => setNewListNameInline(e.target.value.slice(0, 50))}
+                                                        maxLength={50}
+                                                    />
+                                                    <button 
+                                                        type="submit" 
+                                                        className="inline-create-submit" 
+                                                        disabled={!newListNameInline.trim()}
+                                                    >
+                                                        <Plus size={12} />
+                                                    </button>
+                                                </form>
+                                            ) : (
+                                                <button 
+                                                    className="season-option"
+                                                    style={{ color: 'var(--accent)', justifyContent: 'flex-start', gap: '8px' }}
+                                                    onClick={() => setIsCreatingInline(true)}
+                                                >
+                                                    <Plus size={14} />
+                                                    <span className="season-option-text">Create New List</span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="details-hero-genre">
                             {movie.genres?.map(g => g.name).join(" • ") || "N/A"}
