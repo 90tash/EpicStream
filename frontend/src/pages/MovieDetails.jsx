@@ -1,7 +1,8 @@
-import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { useLocation, useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useRef, Fragment } from "react";
 import { ChevronLeft, ChevronRight, Star, X, LayoutGrid, Plus, Check, Bookmark } from "lucide-react";
 import "./movieTvDetails.css";
+import toast from "react-hot-toast";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
@@ -106,7 +107,7 @@ const MovieDetails = () => {
     const [movie, setMovie] = useState(() => state?.movie || null);
     const [cast, setCast] = useState([]);
     const [similarMovies, setSimilarMovies] = useState([]);
-    const [director, setDirector] = useState("");
+    const [director, setDirector] = useState(null);
     const [logoError, setLogoError] = useState(false);
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [logoFetched, setLogoFetched] = useState(false);
@@ -215,7 +216,7 @@ const MovieDetails = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        setDirector("");
+        setDirector(null);
         setLogoError(false);
         setShowFullOverview(false);
         setLogoFetched(false);
@@ -260,7 +261,7 @@ const MovieDetails = () => {
                 setSimilarMovies(recsData.slice(0, 10));
 
                 const directorObj = castData.crew?.find(member => member.job === "Director");
-                setDirector(directorObj ? directorObj.name : "");
+                setDirector(directorObj ? { name: directorObj.name, id: directorObj.id } : null);
             } catch (error) {
                 console.error("Error fetching movie details:", error);
                 setLogoFetched(true);
@@ -299,6 +300,7 @@ const MovieDetails = () => {
                 inlineInputRefMobile.current.value = "";
                 inlineInputRefMobile.current.blur();
             }
+            setIsCreatingInline(false);
         } else {
             toast.error(res.error || "Failed to create list.");
         }
@@ -419,6 +421,7 @@ const MovieDetails = () => {
                                                          type="submit" 
                                                          className="inline-create-submit-tick" 
                                                          disabled={!newListNameInline.trim()}
+                                                         onClick={handleCreateListInline}
                                                          aria-label="Create List"
                                                      >
                                                          <Check size={16} />
@@ -455,7 +458,13 @@ const MovieDetails = () => {
                         <div className="director-synopsis-group">
                             <div className="details-hero-director">
                                 <span className="director-label">Director:</span>
-                                <span className="director-value">{director || "N/A"}</span>
+                                <span className="director-value">
+                                    {director ? (
+                                        <Link to={`/person/${director.id}`} className="person-link">
+                                            {director.name}
+                                        </Link>
+                                    ) : "N/A"}
+                                </span>
                             </div>
                             {movie.overview && (
                                 <div className="synopsis-container">
@@ -696,6 +705,7 @@ const MovieDetails = () => {
                                         type="submit" 
                                         className="inline-create-submit-tick" 
                                         disabled={!newListNameInline.trim()}
+                                        onClick={handleCreateListInline}
                                         aria-label="Create List"
                                     >
                                         <Check size={16} />

@@ -191,6 +191,18 @@
     font-weight: 600;
 }
 
+.person-link {
+    color: #f8fafc;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.person-link:hover,
+.person-link:active {
+    color: var(--accent);
+}
+
 .synopsis-container {
     max-width: 580px;
     margin-top: 0;
@@ -332,7 +344,7 @@
     background: #fff; /* White background */
     border: none; /* No border */
     border-radius: 9999px; /* Fully rounded pill shape */
-    padding: 0 28px; /* Balanced horizontal padding */
+    padding: 0 20px; /* Reduced horizontal padding for compact width */
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1063,17 +1075,18 @@
         display: flex;
         flex-wrap: nowrap;
         justify-content: center;
-        gap: 8px;
+        align-items: center;
+        gap: 12px;
         margin: 12px auto;
         padding: 0 16px;
         box-sizing: border-box;
     }
     .details-actions .details-play {
-        flex: 1;
-        max-width: none;
+        flex: none;
+        width: 120px;
         height: 48px;
         min-height: unset;
-        padding: 0 20px;
+        padding: 0;
         font-size: 15px;
         justify-content: center;
         display: inline-flex;
@@ -1082,8 +1095,10 @@
         border-radius: 9999px;
     }
     .add-to-list-wrapper {
-        gap: 8px;
+        gap: 12px;
         flex-shrink: 0;
+        display: flex;
+        align-items: center;
     }
     .details-group-btn:first-child {
         border-radius: 9999px 0 0 9999px;

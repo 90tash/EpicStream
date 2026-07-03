@@ -1,7 +1,8 @@
-import { useLocation, useParams, useNavigate } from "react-router-dom";
+import { useLocation, useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useRef, Fragment } from "react";
 import { ChevronLeft, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark } from "lucide-react";
 import "./movieTvDetails.css";
+import toast from "react-hot-toast";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
@@ -284,6 +285,7 @@ const TvDetails = () => {
                 inlineInputRefMobile.current.value = "";
                 inlineInputRefMobile.current.blur();
             }
+            setIsCreatingInline(false);
         } else {
             toast.error(res.error || "Failed to create list.");
         }
@@ -396,6 +398,7 @@ const TvDetails = () => {
                                                         type="submit" 
                                                         className="inline-create-submit-tick" 
                                                         disabled={!newListNameInline.trim()}
+                                                        onClick={handleCreateListInline}
                                                         aria-label="Create List"
                                                     >
                                                         <Check size={16} />
@@ -430,12 +433,21 @@ const TvDetails = () => {
                             <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
                         </div>
                         <div className="director-synopsis-group">
-                            {tv.created_by?.length > 0 && (
-                                <div className="details-hero-director">
-                                    <span className="director-label">Creator:</span>
-                                    <span className="director-value">{tv.created_by.map(c => c.name).join(", ")}</span>
-                                </div>
-                            )}
+                             {tv.created_by?.length > 0 && (
+                                 <div className="details-hero-director">
+                                     <span className="director-label">Creator:</span>
+                                     <span className="director-value">
+                                         {tv.created_by.map((c, idx) => (
+                                             <Fragment key={c.id}>
+                                                 {idx > 0 && ", "}
+                                                 <Link to={`/person/${c.id}`} className="person-link">
+                                                     {c.name}
+                                                 </Link>
+                                             </Fragment>
+                                         ))}
+                                     </span>
+                                 </div>
+                             )}
                             {tv.overview && (
                                 <div className="synopsis-container">
                                     <p className="details-hero-overview">
@@ -648,6 +660,7 @@ const TvDetails = () => {
                                         type="submit" 
                                         className="inline-create-submit-tick" 
                                         disabled={!newListNameInline.trim()}
+                                        onClick={handleCreateListInline}
                                         aria-label="Create List"
                                     >
                                         <Check size={16} />
