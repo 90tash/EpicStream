@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, List, Plus, Star, Shuffle, Trash2, FolderClosed } from "lucide-react";
+import { ChevronLeft, ChevronDown, List, Plus, Star, Shuffle, Trash2, FolderClosed, Pencil, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
@@ -32,8 +32,13 @@ const MyListPage = () => {
 
     const [isCreationBarOpen, setIsCreationBarOpen] = useState(false);
     const [listName, setListName] = useState("");
-    const [activeListId, setActiveListId] = useState(null);
+    const [expandedListId, setExpandedListId] = useState(null);
+    const [isEditingList, setIsEditingList] = useState(false);
     const inputRef = useRef(null);
+
+    useEffect(() => {
+        setIsEditingList(false);
+    }, [expandedListId]);
 
     useEffect(() => {
         document.title = "My Lists - EpicStream";
@@ -80,7 +85,9 @@ const MyListPage = () => {
         if (window.confirm(`Are you sure you want to delete the list "${name}"?`)) {
             deleteList(id);
             toast.success(`List "${name}" deleted.`);
-            setActiveListId(null);
+            if (expandedListId === id) {
+                setExpandedListId(null);
+            }
         }
     };
 
@@ -96,208 +103,196 @@ const MyListPage = () => {
     ];
 
     const totalListsCount = allLists.length;
-    const activeList = allLists.find(l => l.id === activeListId);
-
-    // If active list was deleted or not found, fallback to null
-    useEffect(() => {
-        if (activeListId && !activeList) {
-            setActiveListId(null);
-        }
-    }, [activeListId, activeList]);
 
     return (
         <div className="my-list-page">
             {/* Back to Home Button */}
             <button 
                 className="back-btn-simple" 
-                onClick={() => {
-                    if (activeListId) {
-                        setActiveListId(null);
-                    } else {
-                        navigate("/");
-                    }
-                }} 
-                aria-label="Go back"
+                onClick={() => navigate("/")} 
+                aria-label="Go back to Home"
             >
                 <ChevronLeft size={24} />
             </button>
 
-            {!activeListId ? (
-                // --- Lists Dashboard View ---
-                <main className="my-list-empty">
-                    <div className="my-list-empty-topbar">
-                        <header className="my-list-empty-header">
-                            <h1>My Lists</h1>
-                            <p>{totalListsCount} / 15 lists</p>
-                        </header>
-                        <button 
-                            className={`my-list-action ${isCreationBarOpen ? 'active' : ''}`}
-                            onClick={() => setIsCreationBarOpen(!isCreationBarOpen)}
-                            disabled={totalListsCount >= 15 && !isCreationBarOpen}
-                        >
-                            {isCreationBarOpen ? "Cancel" : (
-                                <>
-                                    <Plus size={18} />
-                                    New List
-                                </>
-                            )}
-                        </button>
-                    </div>
+            <main className="my-list-empty">
+                <div className="my-list-empty-topbar">
+                    <header className="my-list-empty-header">
+                        <h1>My Lists</h1>
+                        <p>{totalListsCount} / 15 lists</p>
+                    </header>
+                    <button 
+                        className={`my-list-action ${isCreationBarOpen ? 'active' : ''}`}
+                        onClick={() => setIsCreationBarOpen(!isCreationBarOpen)}
+                        disabled={totalListsCount >= 15 && !isCreationBarOpen}
+                    >
+                        {isCreationBarOpen ? "Cancel" : (
+                            <>
+                                <Plus size={18} />
+                                New List
+                            </>
+                        )}
+                    </button>
+                </div>
 
-                    {/* Inline Creation Bar */}
-                    {isCreationBarOpen && (
-                        <form className="inline-creation-bar" onSubmit={handleCreateList}>
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                className="inline-creation-input"
-                                placeholder="List name..."
-                                value={listName}
-                                onChange={(e) => setListName(e.target.value.slice(0, 50))}
-                                maxLength={50}
-                            />
-                            <div className="inline-creation-actions">
-                                <button
-                                    type="button"
-                                    className="shuffle-btn"
-                                    onClick={handleShuffleName}
-                                    title="Suggest a random list name"
-                                >
-                                    <Shuffle size={18} />
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="create-btn"
-                                    disabled={listName.trim().length === 0}
-                                >
-                                    Create
-                                </button>
-                            </div>
-                        </form>
-                    )}
+                {/* Inline Creation Bar */}
+                {isCreationBarOpen && (
+                    <form className="inline-creation-bar" onSubmit={handleCreateList}>
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            className="inline-creation-input"
+                            placeholder="List name..."
+                            value={listName}
+                            onChange={(e) => setListName(e.target.value.slice(0, 50))}
+                            maxLength={50}
+                        />
+                        <div className="inline-creation-actions">
+                            <button
+                                type="button"
+                                className="shuffle-btn"
+                                onClick={handleShuffleName}
+                                title="Suggest a random list name"
+                            >
+                                <Shuffle size={18} />
+                            </button>
+                            <button
+                                type="submit"
+                                className="create-btn"
+                                disabled={listName.trim().length === 0}
+                            >
+                                Create
+                            </button>
+                        </div>
+                    </form>
+                )}
 
-                    {/* Grid of Lists */}
-                    <div className="lists-folder-grid">
-                        {allLists.map((list) => {
-                            // Take first item poster path for visual card collage background
-                            const firstItem = list.items[0];
-                            const bgPoster = firstItem ? imageUrl(firstItem.poster_path, "w342") : null;
+                {/* Vertical Expandable List of Folders */}
+                <div className="lists-vertical-list">
+                    {allLists.map((list) => {
+                        const isExpanded = expandedListId === list.id;
+                        const firstItem = list.items[0];
+                        const bgPoster = firstItem ? imageUrl(firstItem.poster_path, "w92") : null;
 
-                            return (
+                        return (
+                            <div 
+                                key={list.id} 
+                                className={`list-row-container ${isExpanded ? 'expanded' : ''}`}
+                            >
                                 <div 
-                                    key={list.id} 
-                                    className="list-folder-card"
-                                    onClick={() => setActiveListId(list.id)}
+                                    className="list-row-item"
+                                    onClick={() => setExpandedListId(isExpanded ? null : list.id)}
                                 >
-                                    <div className="folder-preview-container">
+                                    <div className="row-preview-container">
                                         {bgPoster ? (
-                                            <>
-                                                <img src={bgPoster} alt="" className="folder-bg-poster" />
-                                                <div className="folder-overlay" />
-                                            </>
+                                            <img src={bgPoster} alt="" className="row-bg-poster" />
                                         ) : (
-                                            <div className="folder-gradient-bg" />
+                                            <div className="row-gradient-bg">
+                                                <FolderClosed size={20} />
+                                            </div>
                                         )}
-                                        <div className="folder-icon-badge">
-                                            <FolderClosed size={24} />
-                                        </div>
-                                        <span className="folder-count-badge">
-                                            {list.items.length}
-                                        </span>
                                     </div>
-                                    <div className="folder-details">
-                                        <h3 className="folder-name">{list.name}</h3>
-                                        <p className="folder-meta">
-                                            {list.isDefault ? "Default list" : "Custom list"}
+                                    
+                                    <div className="row-details">
+                                        <h3 className="row-name">{list.name}</h3>
+                                        <p className="row-meta">
+                                            {list.isDefault ? "Default list" : "Custom list"} • {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
                                         </p>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </main>
-            ) : (
-                // --- Single List Detail View ---
-                <main className="my-list-container">
-                    <div className="list-detail-header">
-                        <div>
-                            <h1>{activeList.name}</h1>
-                            <p className="list-detail-subtitle">
-                                {activeList.items.length} {activeList.items.length === 1 ? 'item' : 'items'}
-                            </p>
-                        </div>
-                        {!activeList.isDefault && (
-                            <button 
-                                className="delete-list-btn"
-                                onClick={() => handleDeleteList(activeList.id, activeList.name)}
-                                title="Delete list"
-                            >
-                                <Trash2 size={18} />
-                                <span>Delete List</span>
-                            </button>
-                        )}
-                    </div>
 
-                    {activeList.items.length === 0 ? (
-                        <div className="empty-list-content">
-                            <List size={48} />
-                            <h3>This list is empty</h3>
-                            <p>Browse movies and TV shows and add them to this list.</p>
-                            <button className="back-to-lists-btn" onClick={() => setActiveListId(null)}>
-                                Back to Lists
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="my-list-grid">
-                            {activeList.items.map((item) => (
-                                <div 
-                                    key={item.id + item.type} 
-                                    className="my-list-item"
-                                    onClick={() => handleItemClick(item)}
-                                >
-                                    <div className="card-img-wrapper">
-                                        <img 
-                                            src={imageUrl(item.poster_path, "w342")} 
-                                            alt={item.title} 
-                                            loading="lazy"
-                                        />
-                                        <button
-                                            className="remove-item-badge"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleItemInList(activeList.id, item, item.type);
-                                                toast.success(`Removed from "${activeList.name}"`);
-                                            }}
-                                            title="Remove from list"
-                                        >
-                                            &times;
-                                        </button>
-                                    </div>
-                                    <span className="my-list-title">{item.title}</span>
-                                    <div className="my-list-meta">
-                                        {item.vote_average > 0 && (
-                                            <span className="rating">
-                                                <Star size={11} fill="currentColor" />
-                                                {item.vote_average.toFixed(1)}
-                                            </span>
-                                        )}
-                                        <span>
-                                            {item.vote_average > 0 && <span className="bullet"> • </span>}
-                                            {item.type === "movie" ? "Movie" : "TV Show"}
-                                        </span>
-                                        {(item.release_date || item.first_air_date) && (
-                                            <span>
-                                                <span className="bullet"> • </span>
-                                                {(item.release_date || item.first_air_date || "").slice(0, 4)}
-                                            </span>
-                                        )}
+                                    <div className="row-arrow">
+                                        <ChevronDown size={22} strokeWidth={2.5} />
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </main>
-            )}
+
+                                {isExpanded && (
+                                    <div className="row-expanded-content">
+                                        <div className="expanded-actions-header">
+                                            <span className="expanded-section-title">List Items</span>
+                                            <div className="expanded-actions-buttons">
+                                                {list.items.length > 0 && (
+                                                    <button 
+                                                        className={`expanded-action-btn edit-btn ${isEditingList ? 'active' : ''}`}
+                                                        onClick={() => setIsEditingList(!isEditingList)}
+                                                        title={isEditingList ? "Done editing" : "Edit list items"}
+                                                    >
+                                                        {isEditingList ? <Check size={16} /> : <Pencil size={16} />}
+                                                    </button>
+                                                )}
+                                                {!list.isDefault && (
+                                                    <button 
+                                                        className="expanded-action-btn delete-list-btn"
+                                                        onClick={() => handleDeleteList(list.id, list.name)}
+                                                        title="Delete entire list"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {list.items.length === 0 ? (
+                                            <div className="row-empty-content">
+                                                <List size={32} />
+                                                <p>This list is empty. Browse movies/shows to add some!</p>
+                                            </div>
+                                        ) : (
+                                            <div className={`row-items-grid ${isEditingList ? 'grid-editing' : ''}`}>
+                                                {list.items.map((item) => (
+                                                    <div 
+                                                        key={item.id + item.type} 
+                                                        className="my-list-item"
+                                                        onClick={() => {
+                                                            if (isEditingList) {
+                                                                toggleItemInList(list.id, item, item.type);
+                                                                toast.success(`Removed from "${list.name}"`);
+                                                            } else {
+                                                                handleItemClick(item);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <div className="card-img-wrapper">
+                                                            <img 
+                                                                src={imageUrl(item.poster_path, "w185")} 
+                                                                alt={item.title} 
+                                                                loading="lazy"
+                                                            />
+                                                            <button
+                                                                className="remove-item-badge"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    toggleItemInList(list.id, item, item.type);
+                                                                    toast.success(`Removed from "${list.name}"`);
+                                                                }}
+                                                                title="Remove from list"
+                                                            >
+                                                                &times;
+                                                            </button>
+                                                        </div>
+                                                        <span className="my-list-title">{item.title}</span>
+                                                        <div className="my-list-meta">
+                                                            {item.vote_average > 0 && (
+                                                                <span className="rating">
+                                                                    <Star size={11} fill="currentColor" />
+                                                                    {item.vote_average.toFixed(1)}
+                                                                </span>
+                                                            )}
+                                                            <span>
+                                                                {item.vote_average > 0 && <span className="bullet"> • </span>}
+                                                                {item.type === "movie" ? "Movie" : "TV Show"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </main>
         </div>
     );
 };

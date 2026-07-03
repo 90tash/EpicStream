@@ -9,15 +9,16 @@
 .my-list-empty {
     flex: 1;
     width: 100%;
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
     min-height: 100vh;
-    padding: 70px 48px 32px;
+    padding: clamp(92px, 8vw, 110px) clamp(20px, 4vw, 48px) 32px;
     display: flex;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
     text-align: center;
+    box-sizing: border-box;
 }
 
 .my-list-empty-topbar {
@@ -119,7 +120,7 @@
 
 @media (max-width: 640px) {
     .my-list-empty {
-        padding: 44px 20px 16px;
+        padding: 92px 20px 16px;
     }
 
     .my-list-empty-topbar {
@@ -162,14 +163,15 @@
 
 /* Populated List Styles */
 .my-list-container {
-    max-width: 900px;
+    max-width: 1200px;
     width: 100%;
     margin: 0 auto;
-    padding: 48px 4% 32px;
+    padding: clamp(92px, 8vw, 110px) clamp(20px, 4vw, 48px) 32px;
+    box-sizing: border-box;
 }
 
 .my-list-container h1 {
-    font-size: 22px;
+    font-size: clamp(20px, 2.5vw, 24px);
     font-weight: 700;
     margin-bottom: 14px;
     display: flex;
@@ -180,15 +182,15 @@
 .my-list-container h1::before {
     content: "";
     width: 4px;
-    height: 18px;
+    height: clamp(14px, 2.2vw, 18px);
     border-radius: 999px;
     background: var(--accent);
 }
 
 .my-list-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(130px, 15vw, 180px), 1fr));
+    gap: clamp(16px, 2vw, 24px);
 }
 
 .my-list-item {
@@ -382,8 +384,8 @@
 /* Lists Folder Grid */
 .lists-folder-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(140px, 18vw, 220px), 1fr));
+    gap: clamp(16px, 2vw, 24px);
     margin-top: 24px;
     width: 100%;
 }
@@ -613,7 +615,307 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Vertical List View Styles */
+.lists-vertical-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.list-row-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.list-row-item:last-child {
+    border-bottom: none;
+}
+
+.list-row-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.list-row-item:hover .row-name {
+    color: var(--accent);
+}
+
+.list-row-item:hover .row-arrow {
+    color: var(--accent);
+}
+
+.list-row-container:not(.expanded) .list-row-item:hover .row-arrow {
+    transform: translateX(4px);
+}
+
+.row-preview-container {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.row-bg-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.row-gradient-bg {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.row-details {
+    flex: 1;
+    margin-left: 16px;
+    text-align: left;
+    min-width: 0;
+}
+
+.row-name {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #f1f5f9;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.row-meta {
+    margin: 3px 0 0;
+    font-size: 12px;
+    color: rgba(246, 247, 251, 0.45);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.row-arrow {
+    color: rgba(255, 255, 255, 0.65);
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.list-row-container {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.list-row-container:last-child {
+    border-bottom: none;
+}
+
+.list-row-item {
+    border-bottom: none;
+}
+
+.list-row-item:hover .row-arrow {
+    color: var(--accent);
+}
+
+.list-row-container.expanded .row-arrow {
+    transform: rotate(180deg);
+    color: var(--accent);
+}
+
+.expanded-actions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.expanded-section-title {
+    font-size: clamp(11px, 1.4vw, 12px);
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.expanded-actions-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.expanded-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.expanded-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transform: scale(1.06);
+}
+
+.expanded-action-btn:active {
+    transform: scale(0.95);
+}
+
+.expanded-action-btn.edit-btn.active {
+    background: #fff;
+    color: #050607;
+    border-color: #fff;
+}
+
+.expanded-action-btn.delete-list-btn {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.15);
+}
+
+.expanded-action-btn.delete-list-btn:hover {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+}
+
+/* Edit Mode styling for grid items */
+.row-items-grid.grid-editing .my-list-item {
+    cursor: pointer;
+}
+
+.row-items-grid.grid-editing .my-list-item:hover .card-img-wrapper {
+    border-color: rgba(239, 68, 68, 0.45);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
+}
+
+.row-items-grid.grid-editing .remove-item-badge {
+    opacity: 1 !important;
+    background: #ef4444 !important;
+    color: #fff !important;
+    border-color: #ef4444 !important;
+    transform: scale(1.15);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    animation: pulseRemove 1.5s infinite;
+}
+
+@keyframes pulseRemove {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+.row-expanded-content {
+    background: rgba(0, 0, 0, 0.22);
+    padding: 20px 24px 28px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 8px 16px -8px rgba(0, 0, 0, 0.6);
+    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.row-empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    color: rgba(255, 255, 255, 0.35);
+    text-align: center;
+    gap: 8px;
+}
+
+.row-empty-content p {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.row-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(115px, 12vw, 150px), 1fr));
+    gap: 18px;
+}
+
 @media (max-width: 640px) {
+    .my-list-container {
+        padding: 92px 20px 16px !important;
+    }
+
+    .list-detail-header {
+        align-items: center !important;
+        margin-bottom: 24px !important;
+    }
+
+    .my-list-container h1 {
+        font-size: 18px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .my-list-container h1::before {
+        height: 14px !important;
+    }
+
+    .delete-list-btn span {
+        display: none !important;
+    }
+
+    .delete-list-btn {
+        padding: 8px !important;
+        border-radius: 50% !important;
+        width: 36px !important;
+        height: 36px !important;
+        justify-content: center !important;
+        gap: 0 !important;
+    }
+
+    .my-list-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+        gap: 16px !important;
+    }
+
+    .my-list-title {
+        font-size: 12px !important;
+    }
+
+    .my-list-meta {
+        font-size: 10px !important;
+    }
+
     .inline-creation-bar {
         flex-direction: column;
         align-items: stretch;
@@ -643,17 +945,40 @@
         max-width: 120px;
     }
     
-    .lists-folder-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 16px;
+    .lists-vertical-list {
+        margin-top: 12px;
     }
-    
-    .folder-preview-container {
-        border-radius: 12px;
+
+    .list-row-item {
+        padding: 12px 16px;
     }
-    
-    .folder-name {
-        font-size: 13px;
+
+    .row-preview-container {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+    }
+
+    .row-name {
+        font-size: 14px;
+    }
+
+    .row-meta {
+        font-size: 11px;
+    }
+
+    .row-expanded-content {
+        padding: 16px 12px;
+    }
+
+    .row-items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+        gap: 12px !important;
+    }
+
+    .expanded-action-btn {
+        width: 32px;
+        height: 32px;
     }
 }
 

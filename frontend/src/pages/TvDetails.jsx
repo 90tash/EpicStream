@@ -1,5 +1,5 @@
 import { useLocation, useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Fragment } from "react";
 import { ChevronLeft, Star, ChevronDown, LayoutGrid, Plus, Check, X } from "lucide-react";
 import "./movieTvDetails.css";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
@@ -110,10 +110,14 @@ const TvDetails = () => {
     const [isCreatingInline, setIsCreatingInline] = useState(false);
     const [newListNameInline, setNewListNameInline] = useState("");
     const dropdownRef = useRef(null);
-    const inlineInputRef = useRef(null);
+    const inlineInputRefDesktop = useRef(null);
+    const inlineInputRefMobile = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
+            if (event.target.closest('.collection-modal-overlay')) {
+                return;
+            }
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setShowListDropdown(false);
                 setIsCreatingInline(false);
@@ -127,10 +131,22 @@ const TvDetails = () => {
     }, []);
 
     useEffect(() => {
-        if (isCreatingInline && inlineInputRef.current) {
-            inlineInputRef.current.focus();
+        if (isCreatingInline) {
+            if (inlineInputRefDesktop.current) {
+                inlineInputRefDesktop.current.focus();
+            }
+            if (inlineInputRefMobile.current) {
+                inlineInputRefMobile.current.focus();
+            }
         }
     }, [isCreatingInline]);
+
+    useEffect(() => {
+        if (!showListDropdown) {
+            setIsCreatingInline(false);
+            setNewListNameInline("");
+        }
+    }, [showListDropdown]);
 
     const seasonRef = useRef(null);
 
@@ -260,7 +276,14 @@ const TvDetails = () => {
             toast.success(`List "${res.list.name}" created!`);
             toggleItemInList(res.list.id, tv, "tv");
             setNewListNameInline("");
-            setIsCreatingInline(false);
+            if (inlineInputRefDesktop.current) {
+                inlineInputRefDesktop.current.value = "";
+                inlineInputRefDesktop.current.blur();
+            }
+            if (inlineInputRefMobile.current) {
+                inlineInputRefMobile.current.value = "";
+                inlineInputRefMobile.current.blur();
+            }
         } else {
             toast.error(res.error || "Failed to create list.");
         }
@@ -333,37 +356,34 @@ const TvDetails = () => {
                                 </button>
 
                                 {showListDropdown && (
-                                    <div className="lists-dropdown-portal-wrapper">
-                                        <div className="lists-dropdown-overlay" onClick={() => setShowListDropdown(false)} />
-                                        <div className="season-dropdown-menu lists-menu">
-                                            <div className="dropdown-title">Add to List</div>
-                                            <div className="dropdown-options">
+                                    <div className="season-dropdown-menu lists-menu desktop-only">
+                                        <div className="dropdown-options">
+                                            <button 
+                                                className={`season-option ${activeLists.includes("watchlist") ? 'active' : ''}`}
+                                                onClick={() => toggleItemInList("watchlist", tv, "tv")}
+                                            >
+                                                <span className="season-option-text">My Watchlist</span>
+                                                {activeLists.includes("watchlist") && <div className="active-dot" />}
+                                            </button>
+
+                                            {customLists.map(list => (
                                                 <button 
-                                                    className={`season-option ${activeLists.includes("watchlist") ? 'active' : ''}`}
-                                                    onClick={() => toggleItemInList("watchlist", tv, "tv")}
+                                                    key={list.id}
+                                                    className={`season-option ${activeLists.includes(list.id) ? 'active' : ''}`}
+                                                    onClick={() => toggleItemInList(list.id, tv, "tv")}
                                                 >
-                                                    <span className="season-option-text">My Watchlist</span>
-                                                    {activeLists.includes("watchlist") && <div className="active-dot" />}
+                                                    <span className="season-option-text">{list.name}</span>
+                                                    {activeLists.includes(list.id) && <div className="active-dot" />}
                                                 </button>
+                                            ))}
+                                        </div>
 
-                                                {customLists.map(list => (
-                                                    <button 
-                                                        key={list.id}
-                                                        className={`season-option ${activeLists.includes(list.id) ? 'active' : ''}`}
-                                                        onClick={() => toggleItemInList(list.id, tv, "tv")}
-                                                    >
-                                                        <span className="season-option-text">{list.name}</span>
-                                                        {activeLists.includes(list.id) && <div className="active-dot" />}
-                                                    </button>
-                                                ))}
-                                            </div>
-
-                                            <div className="dropdown-divider" />
-
-                                            {isCreatingInline ? (
+                                        {isCreatingInline ? (
+                                            <div className="dropdown-inline-create-container">
                                                 <form className="dropdown-inline-create" onSubmit={handleCreateListInline}>
                                                     <input 
-                                                        ref={inlineInputRef}
+                                                        key="desktop-inline-input"
+                                                        ref={inlineInputRefDesktop}
                                                         type="text"
                                                         className="inline-create-input"
                                                         placeholder="New list name..."
@@ -371,25 +391,27 @@ const TvDetails = () => {
                                                         onChange={(e) => setNewListNameInline(e.target.value.slice(0, 50))}
                                                         maxLength={50}
                                                     />
+                                                    <span className="inline-create-divider" />
                                                     <button 
                                                         type="submit" 
-                                                        className="inline-create-submit" 
+                                                        className="inline-create-submit-tick" 
                                                         disabled={!newListNameInline.trim()}
+                                                        aria-label="Create List"
                                                     >
-                                                        <Plus size={12} />
+                                                        <Check size={16} />
                                                     </button>
                                                 </form>
-                                            ) : (
-                                                <button 
-                                                    className="season-option"
-                                                    style={{ color: 'var(--accent)', justifyContent: 'flex-start', gap: '8px' }}
-                                                    onClick={() => setIsCreatingInline(true)}
-                                                >
-                                                    <Plus size={14} />
-                                                    <span className="season-option-text">Create New List</span>
-                                                </button>
-                                            )}
-                                        </div>
+                                            </div>
+                                        ) : (
+                                            <button 
+                                                className="season-option create-list-option"
+                                                style={{ color: 'var(--accent)', justifyContent: 'flex-start', gap: '8px' }}
+                                                onClick={() => setIsCreatingInline(true)}
+                                            >
+                                                <Plus size={14} />
+                                                <span className="season-option-text">Create New List</span>
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -582,6 +604,69 @@ const TvDetails = () => {
                     </>
                 )}
             </main>
+
+            {/* Mobile-only Lists Modal Overlay (Behaves exactly like the collection modal overlay background but with identical PC styled dropdown) */}
+            {showListDropdown && (
+                <div className="collection-modal-overlay mobile-only" onClick={() => setShowListDropdown(false)}>
+                    <div className="season-dropdown-menu lists-menu" onClick={(e) => e.stopPropagation()} style={{ position: 'relative', top: 'auto', left: 'auto' }}>
+                        <div className="dropdown-options">
+                            <button 
+                                className={`season-option ${activeLists.includes("watchlist") ? 'active' : ''}`}
+                                onClick={() => toggleItemInList("watchlist", tv, "tv")}
+                            >
+                                <span className="season-option-text">My Watchlist</span>
+                                {activeLists.includes("watchlist") && <div className="active-dot" />}
+                            </button>
+
+                            {customLists.map(list => (
+                                <button 
+                                    key={list.id}
+                                    className={`season-option ${activeLists.includes(list.id) ? 'active' : ''}`}
+                                    onClick={() => toggleItemInList(list.id, tv, "tv")}
+                                >
+                                    <span className="season-option-text">{list.name}</span>
+                                    {activeLists.includes(list.id) && <div className="active-dot" />}
+                                </button>
+                            ))}
+                        </div>
+
+                        {isCreatingInline ? (
+                            <div className="dropdown-inline-create-container">
+                                <form className="dropdown-inline-create" onSubmit={handleCreateListInline}>
+                                    <input 
+                                        key="mobile-inline-input"
+                                        ref={inlineInputRefMobile}
+                                        type="text"
+                                        className="inline-create-input"
+                                        placeholder="New list name..."
+                                        value={newListNameInline}
+                                        onChange={(e) => setNewListNameInline(e.target.value.slice(0, 50))}
+                                        maxLength={50}
+                                    />
+                                    <span className="inline-create-divider" />
+                                    <button 
+                                        type="submit" 
+                                        className="inline-create-submit-tick" 
+                                        disabled={!newListNameInline.trim()}
+                                        aria-label="Create List"
+                                    >
+                                        <Check size={16} />
+                                    </button>
+                                </form>
+                            </div>
+                        ) : (
+                            <button 
+                                className="season-option create-list-option"
+                                style={{ color: 'var(--accent)', justifyContent: 'flex-start', gap: '8px' }}
+                                onClick={() => setIsCreatingInline(true)}
+                            >
+                                <Plus size={14} />
+                                <span className="season-option-text">Create New List</span>
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
