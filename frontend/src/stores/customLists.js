@@ -64,6 +64,44 @@ export const useCustomListsStore = create((set, get) => ({
         set({ customLists: updated });
     },
 
+    moveList: (id, direction) => {
+        const currentLists = get().customLists;
+        const index = currentLists.findIndex(l => l.id === id);
+        if (index === -1) return;
+        const targetIndex = direction === "up" ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= currentLists.length) return;
+        
+        const updated = [...currentLists];
+        const [movedList] = updated.splice(index, 1);
+        updated.splice(targetIndex, 0, movedList);
+        
+        saveCustomLists(updated);
+        set({ customLists: updated });
+    },
+
+    renameList: (id, newName) => {
+        const trimmed = newName.trim();
+        if (!trimmed) {
+            return { success: false, error: "List name cannot be empty." };
+        }
+        if (trimmed.length > 50) {
+            return { success: false, error: "List name must be 50 characters or less." };
+        }
+
+        const currentLists = get().customLists;
+        const nameExists = currentLists.some(
+            (l) => l.id !== id && (l.name.toLowerCase() === trimmed.toLowerCase() || trimmed.toLowerCase() === "my watchlist")
+        );
+        if (nameExists) {
+            return { success: false, error: "A list with this name already exists." };
+        }
+
+        const updated = currentLists.map(l => l.id === id ? { ...l, name: trimmed } : l);
+        saveCustomLists(updated);
+        set({ customLists: updated });
+        return { success: true };
+    },
+
     toggleItemInList: (listId, item, type) => {
         if (listId === "watchlist") {
             useWatchlistStore.getState().toggleItem(item, type);

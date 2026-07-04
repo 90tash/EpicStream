@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, ChevronDown, List, Plus, Star, Shuffle, Trash2, FolderClosed, Pencil, Check, X } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, List, Plus, Shuffle, Trash2, Pencil, Check, X, Edit2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
 import { imageUrl } from "../utils/tmdb";
-import toast from "react-hot-toast";
+import { getHistory, removeFromHistory } from "../utils/history";
 import "./myList.css";
 
 const RANDOM_LIST_NAMES = [
@@ -28,12 +28,16 @@ const RANDOM_LIST_NAMES = [
 const MyListPage = () => {
     const navigate = useNavigate();
     const { watchlist } = useWatchlistStore();
-    const { customLists, createList, deleteList, toggleItemInList } = useCustomListsStore();
+    const { customLists, createList, deleteList, toggleItemInList, moveList, renameList } = useCustomListsStore();
 
     const [isCreationBarOpen, setIsCreationBarOpen] = useState(false);
     const [listName, setListName] = useState("");
     const [expandedListId, setExpandedListId] = useState(null);
     const [isEditingList, setIsEditingList] = useState(false);
+    const [isReordering, setIsReordering] = useState(false);
+    const [renamingListId, setRenamingListId] = useState(null);
+    const [renameValue, setRenameValue] = useState("");
+    const [currentlyWatching, setCurrentlyWatching] = useState([]);
     const inputRef = useRef(null);
 
     useEffect(() => {
@@ -41,7 +45,31 @@ const MyListPage = () => {
     }, [expandedListId]);
 
     useEffect(() => {
+        if (isReordering) {
+            setExpandedListId(null);
+            setIsCreationBarOpen(false);
+        } else {
+            setRenamingListId(null);
+            setRenameValue("");
+        }
+    }, [isReordering]);
+
+    const handleSaveRename = (id) => {
+        const trimmed = renameValue.trim();
+        if (!trimmed) {
+            setRenamingListId(null);
+            return;
+        }
+        const res = renameList(id, trimmed);
+        if (!res.success) {
+            alert(res.error || "Failed to rename list.");
+        }
+        setRenamingListId(null);
+    };
+
+    useEffect(() => {
         document.title = "My Lists - EpicStream";
+        setCurrentlyWatching(getHistory());
         return () => {
             document.title = "EpicStream";
         };
@@ -73,11 +101,8 @@ const MyListPage = () => {
 
         const res = createList(trimmed);
         if (res.success) {
-            toast.success(`List "${res.list.name}" created!`);
             setListName("");
             setIsCreationBarOpen(false);
-        } else {
-            toast.error(res.error || "Failed to create list.");
         }
     };
 
@@ -96,6 +121,12 @@ const MyListPage = () => {
             id: "watchlist",
             name: "My Watchlist",
             items: watchlist,
+            isDefault: true
+        },
+        {
+            id: "currently_watching",
+            name: "Currently Watching",
+            items: currentlyWatching,
             isDefault: true
         },
         ...customLists
@@ -118,20 +149,29 @@ const MyListPage = () => {
                 <div className="my-list-empty-topbar">
                     <header className="my-list-empty-header">
                         <h1>My Lists</h1>
-                        <p>{totalListsCount} / 15 lists</p>
+                        <p>{totalListsCount} / 16 lists</p>
                     </header>
-                    <button 
-                        className={`my-list-action ${isCreationBarOpen ? 'active' : ''}`}
-                        onClick={() => setIsCreationBarOpen(!isCreationBarOpen)}
-                        disabled={totalListsCount >= 15 && !isCreationBarOpen}
-                    >
-                        {isCreationBarOpen ? "Cancel" : (
-                            <>
-                                <Plus size={18} />
-                                New List
-                            </>
-                        )}
-                    </button>
+                    <div className="topbar-actions">
+                        <button 
+                            className={`my-list-action edit-lists-btn ${isReordering ? 'active' : ''}`}
+                            onClick={() => setIsReordering(!isReordering)}
+                            title={isReordering ? "Done reordering" : "Reorder lists"}
+                        >
+                            {isReordering ? <Check size={18} /> : <Pencil size={18} />}
+                        </button>
+                        <button 
+                            className={`my-list-action ${isCreationBarOpen ? 'active' : ''}`}
+                            onClick={() => setIsCreationBarOpen(!isCreationBarOpen)}
+                            disabled={totalListsCount >= 16 && !isCreationBarOpen}
+                        >
+                            {isCreationBarOpen ? "Cancel" : (
+                                <>
+                                    <Plus size={18} />
+                                    New List
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Inline Creation Bar */}
@@ -146,6 +186,19 @@ const MyListPage = () => {
                             onChange={(e) => setListName(e.target.value.slice(0, 50))}
                             maxLength={50}
                         />
+                        {listName && (
+                            <button
+                                type="button"
+                                className="inline-creation-clear-btn"
+                                onClick={() => {
+                                    setListName("");
+                                    if (inputRef.current) inputRef.current.focus();
+                                }}
+                                aria-label="Clear list name"
+                            >
+                                <X size={18} />
+                            </button>
+                        )}
                         <div className="inline-creation-actions">
                             <button
                                 type="button"
@@ -170,20 +223,63 @@ const MyListPage = () => {
                 <div className="lists-vertical-list">
                     {allLists.map((list) => {
                         const isExpanded = expandedListId === list.id;
-                        const firstItem = list.items[0];
-                        const bgPoster = firstItem ? imageUrl(firstItem.poster_path, "w92") : null;
 
                         return (
                             <div 
                                 key={list.id} 
-                                className={`list-row-container ${isExpanded ? 'expanded' : ''}`}
+                                className={`list-row-container ${isExpanded ? 'expanded' : ''} ${isReordering ? 'reordering-mode' : ''}`}
                             >
                                 <div 
                                     className="list-row-item"
-                                    onClick={() => setExpandedListId(isExpanded ? null : list.id)}
+                                    onClick={() => {
+                                        if (isReordering) return;
+                                        setExpandedListId(isExpanded ? null : list.id);
+                                    }}
                                 >
                                     <div className="row-details">
-                                        <h3 className="row-name">{list.name}</h3>
+                                        {renamingListId === list.id ? (
+                                            <form 
+                                                className="rename-form" 
+                                                onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    handleSaveRename(list.id);
+                                                }}
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <input
+                                                    type="text"
+                                                    className="rename-input"
+                                                    value={renameValue}
+                                                    onChange={(e) => setRenameValue(e.target.value.slice(0, 50))}
+                                                    maxLength={50}
+                                                    autoFocus
+                                                    onBlur={() => handleSaveRename(list.id)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Escape") {
+                                                            setRenamingListId(null);
+                                                        }
+                                                    }}
+                                                />
+                                            </form>
+                                        ) : (
+                                            <div className="row-name-wrap">
+                                                <h3 className="row-name">{list.name}</h3>
+                                                {isReordering && !list.isDefault && (
+                                                    <button
+                                                        type="button"
+                                                        className="rename-btn"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setRenamingListId(list.id);
+                                                            setRenameValue(list.name);
+                                                        }}
+                                                        title="Rename List"
+                                                    >
+                                                        <Edit2 size={13} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                         <p className="row-meta">
                                             {list.isDefault ? "Default list • " : ""}
                                             {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
@@ -191,7 +287,27 @@ const MyListPage = () => {
                                     </div>
 
                                     <div className="list-row-right-corner">
-                                        {isExpanded && (
+                                        {isReordering && !list.isDefault && (
+                                            <div className="reorder-actions-buttons" onClick={(e) => e.stopPropagation()}>
+                                                <button 
+                                                    className="reorder-action-btn move-up-btn"
+                                                    disabled={customLists.findIndex(l => l.id === list.id) === 0}
+                                                    onClick={() => moveList(list.id, "up")}
+                                                    title="Move Up"
+                                                >
+                                                    <ChevronUp size={16} />
+                                                </button>
+                                                <button 
+                                                    className="reorder-action-btn move-down-btn"
+                                                    disabled={customLists.findIndex(l => l.id === list.id) === customLists.length - 1}
+                                                    onClick={() => moveList(list.id, "down")}
+                                                    title="Move Down"
+                                                >
+                                                    <ChevronDown size={16} />
+                                                </button>
+                                            </div>
+                                        )}
+                                        {!isReordering && isExpanded && (
                                             <div className="expanded-actions-buttons" onClick={(e) => e.stopPropagation()}>
                                                 {list.items.length > 0 && (
                                                     <button 
@@ -219,9 +335,11 @@ const MyListPage = () => {
                                                 )}
                                             </div>
                                         )}
-                                        <div className="list-row-arrow">
-                                            <ChevronDown size={22} strokeWidth={2.5} />
-                                        </div>
+                                        {!isReordering && (
+                                            <div className="list-row-arrow">
+                                                <ChevronDown size={22} strokeWidth={2.5} />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -241,8 +359,12 @@ const MyListPage = () => {
                                                         className="my-list-item"
                                                         onClick={() => {
                                                             if (isEditingList) {
-                                                                toggleItemInList(list.id, item, item.type);
-                                                                toast.success(`Removed from "${list.name}"`);
+                                                                if (list.id === "currently_watching") {
+                                                                    removeFromHistory(item.id);
+                                                                    setCurrentlyWatching(getHistory());
+                                                                } else {
+                                                                    toggleItemInList(list.id, item, item.type);
+                                                                }
                                                             } else {
                                                                 handleItemClick(item);
                                                             }
@@ -259,8 +381,12 @@ const MyListPage = () => {
                                                                     className="remove-item-badge"
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
-                                                                        toggleItemInList(list.id, item, item.type);
-                                                                        toast.success(`Removed from "${list.name}"`);
+                                                                        if (list.id === "currently_watching") {
+                                                                            removeFromHistory(item.id);
+                                                                            setCurrentlyWatching(getHistory());
+                                                                        } else {
+                                                                            toggleItemInList(list.id, item, item.type);
+                                                                        }
                                                                     }}
                                                                     title="Remove from list"
                                                                 >

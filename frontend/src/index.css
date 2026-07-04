@@ -70,5 +70,4 @@ a {
 .back-btn-simple:hover {
     border-color: rgba(255, 38, 51, 0.4);
     color: var(--accent);
-    transform: scale(1.1);
 }
