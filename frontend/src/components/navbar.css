@@ -149,32 +149,58 @@
     }
 
     .navbar-pill-group {
-        background: transparent;
-        border: none;
-        height: auto;
-        box-shadow: none;
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        gap: 12px;
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 9999px;
+        height: 42px;
+        box-sizing: border-box;
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        padding: 0;
+        position: relative;
     }
 
     .navbar-pill-divider {
-        display: none;
+        display: block;
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-50%);
+        width: 1px;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.08);
+        box-sizing: border-box;
+        pointer-events: none;
     }
 
     .navbar-pill-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 50% !important;
-        padding: 0 !important;
-        border: 1px solid transparent !important;
-        opacity: 0.85;
+        width: auto;
+        height: 100%;
+        border-radius: 0 !important;
+        padding: 0 18px;
+        border: none !important;
+        opacity: 0.9;
+        transform: none !important;
+    }
+
+    .navbar-pill-btn:first-child {
+        border-radius: 9999px 0 0 9999px !important;
+        padding-left: 20px;
+    }
+
+    .navbar-pill-btn:last-child {
+        border-radius: 0 9999px 9999px 0 !important;
+        padding-right: 20px;
     }
 
     .navbar-pill-btn:hover {
-        background: transparent;
-        border-color: rgba(255, 38, 51, 0.4) !important;
-        transform: scale(1.1) !important;
-        opacity: 1;
+        background: rgba(255, 255, 255, 0.08);
+        border-color: transparent !important;
+        transform: none !important;
     }
 }

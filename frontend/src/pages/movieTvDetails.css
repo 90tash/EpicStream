@@ -383,6 +383,7 @@
 .details-action-btn:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
+    color: var(--accent);
 }
 
 .details-action-btn.active {
@@ -442,6 +443,7 @@
 
 .details-group-btn:hover {
     background: rgba(255, 255, 255, 0.1); /* Subtle hover background */
+    color: var(--accent);
 }
 
 .details-group-btn.add-list-btn.active {
@@ -586,6 +588,14 @@
 .season-option:hover,
 .season-option.active {
     background: transparent;
+    color: var(--accent);
+}
+
+.lists-menu .season-option.active {
+    color: #94a3b8;
+}
+
+.lists-menu .season-option.active:hover {
     color: var(--accent);
 }
 
@@ -744,7 +754,6 @@
 .back-btn:hover {
     border-color: rgba(255, 38, 51, 0.4);
     color: var(--accent);
-    transform: scale(1.1);
 }
 
 /* ==========================================================================
@@ -1204,7 +1213,6 @@
 .collection-close-btn:hover {
     border-color: rgba(255, 38, 51, 0.4);
     color: var(--accent);
-    transform: scale(1.1);
 }
 
 .collection-modal-body {
@@ -1395,7 +1403,7 @@
 .col-arrow:hover {
     border-color: rgba(255, 38, 51, 0.4);
     color: var(--accent);
-    transform: translateY(-50%) scale(1.1);
+    transform: translateY(-50%);
 }
 
 .col-arrow.left {
