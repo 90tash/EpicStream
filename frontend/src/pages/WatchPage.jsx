@@ -235,7 +235,6 @@ const WatchPage = () => {
                 allowFullScreen
                 webkitallowfullscreen="true"
                 mozallowfullscreen="true"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock"
                 title="EpicStream Player"
             />
 
