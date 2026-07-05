@@ -21,7 +21,6 @@ const WatchPage = () => {
     const season = searchParams.get("season") || 1;
     const episode = searchParams.get("episode") || 1;
 
-    const [showPopup, setShowPopup] = useState(false);
     const [details, setDetails] = useState(null);
 
     // Default Player URL (Uses TMDB ID directly)
@@ -79,38 +78,24 @@ const WatchPage = () => {
     }, [type, id, season, episode]);
     */
 
-    // Fetch details to check if anime and trigger recommendation popup
+    // Fetch details to update page title
     useEffect(() => {
         let isMounted = true;
-        let timeoutId;
 
-        const checkAnimeDetails = async () => {
+        const fetchDetails = async () => {
             try {
                 const detailsData = await tmdbFetch(`/${type}/${id}`);
                 if (!isMounted) return;
                 setDetails(detailsData);
-
-                if (isAnime(detailsData)) {
-                    const dismissed = sessionStorage.getItem("cypher-popup-dismissed");
-                    if (!dismissed) {
-                        // Delay by 1.5 seconds for a smooth entry
-                        timeoutId = setTimeout(() => {
-                            if (isMounted) {
-                                setShowPopup(true);
-                            }
-                        }, 1500);
-                    }
-                }
             } catch (error) {
-                console.error("Error checking anime status for popup:", error);
+                console.error("Error fetching details:", error);
             }
         };
 
-        checkAnimeDetails();
+        fetchDetails();
 
         return () => {
             isMounted = false;
-            if (timeoutId) clearTimeout(timeoutId);
         };
     }, [type, id]);
 
@@ -238,77 +223,6 @@ const WatchPage = () => {
                 title="EpicStream Player"
             />
 
-            {/* Accent Recommend Server Popup */}
-            {showPopup && (
-                <div style={{
-                    position: "fixed",
-                    inset: 0,
-                    zIndex: 9999,
-                    backgroundColor: "rgba(5, 6, 7, 0.75)",
-                    backdropFilter: "blur(6px)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "20px",
-                    animation: "epicFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
-                }}>
-                    <div style={{
-                        backgroundColor: "var(--panel)",
-                        border: "1px solid var(--line)",
-                        borderRadius: "16px",
-                        maxWidth: "400px",
-                        width: "100%",
-                        padding: "32px 24px 24px",
-                        boxShadow: "0 24px 50px rgba(0, 0, 0, 0.7)",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        textAlign: "center",
-                        gap: "20px",
-                        color: "var(--text)"
-                    }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                            <h3 style={{ fontSize: "20px", fontWeight: "800", letterSpacing: "-0.01em" }}>
-                                Better Experience
-                            </h3>
-                            <p style={{ fontSize: "14px", color: "var(--muted)", lineHeight: "1.6" }}>
-                                For the best quality and playback, please switch to <strong style={{ color: "var(--accent)" }}>Cypher</strong> inside the server options.
-                            </p>
-                        </div>
-
-                        <button 
-                            onClick={() => {
-                                setShowPopup(false);
-                                sessionStorage.setItem("cypher-popup-dismissed", "true");
-                            }}
-                            style={{
-                                width: "100%",
-                                padding: "12px",
-                                backgroundColor: "var(--accent)",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: "8px",
-                                fontWeight: "700",
-                                fontSize: "14px",
-                                cursor: "pointer",
-                                transition: "background-color 0.2s ease, transform 0.1s ease",
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = "var(--accent-dark)"}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = "var(--accent)"}
-                            onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.98)"}
-                            onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
-                        >
-                            Got It
-                        </button>
-                    </div>
-                    <style>{`
-                        @keyframes epicFadeIn {
-                            from { opacity: 0; transform: scale(0.95); }
-                            to { opacity: 1; transform: scale(1); }
-                        }
-                    `}</style>
-                </div>
-            )}
         </div>
     );
 };
