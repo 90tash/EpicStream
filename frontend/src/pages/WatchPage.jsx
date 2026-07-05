@@ -1,6 +1,6 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getPlayerUrl, tmdbFetch, getTitle } from "../utils/tmdb";
+import { getPlayerUrl, getAnimePlayerUrl, tmdbFetch, getTitle } from "../utils/tmdb";
 import { updateHistoryProgress } from "../utils/history";
 import { isAnime } from "../utils/anilist";
 
@@ -51,9 +51,7 @@ const WatchPage = () => {
                     const bestMatch = findBestAnilistMatch(mediaList, searchTitle, releaseYear, type === "movie");
 
                     if (bestMatch && isMounted) {
-                        const url = type === "movie"
-                            ? `https://player.videasy.net/anime/${bestMatch.id}`
-                            : `https://player.videasy.net/anime/${bestMatch.id}/${episode}`;
+                        const url = getAnimePlayerUrl(bestMatch.id, episode, type);
                         setPlayerUrl(url);
                     } else if (isMounted) {
                         setPlayerUrl(getPlayerUrl(type, id, season, episode));
@@ -145,16 +143,34 @@ const WatchPage = () => {
         };
 
         const handleMessage = (event) => {
+            // Security vulnerability check: Only allow messages from trusted player domains
+            const trustedOrigins = [
+                "https://player.videasy.net", 
+                "https://vidlink.pro", 
+                "https://vidsrc.to", 
+                "https://vidsrc.me"
+            ];
+            if (!trustedOrigins.includes(event.origin)) {
+                return;
+            }
+
             try {
                 let data = event.data;
                 if (typeof data === "string") {
                     data = JSON.parse(data);
                 }
                 
-                const playerState = data.data || data;
+                // Extract video state data
+                // VidLink nests its player progress events under { type: 'PLAYER_EVENT', data: { ... } }
+                let playerState = null;
+                if (data && data.type === "PLAYER_EVENT") {
+                    playerState = data.data;
+                } else if (data) {
+                    playerState = data.data || data;
+                }
                 
                 if (playerState && (playerState.time !== undefined || playerState.currentTime !== undefined)) {
-                    const time = playerState.time || playerState.currentTime || 0;
+                    const time = playerState.time !== undefined ? playerState.time : playerState.currentTime;
                     const duration = playerState.duration || 0;
                     const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
                     
@@ -219,6 +235,7 @@ const WatchPage = () => {
                 allowFullScreen
                 webkitallowfullscreen="true"
                 mozallowfullscreen="true"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock"
                 title="EpicStream Player"
             />
 
