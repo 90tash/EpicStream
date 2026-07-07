@@ -561,7 +561,6 @@ const WatchPage = () => {
                                     <h2>{title}</h2>
                                 )}
                             </div>
-                            {anime && <span className="watch-anime-badge">Anime</span>}
                         </div>
 
                         <div className="watch-meta-row">
