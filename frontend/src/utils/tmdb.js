@@ -85,34 +85,52 @@ export const tmdbGetRecommendations = async (type, id) => {
 // export const ACTIVE_PROVIDER = "vidsrc_me"; // Option 3: VidSrc.me (Alternative API format)
 export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
 
-export const getPlayerUrl = (type, id, season = 1, episode = 1) => {
+export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIVE_PROVIDER) => {
     const color = "ff2633"; // Project accent color
     const commonParams = `overlay=true&color=${color}`;
     
-    switch (ACTIVE_PROVIDER) {
+    switch (provider) {
         case "videasy":
             if (type === "movie") {
                 return `https://player.videasy.net/movie/${id}?${commonParams}`;
             }
             return `https://player.videasy.net/tv/${id}/${season}/${episode}?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
             
-        case "vidsrc_to":
+        case "vidfast": {
+            const theme = "ff2633"; // Project accent color
             if (type === "movie") {
-                return `https://vidsrc.to/embed/movie/${id}`;
+                return `https://vidfast.vc/movie/${id}?autoPlay=true&theme=${theme}`;
             }
-            return `https://vidsrc.to/embed/tv/${id}/${season}/${episode}`;
+            return `https://vidfast.vc/tv/${id}/${season}/${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
+        }
             
-        case "vidsrc_me":
+        case "1embed":
             if (type === "movie") {
-                return `https://vidsrc.me/embed/movie?tmdb=${id}`;
+                return `https://1embed.cc/embed/movie/${id}`;
             }
-            return `https://vidsrc.me/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`;
+            return `https://1embed.cc/embed/tv/${id}/${season}/${episode}`;
+            
+        case "vidsync": {
+            const theme = "ff2633"; // Project accent color
+            if (type === "movie") {
+                return `https://vidsync.live/embed/movie/${id}?autoPlay=true&theme=${theme}`;
+            }
+            return `https://vidsync.live/embed/tv/${id}/${season}/${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
+        }
+            
+        case "vidcore": {
+            const theme = "ff2633"; // Project accent color
+            if (type === "movie") {
+                return `https://vidcore.net/movie/${id}?autoPlay=true&theme=${theme}`;
+            }
+            return `https://vidcore.net/tv/${id}/{season}/{episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
+        }
             
         case "vidlink": {
             const primaryColor = "ff2633"; // Vibrant red
             const secondaryColor = "c90713"; // Dark red
             const iconColor = "f6f7fb"; // Light grey icon color matching app text
-            const params = `primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true&autoplay=true`;
+            const params = `primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true&autoplay=false`;
             
             if (type === "movie") {
                 return `https://vidlink.pro/movie/${id}?${params}`;
@@ -151,4 +169,3 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
                 : `https://player.videasy.net/anime/${animeId}/${episode}`;
     }
 };
-
