@@ -159,7 +159,7 @@ function applyConfigToEnv(cfg){
 function loadConfig() {
   // Start with env for backward compat, then override with user-config.json
   const envCfg = {
-    port: Number(process.env.API_PORT) || 8787,
+    port: Number(process.env.API_PORT) || Number(process.env.PORT) || 8787,
     defaultRegion: process.env.DEFAULT_REGION || process.env.FEBBOX_REGION || null,
   defaultProviders: (process.env.DEFAULT_PROVIDERS || '').split(/[\s,]+/).map(p=>p.trim().toLowerCase()).filter(Boolean),
     minQualitiesRaw: process.env.MIN_QUALITIES || null,

@@ -4,7 +4,7 @@
   "description": "Standalone streaming embed source aggregation API (TMDB ID in, streams out)",
   "main": "apiServer.js",
   "scripts": {
-    "start": "nodemon --watch restart.trigger apiServer.js",
+    "start": "node apiServer.js",
     "start:dev": "nodemon --watch restart.trigger --ignore providers/.cache --ignore **/cache apiServer.js",
     "lint": "eslint . --ext .js"
   },
