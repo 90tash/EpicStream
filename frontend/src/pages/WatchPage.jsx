@@ -7,11 +7,22 @@ import {
     Star,
     Play,
     Pause,
+    Volume1,
     Volume2,
     VolumeX,
     Maximize,
     Minimize,
     Settings,
+    RotateCcw,
+    RotateCw,
+    Subtitles,
+    Headphones,
+    PictureInPicture,
+    Layout,
+    Gauge,
+    Sliders,
+    SkipBack,
+    SkipForward,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -62,12 +73,32 @@ const formatTime = (seconds) => {
         .join(":");
 };
 
-// HLS Video Player Component with Custom Controls
-const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
+// Premium HLS Video Player Component with Custom Controls
+const HlsPlayer = ({
+    src,
+    poster,
+    savedProgress,
+    onProgress,
+    title,
+    mediaType,
+    season,
+    episode,
+    previousEpisode,
+    nextEpisode,
+    onNavigateEpisode,
+    activeStream,
+    streams,
+    setActiveStream,
+    details,
+    isTheaterMode,
+    setIsTheaterMode,
+    titleLogo,
+}) => {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
     const hlsRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
+    const navigate = useNavigate();
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -77,7 +108,27 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
     const [playbackRate, setPlaybackRate] = useState(1);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    
+    // Subtitles & Audio state
+    const [subtitles, setSubtitles] = useState([]);
+    const [activeSubtitle, setActiveSubtitle] = useState(-1);
+    const [audioTracks, setAudioTracks] = useState([]);
+    const [activeAudio, setActiveAudio] = useState(0);
+    
+    // Custom controls state
+    const [activeMenu, setActiveMenu] = useState(null); // 'speed' | 'subtitles' | 'audio' | 'quality'
+    const [isBuffering, setIsBuffering] = useState(false);
+    const [bufferedPercent, setBufferedPercent] = useState(0);
+    const [showFloatingInfo, setShowFloatingInfo] = useState(true);
+
+    // Fade floating info after 4.5 seconds
+    useEffect(() => {
+        setShowFloatingInfo(true);
+        const timer = setTimeout(() => {
+            setShowFloatingInfo(false);
+        }, 4500);
+        return () => clearTimeout(timer);
+    }, [src]);
 
     // Load Video stream
     useEffect(() => {
@@ -92,6 +143,11 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
         setIsPlaying(false);
         setCurrentTime(0);
         setDuration(0);
+        setBufferedPercent(0);
+        setSubtitles([]);
+        setActiveSubtitle(-1);
+        setAudioTracks([]);
+        setActiveAudio(0);
 
         let hlsInstance = null;
 
@@ -115,6 +171,14 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
                         video.play()
                             .then(() => setIsPlaying(true))
                             .catch(() => setIsPlaying(false));
+                    });
+
+                    hlsInstance.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, (event, data) => {
+                        setSubtitles(data.subtitleTracks || []);
+                    });
+
+                    hlsInstance.on(Hls.Events.AUDIO_TRACKS_UPDATED, (event, data) => {
+                        setAudioTracks(data.audioTracks || []);
                     });
 
                     hlsInstance.on(Hls.Events.ERROR, (event, data) => {
@@ -194,19 +258,44 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
             setDuration(video.duration);
         };
 
+        const handleProgress = () => {
+            if (video.buffered.length > 0 && video.duration) {
+                let bufferedEnd = 0;
+                for (let i = 0; i < video.buffered.length; i++) {
+                    if (video.buffered.start(i) <= video.currentTime && video.buffered.end(i) >= video.currentTime) {
+                        bufferedEnd = video.buffered.end(i);
+                        break;
+                    }
+                }
+                const pct = (bufferedEnd / video.duration) * 100;
+                setBufferedPercent(pct);
+            }
+        };
+
         const handlePlay = () => setIsPlaying(true);
         const handlePause = () => setIsPlaying(false);
+        const handleWaiting = () => setIsBuffering(true);
+        const handlePlaying = () => setIsBuffering(false);
+        const handleSeeked = () => setIsBuffering(false);
 
         video.addEventListener("timeupdate", handleTimeUpdate);
         video.addEventListener("durationchange", handleDurationChange);
+        video.addEventListener("progress", handleProgress);
         video.addEventListener("play", handlePlay);
         video.addEventListener("pause", handlePause);
+        video.addEventListener("waiting", handleWaiting);
+        video.addEventListener("playing", handlePlaying);
+        video.addEventListener("seeked", handleSeeked);
 
         return () => {
             video.removeEventListener("timeupdate", handleTimeUpdate);
             video.removeEventListener("durationchange", handleDurationChange);
+            video.removeEventListener("progress", handleProgress);
             video.removeEventListener("play", handlePlay);
             video.removeEventListener("pause", handlePause);
+            video.removeEventListener("waiting", handleWaiting);
+            video.removeEventListener("playing", handlePlaying);
+            video.removeEventListener("seeked", handleSeeked);
         };
     }, [onProgress, src]);
 
@@ -219,8 +308,8 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
         if (isPlaying) {
             controlsTimeoutRef.current = setTimeout(() => {
                 setShowControls(false);
-                setIsSettingsOpen(false);
-            }, 3000);
+                setActiveMenu(null);
+            }, 3500); // Hide after 3.5s inactivity
         }
     };
 
@@ -232,6 +321,13 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
             }
         }
     }, [isPlaying]);
+
+    // Close menus when controls fade
+    useEffect(() => {
+        if (!showControls) {
+            setActiveMenu(null);
+        }
+    }, [showControls]);
 
     // Keyboard controls
     useEffect(() => {
@@ -354,7 +450,31 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
 
         video.playbackRate = rate;
         setPlaybackRate(rate);
-        setIsSettingsOpen(false);
+        setActiveMenu(null);
+    };
+
+    const handleSubtitleChange = (index) => {
+        if (hlsRef.current) {
+            hlsRef.current.subtitleTrack = index;
+            setActiveSubtitle(index);
+        } else {
+            const video = videoRef.current;
+            if (video && video.textTracks) {
+                for (let i = 0; i < video.textTracks.length; i++) {
+                    video.textTracks[i].mode = i === index ? "showing" : "disabled";
+                }
+                setActiveSubtitle(index);
+            }
+        }
+        setActiveMenu(null);
+    };
+
+    const handleAudioChange = (index) => {
+        if (hlsRef.current) {
+            hlsRef.current.audioTrack = index;
+            setActiveAudio(index);
+        }
+        setActiveMenu(null);
     };
 
     const toggleFullscreen = () => {
@@ -382,6 +502,31 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
         };
     }, []);
 
+    const togglePip = async () => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        try {
+            if (video !== document.pictureInPictureElement) {
+                await video.requestPictureInPicture();
+            } else {
+                await document.exitPictureInPicture();
+            }
+        } catch (err) {
+            console.error("Picture-in-Picture failed:", err);
+        }
+    };
+
+    const toggleMenu = (menuName) => {
+        setActiveMenu((prev) => (prev === menuName ? null : menuName));
+    };
+
+    const getVolumeIcon = () => {
+        if (isMuted || volume === 0) return <VolumeX size={18} />;
+        if (volume < 0.5) return <Volume1 size={18} />;
+        return <Volume2 size={18} />;
+    };
+
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
     const volumePercent = isMuted ? 0 : volume * 100;
 
@@ -401,6 +546,46 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
                 crossOrigin="anonymous"
             />
 
+            {/* Top Overlay */}
+            <div className="epic-player-top-bar" onClick={(e) => e.stopPropagation()}>
+                <button
+                    type="button"
+                    className="epic-player-btn accent-hover back-btn"
+                    onClick={() => navigate(-1)}
+                    title="Go Back"
+                >
+                    <ChevronLeft size={22} />
+                </button>
+                <div className="epic-player-top-title-group">
+                    <span className="epic-player-top-title">{title}</span>
+                    {mediaType === "tv" && (
+                        <span className="epic-player-top-subtitle">
+                            Season {season}, Episode {episode}
+                        </span>
+                    )}
+                </div>
+                <div className="epic-player-top-badges">
+                    {activeStream && (
+                        <>
+                            <span className="epic-player-badge quality">
+                                {activeStream.quality}
+                            </span>
+                            <span className="epic-player-badge server">
+                                {activeStream.provider}
+                            </span>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            {/* Center Loading Buffer Indicator */}
+            {isBuffering && (
+                <div className="epic-player-center-loading" onClick={(e) => e.stopPropagation()}>
+                    <div className="epic-player-loader-spinner" />
+                    <span className="epic-player-loader-text">Buffering...</span>
+                </div>
+            )}
+
             {/* Center Big Play Button Overlay */}
             <div
                 className={`epic-player-center-play ${!isPlaying ? "paused" : ""}`}
@@ -412,24 +597,105 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
                 {!isPlaying ? <Play size={28} fill="#fff" style={{ marginLeft: 3 }} /> : <Pause size={28} fill="#fff" />}
             </div>
 
+            {/* Pause Info Overlay */}
+            {!isPlaying && showControls && (
+                <div className="epic-player-pause-overlay" onClick={(e) => e.stopPropagation()}>
+                    <div className="epic-player-pause-card">
+                        {titleLogo ? (
+                            <img
+                                src={imageUrl(titleLogo, "w500")}
+                                alt={title}
+                                className="epic-player-pause-logo"
+                            />
+                        ) : (
+                            <h2 className="epic-player-pause-title">{title}</h2>
+                        )}
+                        <p className="epic-player-pause-summary">
+                            {details?.overview || "No summary available."}
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Floating Information Panel on load */}
+            {showFloatingInfo && (
+                <div className="epic-player-floating-info" onClick={(e) => e.stopPropagation()}>
+                    {details?.poster_path && (
+                        <img 
+                            src={imageUrl(details.poster_path, "w92")} 
+                            alt="" 
+                            className="epic-player-floating-poster"
+                        />
+                    )}
+                    <div className="epic-player-floating-copy">
+                        <span className="epic-player-floating-badge">Now Playing</span>
+                        <h4>{title}</h4>
+                        {mediaType === "tv" && <h5>Season {season}, Episode {episode}</h5>}
+                        <p>{details?.overview || "Enjoy the show!"}</p>
+                    </div>
+                </div>
+            )}
+
             {/* Bottom Controls Bar */}
             <div
                 className="epic-player-controls"
                 onClick={(e) => e.stopPropagation()}
             >
+                {/* Metadata Row */}
+                {showControls && (
+                    <div className="epic-player-meta-row">
+                        <span className="epic-player-meta-title">{title}</span>
+                        <span className="epic-player-meta-dot" />
+                        {details && (
+                            <>
+                                {details.release_date && (
+                                    <>
+                                        <span>{new Date(details.release_date).getFullYear()}</span>
+                                        <span className="epic-player-meta-dot" />
+                                    </>
+                                )}
+                                {details.first_air_date && (
+                                    <>
+                                        <span>{new Date(details.first_air_date).getFullYear()}</span>
+                                        <span className="epic-player-meta-dot" />
+                                    </>
+                                )}
+                                {details.vote_average ? (
+                                    <>
+                                        <span className="rating-pill">
+                                            <Star size={12} fill="currentColor" style={{ marginRight: 3 }} />
+                                            {details.vote_average.toFixed(1)}
+                                        </span>
+                                        <span className="epic-player-meta-dot" />
+                                    </>
+                                ) : null}
+                            </>
+                        )}
+                        <span>{formatTime(duration)}</span>
+                    </div>
+                )}
+
                 {/* Custom Progress Scrubber */}
                 <div className="epic-player-scrub-row">
-                    <input
-                        type="range"
-                        className="epic-player-slider"
-                        min={0}
-                        max={duration || 100}
-                        value={currentTime}
-                        onChange={handleScrub}
-                        style={{
-                            background: `linear-gradient(to right, var(--accent) ${progressPercent}%, rgba(255, 255, 255, 0.2) ${progressPercent}%)`
-                        }}
-                    />
+                    <div className="epic-player-scrub-container">
+                        <div className="epic-player-scrub-track-bg" />
+                        <div
+                            className="epic-player-scrub-track-buffer"
+                            style={{ width: `${bufferedPercent}%` }}
+                        />
+                        <div
+                            className="epic-player-scrub-track-played"
+                            style={{ width: `${progressPercent}%` }}
+                        />
+                        <input
+                            type="range"
+                            className="epic-player-slider"
+                            min={0}
+                            max={duration || 100}
+                            value={currentTime}
+                            onChange={handleScrub}
+                        />
+                    </div>
                 </div>
 
                 {/* Buttons Control Panel */}
@@ -440,17 +706,67 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
                             type="button"
                             className="epic-player-btn accent-hover"
                             onClick={togglePlay}
+                            title={isPlaying ? "Pause" : "Play"}
                         >
                             {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
                         </button>
 
+                        {/* Prev Episode button (Series Mode only) */}
+                        {mediaType === "tv" && (
+                            <>
+                                <button
+                                    type="button"
+                                    className="epic-player-btn accent-hover"
+                                    disabled={!previousEpisode}
+                                    onClick={() => previousEpisode && onNavigateEpisode(previousEpisode.episode_number)}
+                                    title="Previous Episode"
+                                >
+                                    <SkipBack size={16} fill="currentColor" />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="epic-player-btn accent-hover"
+                                    disabled={!nextEpisode}
+                                    onClick={() => nextEpisode && onNavigateEpisode(nextEpisode.episode_number)}
+                                    title="Next Episode"
+                                >
+                                    <SkipForward size={16} fill="currentColor" />
+                                </button>
+                            </>
+                        )}
+
+                        {/* Rewind / Forward 10s */}
+                        <button
+                            type="button"
+                            className="epic-player-btn accent-hover"
+                            onClick={() => {
+                                const video = videoRef.current;
+                                if (video) video.currentTime = Math.max(0, video.currentTime - 10);
+                            }}
+                            title="Rewind 10s"
+                        >
+                            <RotateCcw size={17} />
+                        </button>
+                        <button
+                            type="button"
+                            className="epic-player-btn accent-hover"
+                            onClick={() => {
+                                const video = videoRef.current;
+                                if (video) video.currentTime = Math.min(video.duration || 0, video.currentTime + 10);
+                            }}
+                            title="Forward 10s"
+                        >
+                            <RotateCw size={17} />
+                        </button>
+
+                        {/* Volume controls */}
                         <div className="epic-player-volume-container">
                             <button
                                 type="button"
                                 className="epic-player-btn accent-hover"
                                 onClick={toggleMute}
                             >
-                                {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                                {getVolumeIcon()}
                             </button>
                             <input
                                 type="range"
@@ -473,16 +789,85 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
 
                     {/* Right Actions */}
                     <div className="epic-player-group">
+                        {/* Subtitle track Selector */}
                         <div className="epic-player-settings-wrapper">
                             <button
                                 type="button"
-                                className={`epic-player-btn ${isSettingsOpen ? 'accent-hover active' : ''}`}
-                                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                                className={`epic-player-btn ${activeMenu === "subtitles" ? "accent-hover active" : ""}`}
+                                onClick={() => toggleMenu("subtitles")}
+                                title="Subtitles"
                             >
-                                <Settings size={18} />
+                                <Subtitles size={18} />
+                            </button>
+                            {activeMenu === "subtitles" && (
+                                <div className="epic-player-menu">
+                                    <span className="epic-player-menu-title">Subtitles</span>
+                                    <button
+                                        type="button"
+                                        className={`epic-player-menu-item ${activeSubtitle === -1 ? "active" : ""}`}
+                                        onClick={() => handleSubtitleChange(-1)}
+                                    >
+                                        Off
+                                    </button>
+                                    {subtitles.map((track, idx) => (
+                                        <button
+                                            type="button"
+                                            key={idx}
+                                            className={`epic-player-menu-item ${activeSubtitle === idx ? "active" : ""}`}
+                                            onClick={() => handleSubtitleChange(idx)}
+                                        >
+                                            {track.name || track.label || `Track ${idx + 1}`}
+                                        </button>
+                                    ))}
+                                    {subtitles.length === 0 && (
+                                        <span className="epic-player-menu-title" style={{textTransform:'none', color:'#64748b'}}>None available</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Audio track Selector */}
+                        <div className="epic-player-settings-wrapper">
+                            <button
+                                type="button"
+                                className={`epic-player-btn ${activeMenu === "audio" ? "accent-hover active" : ""}`}
+                                onClick={() => toggleMenu("audio")}
+                                title="Audio Tracks"
+                            >
+                                <Headphones size={18} />
+                            </button>
+                            {activeMenu === "audio" && (
+                                <div className="epic-player-menu">
+                                    <span className="epic-player-menu-title">Audio Tracks</span>
+                                    {audioTracks.map((track, idx) => (
+                                        <button
+                                            type="button"
+                                            key={idx}
+                                            className={`epic-player-menu-item ${activeAudio === idx ? "active" : ""}`}
+                                            onClick={() => handleAudioChange(idx)}
+                                        >
+                                            {track.name || track.label || `Track ${idx + 1}`}
+                                        </button>
+                                    ))}
+                                    {audioTracks.length === 0 && (
+                                        <span className="epic-player-menu-title" style={{textTransform:'none', color:'#64748b'}}>Default Track</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Playback speed selector */}
+                        <div className="epic-player-settings-wrapper">
+                            <button
+                                type="button"
+                                className={`epic-player-btn ${activeMenu === "speed" ? "accent-hover active" : ""}`}
+                                onClick={() => toggleMenu("speed")}
+                                title="Playback Speed"
+                            >
+                                <Gauge size={18} />
                             </button>
 
-                            {isSettingsOpen && (
+                            {activeMenu === "speed" && (
                                 <div className="epic-player-menu">
                                     <span className="epic-player-menu-title">Speed</span>
                                     {[0.5, 1, 1.25, 1.5, 2].map((rate) => (
@@ -499,10 +884,64 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
                             )}
                         </div>
 
+                        {/* Quality & Server selector */}
+                        <div className="epic-player-settings-wrapper">
+                            <button
+                                type="button"
+                                className={`epic-player-btn ${activeMenu === "quality" ? "accent-hover active" : ""}`}
+                                onClick={() => toggleMenu("quality")}
+                                title="Server / Quality"
+                            >
+                                <Sliders size={17} />
+                            </button>
+
+                            {activeMenu === "quality" && (
+                                <div className="epic-player-menu quality-menu" style={{ width: 174 }}>
+                                    <span className="epic-player-menu-title">Server & Quality</span>
+                                    {streams.map((stream, idx) => (
+                                        <button
+                                            type="button"
+                                            key={idx}
+                                            className={`epic-player-menu-item ${activeStream?.url === stream.url ? "active" : ""}`}
+                                            onClick={() => {
+                                                setActiveStream(stream);
+                                                setActiveMenu(null);
+                                            }}
+                                        >
+                                            {stream.title || stream.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Picture in Picture */}
+                        <button
+                            type="button"
+                            className="epic-player-btn accent-hover"
+                            onClick={togglePip}
+                            title="Picture-in-Picture"
+                        >
+                            <PictureInPicture size={18} />
+                        </button>
+
+                        {/* Theater Mode */}
+                        <button
+                            type="button"
+                            className={`epic-player-btn accent-hover ${isTheaterMode ? "active" : ""}`}
+                            onClick={() => setIsTheaterMode(!isTheaterMode)}
+                            title="Theater Mode"
+                            style={{ color: isTheaterMode ? "var(--accent)" : "" }}
+                        >
+                            <Layout size={18} />
+                        </button>
+
+                        {/* Fullscreen */}
                         <button
                             type="button"
                             className="epic-player-btn accent-hover"
                             onClick={toggleFullscreen}
+                            title="Fullscreen"
                         >
                             {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
                         </button>
@@ -535,6 +974,9 @@ const WatchPage = () => {
     const [streams, setStreams] = useState([]);
     const [activeStream, setActiveStream] = useState(null);
     const [isStreamsLoading, setIsStreamsLoading] = useState(false);
+
+    // Layout configuration
+    const [isTheaterMode, setIsTheaterMode] = useState(false);
 
     const [isProviderMenuOpen, setIsProviderMenuOpen] = useState(false);
     const providerMenuRef = useRef(null);
@@ -754,7 +1196,7 @@ const WatchPage = () => {
             )}
             <div className="watch-shade" />
 
-            <main className={`watch-shell ${mediaType === "movie" ? "movie-mode" : "series-mode"}`}>
+            <main className={`watch-shell ${mediaType === "movie" ? "movie-mode" : "series-mode"} ${isTheaterMode ? "theater-mode" : ""}`}>
                 <section className="watch-main-grid">
                     <div className="watch-primary">
                         <section className="watch-player-card" aria-label={`${title} player`}>
@@ -778,67 +1220,23 @@ const WatchPage = () => {
                                             timeStr: formatTime(progress.currentTime),
                                         });
                                     }}
+                                    title={title}
+                                    mediaType={mediaType}
+                                    season={season}
+                                    episode={episode}
+                                    previousEpisode={previousEpisode}
+                                    nextEpisode={nextEpisode}
+                                    onNavigateEpisode={navigateToEpisode}
+                                    activeStream={activeStream}
+                                    streams={streams}
+                                    setActiveStream={setActiveStream}
+                                    details={details}
+                                    isTheaterMode={isTheaterMode}
+                                    setIsTheaterMode={setIsTheaterMode}
+                                    titleLogo={titleLogo}
                                 />
                             )}
                         </section>
-
-                        <div className="watch-quick-nav">
-                            <div className="watch-quick-nav-left">
-                                {mediaType === "tv" && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            className="watch-nav-btn"
-                                            disabled={!previousEpisode}
-                                            onClick={() => previousEpisode && navigateToEpisode(previousEpisode.episode_number)}
-                                        >
-                                            <ChevronLeft size={15} />
-                                            Prev
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="watch-nav-btn"
-                                            disabled={!nextEpisode}
-                                            onClick={() => nextEpisode && navigateToEpisode(nextEpisode.episode_number)}
-                                        >
-                                            Next
-                                            <ChevronRight size={15} />
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-
-                            <div className="watch-server-box" ref={providerMenuRef}>
-                                <button
-                                    type="button"
-                                    className="watch-server-trigger"
-                                    onClick={() => setIsProviderMenuOpen((value) => !value)}
-                                    aria-expanded={isProviderMenuOpen}
-                                >
-                                    <strong>
-                                        {activeStream ? activeStream.title || activeStream.name : "Select Source"}
-                                        <ChevronDown size={16} />
-                                    </strong>
-                                </button>
-                                {isProviderMenuOpen && streams.length > 0 && (
-                                    <div className={`watch-provider-menu ${openUpward ? "open-up" : ""}`}>
-                                        {streams.map((stream, idx) => (
-                                            <button
-                                                type="button"
-                                                key={idx}
-                                                className={activeStream?.url === stream.url ? "active" : ""}
-                                                onClick={() => {
-                                                    setActiveStream(stream);
-                                                    setIsProviderMenuOpen(false);
-                                                }}
-                                            >
-                                                {stream.title || stream.name}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
                     </div>
 
                     {mediaType === "tv" && (
