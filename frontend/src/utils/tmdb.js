@@ -85,7 +85,7 @@ export const tmdbGetRecommendations = async (type, id) => {
 // export const ACTIVE_PROVIDER = "vidsrc_me"; // Option 3: VidSrc.me (Alternative API format)
 export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
 
-export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIVE_PROVIDER) => {
+export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIVE_PROVIDER, progress = 0) => {
     const color = "ff2633"; // Project accent color
     const commonParams = `overlay=true&color=${color}`;
     
@@ -136,6 +136,17 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
                 return `https://vidlink.pro/movie/${id}?${params}`;
             }
             return `https://vidlink.pro/tv/${id}/${season}/${episode}?${params}`;
+        }
+            
+        case "vidking": {
+            const themeColor = "ff2633";
+            const common = `color=${themeColor}&autoPlay=true`;
+            const progressParam = progress > 0 ? `&progress=${progress}` : "";
+            
+            if (type === "movie") {
+                return `https://www.vidking.net/embed/movie/${id}?${common}${progressParam}`;
+            }
+            return `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?${common}&nextEpisode=true&episodeSelector=true${progressParam}`;
         }
             
         default:

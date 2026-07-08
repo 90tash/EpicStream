@@ -55,11 +55,12 @@ const getProviderLabel = (provider) => {
         "1embed": "1Embed",
         vidfast: "VidFast",
         vidcore: "VidCore",
+        vidking: "VidKing",
     };
     return labels[provider] || provider;
 };
 
-const WATCH_PROVIDERS = ["vidlink", "vidsync", "videasy", "1embed", "vidfast", "vidcore"];
+const WATCH_PROVIDERS = ["vidlink", "vidsync", "videasy", "1embed", "vidfast", "vidcore", "vidking"];
 
 
 
@@ -96,9 +97,18 @@ const WatchPage = () => {
 
     const title = getTitle(details);
     const anime = mediaType === "tv" && isAnime(details);
+    const savedProgress = useMemo(() => {
+        const historyItem = getHistory().find(h => h.id === Number(id));
+        if (mediaType === "tv") {
+            const isSameEpisode = historyItem?.season === season && historyItem?.episode === episode;
+            return isSameEpisode ? Math.floor(historyItem.currentTime || 0) : 0;
+        }
+        return Math.floor(historyItem?.currentTime || 0);
+    }, [id, mediaType, season, episode]);
+
     const playerUrl = useMemo(
-        () => getPlayerUrl(mediaType, id, season, episode, selectedProvider),
-        [episode, id, mediaType, season, selectedProvider]
+        () => getPlayerUrl(mediaType, id, season, episode, selectedProvider, savedProgress),
+        [episode, id, mediaType, season, selectedProvider, savedProgress]
     );
 
     const seasonsList = useMemo(
@@ -249,6 +259,8 @@ const WatchPage = () => {
                 "https://1embed.cc",
                 "https://vidsync.live",
                 "https://vidcore.net",
+                "https://www.vidking.net",
+                "https://vidking.net",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
@@ -317,7 +329,11 @@ const WatchPage = () => {
 
                 const time = playerState.time !== undefined ? playerState.time : playerState.currentTime;
                 const duration = playerState.duration || 0;
-                const percentage = playerState.percentage !== undefined ? playerState.percentage : (duration > 0 ? Math.round((time / duration) * 100) : 0);
+                const percentage = playerState.percentage !== undefined
+                    ? playerState.percentage
+                    : (playerState.progress !== undefined
+                        ? Math.round(playerState.progress)
+                        : (duration > 0 ? Math.round((time / duration) * 100) : 0));
 
                 updateHistoryProgress(id, {
                     percentage,
