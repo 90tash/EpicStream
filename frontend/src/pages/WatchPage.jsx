@@ -18,7 +18,7 @@ import {
     tmdbGetImages,
     tmdbGetSeason,
 } from "../utils/tmdb";
-import { addToHistory, updateHistoryProgress } from "../utils/history";
+import { addToHistory, updateHistoryProgress, getHistory } from "../utils/history";
 import { isAnime } from "../utils/anilist";
 import "./watchPage.css";
 
@@ -83,7 +83,10 @@ const WatchPage = () => {
     const [error, setError] = useState("");
     const [episodeQuery, setEpisodeQuery] = useState("");
     const [isSeasonMenuOpen, setIsSeasonMenuOpen] = useState(false);
-    const [selectedProvider, setSelectedProvider] = useState(ACTIVE_PROVIDER);
+    const [selectedProvider, setSelectedProvider] = useState(() => {
+        const historyItem = getHistory().find((h) => h.id === Number(id));
+        return historyItem?.provider || ACTIVE_PROVIDER;
+    });
     const [isProviderMenuOpen, setIsProviderMenuOpen] = useState(false);
     const providerMenuRef = useRef(null);
     const seasonMenuRef = useRef(null);
@@ -195,8 +198,29 @@ const WatchPage = () => {
 
     useEffect(() => {
         if (!details) return;
-        addToHistory(details, mediaType, mediaType === "tv" ? season : null, mediaType === "tv" ? episode : null);
-    }, [details, episode, mediaType, season]);
+
+        const historyItem = getHistory().find(h => h.id === Number(id));
+        if (historyItem?.provider) {
+            setSelectedProvider(historyItem.provider);
+        } else {
+            // Check if Indian content or Japanese Anime
+            const isJapaneseAnime = mediaType === "tv" && isAnime(details);
+            const isIndian = (
+                (details.origin_country && Array.isArray(details.origin_country) && details.origin_country.includes("IN")) ||
+                (details.production_countries && Array.isArray(details.production_countries) && details.production_countries.some(c => c.iso_3166_1 === "IN")) ||
+                (["hi", "te", "ta", "ml", "kn", "bn", "mr", "gu", "pa", "ur", "or", "as"].includes(details.original_language))
+            );
+
+            if (isJapaneseAnime || isIndian) {
+                setSelectedProvider("vidsync");
+            }
+        }
+    }, [details, id, mediaType]);
+
+    useEffect(() => {
+        if (!details) return;
+        addToHistory(details, mediaType, mediaType === "tv" ? season : null, mediaType === "tv" ? episode : null, selectedProvider);
+    }, [details, episode, mediaType, season, selectedProvider]);
 
     useEffect(() => {
         const formatTime = (seconds) => {

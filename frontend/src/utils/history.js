@@ -1,9 +1,10 @@
 const HISTORY_KEY = "epicstream_watch_history";
 const MAX_HISTORY = 20;
 
-export const addToHistory = (item, type, season = null, episode = null) => {
+export const addToHistory = (item, type, season = null, episode = null, provider = null) => {
     try {
         const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+        const existingItem = history.find(h => h.id === item.id);
         
         // Remove existing entry for the same ID to move it to the top
         const filteredHistory = history.filter(h => h.id !== item.id);
@@ -19,6 +20,11 @@ export const addToHistory = (item, type, season = null, episode = null) => {
             type,
             season,
             episode,
+            provider: provider || existingItem?.provider || null,
+            percentage: existingItem?.percentage || 0,
+            currentTime: existingItem?.currentTime || 0,
+            duration: existingItem?.duration || 0,
+            timeStr: existingItem?.timeStr || "",
             timestamp: Date.now()
         };
         
