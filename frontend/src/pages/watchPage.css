@@ -1109,12 +1109,13 @@
 @media (min-width: 1181px) {
     .series-mode .watch-main-grid {
         grid-template-columns: minmax(0, 1fr) 450px;
+        align-items: stretch;
     }
 
     .series-mode .watch-side-panel {
         position: sticky;
         top: 24px;
-        height: 618px;
+        height: 100%;
         display: flex;
         flex-direction: column;
     }
