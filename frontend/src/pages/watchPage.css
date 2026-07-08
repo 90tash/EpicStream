@@ -1114,7 +1114,7 @@
     .series-mode .watch-side-panel {
         position: sticky;
         top: 24px;
-        height: 617px;
+        height: 618px;
         display: flex;
         flex-direction: column;
     }
