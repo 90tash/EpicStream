@@ -75,6 +75,31 @@ async function prefetchSegment(url, headers) {
 
 const DEFAULT_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
+function injectProxyHeaders(targetUrl, originalHeaders = {}) {
+    const headers = { ...originalHeaders };
+    try {
+        const parsedTarget = new URL(targetUrl);
+        const targetHost = parsedTarget.hostname.toLowerCase();
+        
+        if (!headers['User-Agent'] && !headers['user-agent']) {
+            headers['User-Agent'] = DEFAULT_UA;
+        }
+
+        if (!headers.Referer && !headers.referer) {
+            if (targetHost.includes('hubcloud') || targetHost.includes('latent.click') || targetHost.includes('fukggl.buzz')) {
+                headers.Referer = 'https://hubcloud.cx/';
+                headers.Origin = 'https://hubcloud.cx';
+            } else if (targetHost.includes('pixeldrain')) {
+                headers.Referer = 'https://pixeldrain.com/';
+            }
+        }
+    } catch (err) {
+        // Ignore URL parsing errors
+    }
+    return headers;
+}
+
+
 function inferContentType(upstreamCT, targetUrl) {
     const bad = !upstreamCT || /application\/octet-stream/i.test(upstreamCT) || /application\/(x-)?zip/i.test(upstreamCT);
     if (!bad) return upstreamCT;
@@ -118,11 +143,14 @@ function rewriteM3u8(content, targetUrl, baseProxyUrl, headers) {
     for (const line of lines) {
         if (line.startsWith('#')) {
             if (line.startsWith('#EXT-X-KEY:')) {
-                const regex = /https?:\/\/[^""\s]+/g; const keyUrl = regex.exec(line)?.[0];
-                if (keyUrl) {
-                    const proxyUrl = `${baseProxyUrl}/ts-proxy?url=${encodeURIComponent(keyUrl)}&headers=${encodeURIComponent(JSON.stringify(headers))}`;
-                    out.push(line.replace(keyUrl, proxyUrl));
-                    if (!isCacheDisabled()) prefetchSegment(keyUrl, headers);
+                const uriMatch = line.match(/URI="([^"]+)"/);
+                if (uriMatch) {
+                    try {
+                        const keyUrl = new URL(uriMatch[1], targetUrl).href;
+                        const proxyUrl = `${baseProxyUrl}/ts-proxy?url=${encodeURIComponent(keyUrl)}&headers=${encodeURIComponent(JSON.stringify(headers))}`;
+                        out.push(line.replace(`URI="${uriMatch[1]}"`, `URI="${proxyUrl}"`));
+                        if (!isCacheDisabled()) prefetchSegment(keyUrl, headers);
+                    } catch { out.push(line); }
                 } else out.push(line);
             } else if (line.startsWith('#EXT-X-MEDIA:') || line.startsWith('#EXT-X-I-FRAME-STREAM-INF:')) {
                 const uriMatch = line.match(/URI="([^"]+)"/);
@@ -142,10 +170,10 @@ function rewriteM3u8(content, targetUrl, baseProxyUrl, headers) {
                 const abs = new URL(line, targetUrl).href;
                 if (/\.m3u8(\?|$)/i.test(abs)) {
                     out.push(`${baseProxyUrl}/m3u8-proxy?url=${encodeURIComponent(abs)}&headers=${encodeURIComponent(JSON.stringify(headers))}`);
-                } else if (/\.ts(\?|$)/i.test(abs)) {
+                } else {
                     segmentUrls.push(abs);
                     out.push(`${baseProxyUrl}/ts-proxy?url=${encodeURIComponent(abs)}&headers=${encodeURIComponent(JSON.stringify(headers))}`);
-                } else out.push(line);
+                }
             } catch { out.push(line); }
         } else out.push(line);
     }
@@ -158,14 +186,21 @@ function rewriteM3u8(content, targetUrl, baseProxyUrl, headers) {
 function createProxyRoutes(app) {
     // m3u8 playlist proxy
     app.get('/m3u8-proxy', cors(), async (req, res) => {
-        const targetUrl = req.query.url; if (!targetUrl) return res.status(400).json({ error: 'URL parameter required' });
+        const targetUrl = req.query.url; if (!targetUrl) {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            return res.status(400).json({ error: 'URL parameter required' });
+        }
         let headers = {};
         try { headers = JSON.parse(req.query.headers || '{}'); } catch {
             // Ignore URL parsing errors
         }
         try {
-            const response = await fetch(targetUrl, { headers: { 'User-Agent': DEFAULT_UA, ...headers } });
-            if (!response.ok) return res.status(response.status).json({ error: `M3U8 fetch failed: ${response.status}` });
+            headers = injectProxyHeaders(targetUrl, headers);
+            const response = await fetch(targetUrl, { headers });
+            if (!response.ok) {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                return res.status(response.status).json({ error: `M3U8 fetch failed: ${response.status}` });
+            }
             const text = await response.text();
             const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
             const baseProxyUrl = `${protocol}://${req.get('host')}`;
@@ -174,7 +209,10 @@ function createProxyRoutes(app) {
             res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.send(rewritten);
-        } catch (e) { res.status(500).json({ error: e.message }); }
+        } catch (e) {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.status(500).json({ error: e.message });
+        }
     });
 
     // ts / key segment proxy
@@ -198,6 +236,7 @@ function createProxyRoutes(app) {
         let headers = {}; try { headers = JSON.parse(req.query.headers || '{}'); } catch {
             // Ignore URL parsing errors
         }
+        headers = injectProxyHeaders(targetUrl, headers);
         // Pass through Range header for progressive playback / seeking
         const range = req.headers['range'];
         let appliedClamp = false;
@@ -378,6 +417,7 @@ function createProxyRoutes(app) {
             const resp = await fetch(targetUrl, upstreamOptions);
             if (!resp.ok && resp.status !== 206) {
                 if (debug) console.log('[ts-proxy] upstream error', resp.status);
+                res.setHeader('Access-Control-Allow-Origin', '*');
                 return res.status(resp.status).json({ error: `TS fetch failed: ${resp.status}` });
             }
             // Forward partial content status when range used
@@ -407,23 +447,36 @@ function createProxyRoutes(app) {
             res.setHeader('Access-Control-Allow-Origin', '*');
             if (debug) console.log('[ts-proxy] streaming body', { status: resp.status, ct: upstreamCT, cl, contentRange: force200 ? undefined : contentRange });
             resp.body.pipe(res);
-        } catch (e) { if (debug) console.log('[ts-proxy] exception', e.message); res.status(500).json({ error: e.message }); }
+        } catch (e) {
+            if (debug) console.log('[ts-proxy] exception', e.message);
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.status(500).json({ error: e.message });
+        }
     });
 
     // subtitle proxy
     app.get('/sub-proxy', cors(), async (req, res) => {
-        const targetUrl = req.query.url; if (!targetUrl) return res.status(400).json({ error: 'url parameter required' });
+        const targetUrl = req.query.url; if (!targetUrl) {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            return res.status(400).json({ error: 'url parameter required' });
+        }
         let headers = {}; try { headers = JSON.parse(req.query.headers || '{}'); } catch {
             // Ignore URL parsing errors
         }
         try {
             const resp = await fetch(targetUrl, { headers: { 'User-Agent': DEFAULT_UA, ...headers } });
-            if (!resp.ok) return res.status(resp.status).json({ error: `subtitle fetch failed: ${resp.status}` });
+            if (!resp.ok) {
+                res.setHeader('Access-Control-Allow-Origin', '*');
+                return res.status(resp.status).json({ error: `subtitle fetch failed: ${resp.status}` });
+            }
             res.setHeader('Access-Control-Allow-Origin', '*');
             res.setHeader('Cache-Control', 'public, max-age=3600');
             res.setHeader('Content-Type', resp.headers.get('content-type') || 'text/vtt');
             resp.body.pipe(res);
-        } catch (e) { res.status(500).json({ error: e.message }); }
+        } catch (e) {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.status(500).json({ error: e.message });
+        }
     });
 }
 

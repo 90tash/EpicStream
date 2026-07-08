@@ -70,11 +70,16 @@ async function getNotorrentStreams(tmdbId, mediaType = 'movie', seasonNum = null
             const proxyHeaders = (item.behaviorHints?.proxyHeaders?.request) || {};
             const headers = { ...(item.behaviorHints?.headers || {}), ...proxyHeaders };
 
+            let streamUrl = item.url;
+            if (streamUrl.startsWith('/')) {
+                streamUrl = `${NOTORRENT_API}${streamUrl}`;
+            }
+
             const nameParts = ['NoTorrent', language !== 'Default' ? language : ''].filter(p => p.trim() !== '');
             streams.push({
                 name: nameParts.join(' \u2022 '),
                 title: quality,
-                url: item.url,
+                url: streamUrl,
                 quality,
                 provider: 'NoTorrent',
                 headers: Object.keys(headers).length > 0 ? headers : undefined

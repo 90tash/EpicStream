@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable */
 import {
     ChevronDown,
     ChevronLeft,
@@ -114,6 +114,13 @@ const HlsPlayer = ({
             const apiHost = new URL(apiBase).host;
             const streamUrl = new URL(url);
             
+            const queryUrl = streamUrl.searchParams.get("url");
+            if (queryUrl && queryUrl.startsWith("/")) {
+                const absoluteQueryUrl = `https://addon-osvh.onrender.com${queryUrl}`;
+                streamUrl.searchParams.set("url", absoluteQueryUrl);
+                url = streamUrl.toString();
+            }
+
             if (streamUrl.host === apiHost || streamUrl.host.includes("onrender.com")) {
                 const targetProtocol = apiBase.startsWith("https:") ? "https:" : "http:";
                 if (streamUrl.protocol !== targetProtocol) {
@@ -169,6 +176,16 @@ const HlsPlayer = ({
         const hours = Math.floor(mins / 60);
         const remainingMins = mins % 60;
         return hours > 0 ? `${hours}h ${remainingMins}m` : `${remainingMins}m`;
+    };
+
+    const getReleaseYear = () => {
+        const dateStr = details?.release_date || details?.first_air_date;
+        if (!dateStr) return null;
+        try {
+            return new Date(dateStr).getFullYear();
+        } catch {
+            return null;
+        }
     };
 
     const fetchStreamsForProvider = async (providerId) => {
@@ -888,6 +905,27 @@ const HlsPlayer = ({
                         ) : (
                             <h2 className="epic-player-pause-title">{title}</h2>
                         )}
+
+                        {/* Pause Metadata Row */}
+                        {details && (
+                            <div className="epic-player-pause-meta">
+                                {details.vote_average ? (
+                                    <span className="pause-rating">
+                                        <Star size={14} fill="currentColor" style={{ marginRight: 4 }} />
+                                        {details.vote_average.toFixed(1)}
+                                    </span>
+                                ) : null}
+                                
+                                {getFormattedRuntime() && (
+                                    <span className="pause-runtime">{getFormattedRuntime()}</span>
+                                )}
+
+                                {getReleaseYear() && (
+                                    <span className="pause-year">{getReleaseYear()}</span>
+                                )}
+                            </div>
+                        )}
+
                         <p className="epic-player-pause-summary">
                             {details?.overview || "No summary available."}
                         </p>
@@ -919,39 +957,7 @@ const HlsPlayer = ({
                 className="epic-player-controls"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Metadata Row */}
-                {showControls && (
-                    <div className="epic-player-meta-row">
-                        <span className="epic-player-meta-title">{title}</span>
-                        <span className="epic-player-meta-dot" />
-                        {details && (
-                            <>
-                                {details.release_date && (
-                                    <>
-                                        <span>{new Date(details.release_date).getFullYear()}</span>
-                                        <span className="epic-player-meta-dot" />
-                                    </>
-                                )}
-                                {details.first_air_date && (
-                                    <>
-                                        <span>{new Date(details.first_air_date).getFullYear()}</span>
-                                        <span className="epic-player-meta-dot" />
-                                    </>
-                                )}
-                                {details.vote_average ? (
-                                    <>
-                                        <span className="rating-pill">
-                                            <Star size={12} fill="currentColor" style={{ marginRight: 3 }} />
-                                            {details.vote_average.toFixed(1)}
-                                        </span>
-                                        <span className="epic-player-meta-dot" />
-                                    </>
-                                ) : null}
-                            </>
-                        )}
-                        <span>{formatTime(duration)}</span>
-                    </div>
-                )}
+
 
                 {/* Custom Progress Scrubber */}
                 <div className="epic-player-scrub-row">
