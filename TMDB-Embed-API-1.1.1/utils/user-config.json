@@ -1,0 +1,22 @@
+{
+  "defaultProviders": [],
+  "configVersion": 1,
+  "tmdbApiKeys": [],
+  "enableShowboxProvider": true,
+  "febboxCookies": [],
+  "enable4khdhubProvider": true,
+  "enableVixsrcProvider": true,
+  "enableProxy": true,
+  "disableCache": false,
+  "enablePStreamApi": true,
+  "disableUrlValidation": false,
+  "disable4khdhubUrlValidation": false,
+  "excludeCodecsRaw": "{\"excludeDV\":false,\"excludeHDR\":false}",
+  "minQualitiesRaw": "all",
+  "enableUhdmoviesProvider": false,
+  "enableVidlinkProvider": true,
+  "enableVideasyProvider": true,
+  "enableLordflixProvider": true,
+  "enableNotorrentProvider": true,
+  "port": 8787
+}

@@ -5,6 +5,13 @@ import {
     ChevronRight,
     Search,
     Star,
+    Play,
+    Pause,
+    Volume2,
+    VolumeX,
+    Maximize,
+    Minimize,
+    Settings,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -55,20 +62,36 @@ const formatTime = (seconds) => {
         .join(":");
 };
 
-// HLS Video Player Component using dynamic hls.js
+// HLS Video Player Component with Custom Controls
 const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
     const videoRef = useRef(null);
+    const containerRef = useRef(null);
     const hlsRef = useRef(null);
+    const controlsTimeoutRef = useRef(null);
 
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [volume, setVolume] = useState(1);
+    const [isMuted, setIsMuted] = useState(false);
+    const [playbackRate, setPlaybackRate] = useState(1);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [showControls, setShowControls] = useState(true);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+    // Load Video stream
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        // Clean up previous Hls instance
         if (hlsRef.current) {
             hlsRef.current.destroy();
             hlsRef.current = null;
         }
+
+        setIsPlaying(false);
+        setCurrentTime(0);
+        setDuration(0);
 
         let hlsInstance = null;
 
@@ -89,7 +112,9 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
                         if (savedProgress > 0) {
                             video.currentTime = savedProgress;
                         }
-                        video.play().catch(() => {});
+                        video.play()
+                            .then(() => setIsPlaying(true))
+                            .catch(() => setIsPlaying(false));
                     });
 
                     hlsInstance.on(Hls.Events.ERROR, (event, data) => {
@@ -107,23 +132,25 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
                         }
                     });
                 } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-                    // Native HLS support (Safari / iOS)
                     video.src = src;
                     video.addEventListener("loadedmetadata", () => {
                         if (savedProgress > 0) {
                             video.currentTime = savedProgress;
                         }
-                        video.play().catch(() => {});
+                        video.play()
+                            .then(() => setIsPlaying(true))
+                            .catch(() => setIsPlaying(false));
                     });
                 }
             } else {
-                // Direct MP4 / other playable video files
                 video.src = src;
                 video.addEventListener("loadedmetadata", () => {
                     if (savedProgress > 0) {
                         video.currentTime = savedProgress;
                     }
-                    video.play().catch(() => {});
+                    video.play()
+                        .then(() => setIsPlaying(true))
+                        .catch(() => setIsPlaying(false));
                 });
             }
         };
@@ -145,13 +172,15 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
         };
     }, [src, savedProgress]);
 
-    // Handle progress events
+    // Handle time updates & native playback state sync
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
         const handleTimeUpdate = () => {
+            setCurrentTime(video.currentTime);
             if (video.duration) {
+                setDuration(video.duration);
                 const percentage = Math.round((video.currentTime / video.duration) * 100);
                 onProgress({
                     currentTime: video.currentTime,
@@ -161,22 +190,326 @@ const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
             }
         };
 
+        const handleDurationChange = () => {
+            setDuration(video.duration);
+        };
+
+        const handlePlay = () => setIsPlaying(true);
+        const handlePause = () => setIsPlaying(false);
+
         video.addEventListener("timeupdate", handleTimeUpdate);
+        video.addEventListener("durationchange", handleDurationChange);
+        video.addEventListener("play", handlePlay);
+        video.addEventListener("pause", handlePause);
+
         return () => {
             video.removeEventListener("timeupdate", handleTimeUpdate);
+            video.removeEventListener("durationchange", handleDurationChange);
+            video.removeEventListener("play", handlePlay);
+            video.removeEventListener("pause", handlePause);
         };
     }, [onProgress, src]);
 
+    // Handle controls timeout visibility
+    const handleMouseMove = () => {
+        setShowControls(true);
+        if (controlsTimeoutRef.current) {
+            clearTimeout(controlsTimeoutRef.current);
+        }
+        if (isPlaying) {
+            controlsTimeoutRef.current = setTimeout(() => {
+                setShowControls(false);
+                setIsSettingsOpen(false);
+            }, 3000);
+        }
+    };
+
+    useEffect(() => {
+        if (!isPlaying) {
+            setShowControls(true);
+            if (controlsTimeoutRef.current) {
+                clearTimeout(controlsTimeoutRef.current);
+            }
+        }
+    }, [isPlaying]);
+
+    // Keyboard controls
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            const video = videoRef.current;
+            if (!video) return;
+
+            const activeTag = document.activeElement?.tagName.toLowerCase();
+            if (activeTag === "input" || activeTag === "textarea") return;
+
+            switch (e.key.toLowerCase()) {
+                case " ":
+                case "k":
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case "f":
+                    e.preventDefault();
+                    toggleFullscreen();
+                    break;
+                case "m":
+                    e.preventDefault();
+                    toggleMute();
+                    break;
+                case "arrowleft":
+                    e.preventDefault();
+                    video.currentTime = Math.max(0, video.currentTime - 10);
+                    break;
+                case "arrowright":
+                    e.preventDefault();
+                    video.currentTime = Math.min(video.duration || 0, video.currentTime + 10);
+                    break;
+                case "arrowup":
+                    e.preventDefault();
+                    setVolume((prev) => {
+                        const newVol = Math.min(1, prev + 0.1);
+                        video.volume = newVol;
+                        video.muted = false;
+                        setIsMuted(false);
+                        return newVol;
+                    });
+                    break;
+                case "arrowdown":
+                    e.preventDefault();
+                    setVolume((prev) => {
+                        const newVol = Math.max(0, prev - 0.1);
+                        video.volume = newVol;
+                        if (newVol === 0) {
+                            video.muted = true;
+                            setIsMuted(true);
+                        } else {
+                            video.muted = false;
+                            setIsMuted(false);
+                        }
+                        return newVol;
+                    });
+                    break;
+                default:
+                    break;
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isPlaying, isMuted, volume]);
+
+    const togglePlay = () => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        if (video.paused) {
+            video.play()
+                .then(() => setIsPlaying(true))
+                .catch(() => setIsPlaying(false));
+        } else {
+            video.pause();
+            setIsPlaying(false);
+        }
+    };
+
+    const toggleMute = () => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const newMuted = !video.muted;
+        video.muted = newMuted;
+        setIsMuted(newMuted);
+    };
+
+    const handleVolumeChange = (e) => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const newVol = parseFloat(e.target.value);
+        video.volume = newVol;
+        setVolume(newVol);
+        if (newVol === 0) {
+            video.muted = true;
+            setIsMuted(true);
+        } else {
+            video.muted = false;
+            setIsMuted(false);
+        }
+    };
+
+    const handleScrub = (e) => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const newTime = parseFloat(e.target.value);
+        video.currentTime = newTime;
+        setCurrentTime(newTime);
+    };
+
+    const handleSpeedChange = (rate) => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        video.playbackRate = rate;
+        setPlaybackRate(rate);
+        setIsSettingsOpen(false);
+    };
+
+    const toggleFullscreen = () => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        if (!document.fullscreenElement) {
+            container.requestFullscreen().catch((err) => {
+                console.error("Error enabling fullscreen:", err);
+            });
+            setIsFullscreen(true);
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
+    };
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+        };
+    }, []);
+
+    const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const volumePercent = isMuted ? 0 : volume * 100;
+
     return (
-        <video
-            ref={videoRef}
-            className="watch-frame"
-            poster={poster}
-            controls
-            playsInline
-            crossOrigin="anonymous"
-            style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
-        />
+        <div
+            ref={containerRef}
+            className={`epic-player-container ${showControls ? "controls-visible" : "controls-hidden"}`}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => isPlaying && setShowControls(false)}
+            onClick={togglePlay}
+        >
+            <video
+                ref={videoRef}
+                className="epic-player-video"
+                poster={poster}
+                playsInline
+                crossOrigin="anonymous"
+            />
+
+            {/* Center Big Play Button Overlay */}
+            <div
+                className={`epic-player-center-play ${!isPlaying ? "paused" : ""}`}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    togglePlay();
+                }}
+            >
+                {!isPlaying ? <Play size={28} fill="#fff" style={{ marginLeft: 3 }} /> : <Pause size={28} fill="#fff" />}
+            </div>
+
+            {/* Bottom Controls Bar */}
+            <div
+                className="epic-player-controls"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Custom Progress Scrubber */}
+                <div className="epic-player-scrub-row">
+                    <input
+                        type="range"
+                        className="epic-player-slider"
+                        min={0}
+                        max={duration || 100}
+                        value={currentTime}
+                        onChange={handleScrub}
+                        style={{
+                            background: `linear-gradient(to right, var(--accent) ${progressPercent}%, rgba(255, 255, 255, 0.2) ${progressPercent}%)`
+                        }}
+                    />
+                </div>
+
+                {/* Buttons Control Panel */}
+                <div className="epic-player-buttons-row">
+                    {/* Left Actions */}
+                    <div className="epic-player-group">
+                        <button
+                            type="button"
+                            className="epic-player-btn accent-hover"
+                            onClick={togglePlay}
+                        >
+                            {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+                        </button>
+
+                        <div className="epic-player-volume-container">
+                            <button
+                                type="button"
+                                className="epic-player-btn accent-hover"
+                                onClick={toggleMute}
+                            >
+                                {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                            </button>
+                            <input
+                                type="range"
+                                className="epic-player-volume-slider"
+                                min={0}
+                                max={1}
+                                step={0.05}
+                                value={isMuted ? 0 : volume}
+                                onChange={handleVolumeChange}
+                                style={{
+                                    background: `linear-gradient(to right, #fff ${volumePercent}%, rgba(255, 255, 255, 0.2) ${volumePercent}%)`
+                                }}
+                            />
+                        </div>
+
+                        <span className="epic-player-time">
+                            {formatTime(currentTime)} / {formatTime(duration)}
+                        </span>
+                    </div>
+
+                    {/* Right Actions */}
+                    <div className="epic-player-group">
+                        <div className="epic-player-settings-wrapper">
+                            <button
+                                type="button"
+                                className={`epic-player-btn ${isSettingsOpen ? 'accent-hover active' : ''}`}
+                                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                            >
+                                <Settings size={18} />
+                            </button>
+
+                            {isSettingsOpen && (
+                                <div className="epic-player-menu">
+                                    <span className="epic-player-menu-title">Speed</span>
+                                    {[0.5, 1, 1.25, 1.5, 2].map((rate) => (
+                                        <button
+                                            type="button"
+                                            key={rate}
+                                            className={`epic-player-menu-item ${playbackRate === rate ? "active" : ""}`}
+                                            onClick={() => handleSpeedChange(rate)}
+                                        >
+                                            {rate === 1 ? "Normal" : `${rate}x`}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <button
+                            type="button"
+                            className="epic-player-btn accent-hover"
+                            onClick={toggleFullscreen}
+                        >
+                            {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 
