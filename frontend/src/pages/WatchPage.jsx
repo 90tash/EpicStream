@@ -135,7 +135,6 @@ const WatchPage = () => {
                     display: "block"
                 }}
                 scrolling="no"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock"
                 allowFullScreen
                 allow="autoplay; encrypted-media; picture-in-picture; web-share"
                 title="Videasy Stream Player"
