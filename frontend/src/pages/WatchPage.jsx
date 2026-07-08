@@ -9,9 +9,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-    ACTIVE_PROVIDER,
     formatMediaType,
-    getPlayerUrl,
     getTitle,
     imageUrl,
     tmdbFetch,
@@ -47,24 +45,140 @@ const formatRuntime = (minutes) => {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 };
 
-const getProviderLabel = (provider) => {
-    const labels = {
-        vidlink: "VidLink",
-        vidsync: "VidSync",
-        videasy: "Videasy",
-        "1embed": "1Embed",
-        vidfast: "VidFast",
-        vidcore: "VidCore",
-        vidking: "VidKing",
-    };
-    return labels[provider] || provider;
+const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return [h, m, s]
+        .map((value) => (value < 10 ? `0${value}` : `${value}`))
+        .filter((value, index) => value !== "00" || index > 0)
+        .join(":");
 };
 
-const WATCH_PROVIDERS = ["vidlink", "vidsync", "videasy", "1embed", "vidfast", "vidcore", "vidking"];
+// HLS Video Player Component using dynamic hls.js
+const HlsPlayer = ({ src, poster, savedProgress, onProgress }) => {
+    const videoRef = useRef(null);
+    const hlsRef = useRef(null);
 
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
 
+        // Clean up previous Hls instance
+        if (hlsRef.current) {
+            hlsRef.current.destroy();
+            hlsRef.current = null;
+        }
 
+        let hlsInstance = null;
 
+        const loadVideo = () => {
+            const isHls = src.includes(".m3u8") || src.includes("m3u8-proxy");
+
+            if (isHls) {
+                if (Hls.isSupported()) {
+                    hlsInstance = new Hls({
+                        maxMaxBufferLength: 30,
+                        enableWorker: true,
+                    });
+                    hlsInstance.loadSource(src);
+                    hlsInstance.attachMedia(video);
+                    hlsRef.current = hlsInstance;
+
+                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                        if (savedProgress > 0) {
+                            video.currentTime = savedProgress;
+                        }
+                        video.play().catch(() => {});
+                    });
+
+                    hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+                        if (data.fatal) {
+                            switch (data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    hlsInstance.startLoad();
+                                    break;
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    hlsInstance.recoverMediaError();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    });
+                } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                    // Native HLS support (Safari / iOS)
+                    video.src = src;
+                    video.addEventListener("loadedmetadata", () => {
+                        if (savedProgress > 0) {
+                            video.currentTime = savedProgress;
+                        }
+                        video.play().catch(() => {});
+                    });
+                }
+            } else {
+                // Direct MP4 / other playable video files
+                video.src = src;
+                video.addEventListener("loadedmetadata", () => {
+                    if (savedProgress > 0) {
+                        video.currentTime = savedProgress;
+                    }
+                    video.play().catch(() => {});
+                });
+            }
+        };
+
+        if (typeof Hls === "undefined") {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js";
+            script.async = true;
+            script.onload = loadVideo;
+            document.body.appendChild(script);
+        } else {
+            loadVideo();
+        }
+
+        return () => {
+            if (hlsInstance) {
+                hlsInstance.destroy();
+            }
+        };
+    }, [src, savedProgress]);
+
+    // Handle progress events
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const handleTimeUpdate = () => {
+            if (video.duration) {
+                const percentage = Math.round((video.currentTime / video.duration) * 100);
+                onProgress({
+                    currentTime: video.currentTime,
+                    duration: video.duration,
+                    percentage,
+                });
+            }
+        };
+
+        video.addEventListener("timeupdate", handleTimeUpdate);
+        return () => {
+            video.removeEventListener("timeupdate", handleTimeUpdate);
+        };
+    }, [onProgress, src]);
+
+    return (
+        <video
+            ref={videoRef}
+            className="watch-frame"
+            poster={poster}
+            controls
+            playsInline
+            crossOrigin="anonymous"
+            style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
+        />
+    );
+};
 
 const WatchPage = () => {
     const { type, id } = useParams();
@@ -79,15 +193,16 @@ const WatchPage = () => {
     const [details, setDetails] = useState(null);
     const [episodes, setEpisodes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isFrameLoading, setIsFrameLoading] = useState(true);
     const [isEpisodesLoading, setIsEpisodesLoading] = useState(false);
     const [error, setError] = useState("");
     const [episodeQuery, setEpisodeQuery] = useState("");
     const [isSeasonMenuOpen, setIsSeasonMenuOpen] = useState(false);
-    const [selectedProvider, setSelectedProvider] = useState(() => {
-        const historyItem = getHistory().find((h) => h.id === Number(id));
-        return historyItem?.provider || ACTIVE_PROVIDER;
-    });
+    
+    // Direct stream list and active stream source
+    const [streams, setStreams] = useState([]);
+    const [activeStream, setActiveStream] = useState(null);
+    const [isStreamsLoading, setIsStreamsLoading] = useState(false);
+
     const [isProviderMenuOpen, setIsProviderMenuOpen] = useState(false);
     const providerMenuRef = useRef(null);
     const seasonMenuRef = useRef(null);
@@ -97,6 +212,7 @@ const WatchPage = () => {
 
     const title = getTitle(details);
     const anime = mediaType === "tv" && isAnime(details);
+
     const savedProgress = useMemo(() => {
         const historyItem = getHistory().find(h => h.id === Number(id));
         if (mediaType === "tv") {
@@ -105,11 +221,6 @@ const WatchPage = () => {
         }
         return Math.floor(historyItem?.currentTime || 0);
     }, [id, mediaType, season, episode]);
-
-    const playerUrl = useMemo(
-        () => getPlayerUrl(mediaType, id, season, episode, selectedProvider, savedProgress),
-        [episode, id, mediaType, season, selectedProvider, savedProgress]
-    );
 
     const seasonsList = useMemo(
         () => details?.seasons?.filter((item) => item.season_number > 0) || [],
@@ -184,9 +295,53 @@ const WatchPage = () => {
         fetchEpisodes();
     }, [id, mediaType, season]);
 
+    // Fetch video streams from TMDB Embed API
     useEffect(() => {
-        setIsFrameLoading(true);
-    }, [playerUrl]);
+        if (!id) return;
+
+        const fetchStreams = async () => {
+            setIsStreamsLoading(true);
+            setError("");
+            setStreams([]);
+            setActiveStream(null);
+
+            try {
+                const apiBase = import.meta.env.VITE_TMDB_EMBED_API_URL || "http://localhost:8787";
+                const endpoint = mediaType === "tv"
+                    ? `${apiBase}/api/streams/series/${id}/${season}/${episode}`
+                    : `${apiBase}/api/streams/movie/${id}`;
+
+                const response = await fetch(endpoint);
+                if (!response.ok) throw new Error("Failed to fetch streams");
+
+                const data = await response.json();
+                if (data.success && Array.isArray(data.streams) && data.streams.length > 0) {
+                    setStreams(data.streams);
+                    
+                    // Look if there is a saved provider in the history for this title
+                    const historyItem = getHistory().find(h => h.id === Number(id));
+                    const matchedStream = data.streams.find(s => s.provider === historyItem?.provider);
+                    
+                    // Default to matched provider, or falls back to first stream
+                    setActiveStream(matchedStream || data.streams[0]);
+                } else {
+                    setError("No streaming sources found for this title.");
+                }
+            } catch (err) {
+                console.error("Error fetching direct streams:", err);
+                setError("Unable to connect to the streaming server. Please ensure the API is running.");
+            } finally {
+                setIsStreamsLoading(false);
+            }
+        };
+
+        fetchStreams();
+    }, [id, mediaType, season, episode]);
+
+    useEffect(() => {
+        if (!details) return;
+        addToHistory(details, mediaType, mediaType === "tv" ? season : null, mediaType === "tv" ? episode : null, activeStream?.provider || null);
+    }, [details, episode, mediaType, season, activeStream]);
 
     useEffect(() => {
         if (!details) {
@@ -205,150 +360,6 @@ const WatchPage = () => {
             document.title = "EpicStream";
         };
     }, [currentEpisode, details, episode, mediaType, season, title]);
-
-    useEffect(() => {
-        if (!details) return;
-
-        const historyItem = getHistory().find(h => h.id === Number(id));
-        if (historyItem?.provider) {
-            setSelectedProvider(historyItem.provider);
-        } else {
-            // Check if Indian content or Japanese Anime
-            const isJapaneseAnime = mediaType === "tv" && isAnime(details);
-            const isIndian = (
-                (details.origin_country && Array.isArray(details.origin_country) && details.origin_country.includes("IN")) ||
-                (details.production_countries && Array.isArray(details.production_countries) && details.production_countries.some(c => c.iso_3166_1 === "IN")) ||
-                (["hi", "te", "ta", "ml", "kn", "bn", "mr", "gu", "pa", "ur", "or", "as"].includes(details.original_language))
-            );
-
-            if (isJapaneseAnime || isIndian) {
-                setSelectedProvider("vidsync");
-            }
-        }
-    }, [details, id, mediaType]);
-
-    useEffect(() => {
-        if (!details) return;
-        addToHistory(details, mediaType, mediaType === "tv" ? season : null, mediaType === "tv" ? episode : null, selectedProvider);
-    }, [details, episode, mediaType, season, selectedProvider]);
-
-    useEffect(() => {
-        const formatTime = (seconds) => {
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = Math.floor(seconds % 60);
-            return [h, m, s]
-                .map((value) => (value < 10 ? `0${value}` : `${value}`))
-                .filter((value, index) => value !== "00" || index > 0)
-                .join(":");
-        };
-
-        const handleMessage = (event) => {
-            const trustedOrigins = [
-                "https://player.videasy.net",
-                "https://vidlink.pro",
-                "https://vidfast.pro",
-                "https://vidfast.in",
-                "https://vidfast.io",
-                "https://vidfast.me",
-                "https://vidfast.net",
-                "https://vidfast.pm",
-                "https://vidfast.xyz",
-                "https://vidfast.vc",
-                "https://vidfast.bz",
-                "https://1embed.cc",
-                "https://vidsync.live",
-                "https://vidcore.net",
-                "https://www.vidking.net",
-                "https://vidking.net",
-            ];
-
-            if (!trustedOrigins.includes(event.origin)) return;
-
-            try {
-                let data = event.data;
-                if (typeof data === "string") data = JSON.parse(data);
-
-                let playerState = data?.type === "PLAYER_EVENT" ? data.data : null;
-
-                // Handle 1Embed progress/ninety_percent/ended events
-                if (!playerState && data?.type && (data.type === "VIDEO_PROGRESS" || data.type === "VIDEO_NINETY_PERCENT" || data.type === "VIDEO_ENDED")) {
-                    const payload = data.payload || {};
-                    const time = payload.currentTime !== undefined ? payload.currentTime : payload.time;
-                    const duration = payload.duration || 0;
-                    let percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
-                    if (data.type === "VIDEO_NINETY_PERCENT") percentage = 90;
-                    if (data.type === "VIDEO_ENDED") percentage = 100;
-
-                    playerState = {
-                        currentTime: time || 0,
-                        time: time || 0,
-                        duration: duration || 0,
-                        percentage,
-                    };
-                }
-
-                // Handle VidSync events
-                if (!playerState && data?.type === "VIDSYNC_PLAYER_EVENT") {
-                    const vidsyncData = data.data || {};
-                    const time = vidsyncData.currentTime !== undefined ? vidsyncData.currentTime : vidsyncData.time;
-                    const duration = vidsyncData.duration || 0;
-                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
-
-                    playerState = {
-                        currentTime: time || 0,
-                        time: time || 0,
-                        duration: duration || 0,
-                        percentage,
-                    };
-                }
-
-                // Handle VidCore events
-                if (!playerState && data?.type && (data.type === "timeupdate" || data.type === "ended")) {
-                    const vidcoreData = data.data || {};
-                    const time = vidcoreData.currentTime;
-                    const duration = vidcoreData.duration || 0;
-                    let percentage = vidcoreData.percent !== undefined ? Math.round(vidcoreData.percent * 100) : (duration > 0 ? Math.round((time / duration) * 100) : 0);
-                    if (data.type === "ended") percentage = 100;
-
-                    playerState = {
-                        currentTime: time || 0,
-                        time: time || 0,
-                        duration: duration || 0,
-                        percentage,
-                    };
-                }
-
-                if (!playerState) {
-                    playerState = data?.data || data;
-                }
-
-                if (!playerState || (playerState.time === undefined && playerState.currentTime === undefined)) {
-                    return;
-                }
-
-                const time = playerState.time !== undefined ? playerState.time : playerState.currentTime;
-                const duration = playerState.duration || 0;
-                const percentage = playerState.percentage !== undefined
-                    ? playerState.percentage
-                    : (playerState.progress !== undefined
-                        ? Math.round(playerState.progress)
-                        : (duration > 0 ? Math.round((time / duration) * 100) : 0));
-
-                updateHistoryProgress(id, {
-                    percentage,
-                    currentTime: time,
-                    duration,
-                    timeStr: formatTime(time),
-                });
-            } catch {
-                // Ignore malformed provider messages.
-            }
-        };
-
-        window.addEventListener("message", handleMessage);
-        return () => window.removeEventListener("message", handleMessage);
-    }, [id]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -394,8 +405,6 @@ const WatchPage = () => {
         navigateToEpisode(1, seasonNumber);
     };
 
-
-
     const releaseDate = details?.release_date || details?.first_air_date;
     const runtime = mediaType === "movie"
         ? formatRuntime(details?.runtime)
@@ -405,7 +414,6 @@ const WatchPage = () => {
     const backdrop = details?.backdrop_path || details?.poster_path;
     const poster = details?.poster_path || details?.backdrop_path;
 
-
     return (
         <div className="watch-page">
             {backdrop && (
@@ -413,37 +421,31 @@ const WatchPage = () => {
             )}
             <div className="watch-shade" />
 
-
-
             <main className={`watch-shell ${mediaType === "movie" ? "movie-mode" : "series-mode"}`}>
                 <section className="watch-main-grid">
                     <div className="watch-primary">
                         <section className="watch-player-card" aria-label={`${title} player`}>
-                            {(isLoading || error) && (
+                            {(isLoading || isStreamsLoading || error) && (
                                 <div className="watch-state">
                                     {!error && <div className="watch-spinner" />}
-                                    <strong>{error || "Preparing player..."}</strong>
+                                    <strong>{error || (isLoading ? "Preparing player..." : "Fetching video streams...")}</strong>
                                 </div>
                             )}
 
-                            {!isLoading && !error && (
-                                <>
-                                    {isFrameLoading && (
-                                        <div className="watch-state floating">
-                                            <div className="watch-spinner" />
-                                            <strong>Loading stream...</strong>
-                                        </div>
-                                    )}
-                                    <iframe
-                                        key={playerUrl}
-                                        className="watch-frame"
-                                        src={playerUrl}
-                                        title={`${title} player`}
-                                        allow="autoplay; fullscreen *; encrypted-media; picture-in-picture; allow-presentation"
-                                        allowFullScreen
-                                        onLoad={() => setIsFrameLoading(false)}
-                                    />
-                                </>
+                            {!isLoading && !isStreamsLoading && !error && activeStream && (
+                                <HlsPlayer
+                                    src={activeStream.url}
+                                    poster={imageUrl(backdrop, "original")}
+                                    savedProgress={savedProgress}
+                                    onProgress={(progress) => {
+                                        updateHistoryProgress(id, {
+                                            percentage: progress.percentage,
+                                            currentTime: progress.currentTime,
+                                            duration: progress.duration,
+                                            timeStr: formatTime(progress.currentTime),
+                                        });
+                                    }}
+                                />
                             )}
                         </section>
 
@@ -481,23 +483,23 @@ const WatchPage = () => {
                                     aria-expanded={isProviderMenuOpen}
                                 >
                                     <strong>
-                                        {getProviderLabel(selectedProvider)}
+                                        {activeStream ? activeStream.title || activeStream.name : "Select Source"}
                                         <ChevronDown size={16} />
                                     </strong>
                                 </button>
-                                {isProviderMenuOpen && (
+                                {isProviderMenuOpen && streams.length > 0 && (
                                     <div className={`watch-provider-menu ${openUpward ? "open-up" : ""}`}>
-                                        {WATCH_PROVIDERS.map((provider) => (
+                                        {streams.map((stream, idx) => (
                                             <button
                                                 type="button"
-                                                key={provider}
-                                                className={selectedProvider === provider ? "active" : ""}
+                                                key={idx}
+                                                className={activeStream?.url === stream.url ? "active" : ""}
                                                 onClick={() => {
-                                                    setSelectedProvider(provider);
+                                                    setActiveStream(stream);
                                                     setIsProviderMenuOpen(false);
                                                 }}
                                             >
-                                                {getProviderLabel(provider)}
+                                                {stream.title || stream.name}
                                             </button>
                                         ))}
                                     </div>
@@ -599,7 +601,7 @@ const WatchPage = () => {
                                     />
                                 ) : (
                                     <h2>{title}</h2>
-                                )}
+                                ) }
                             </div>
                         </div>
 
