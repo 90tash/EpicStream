@@ -3,6 +3,7 @@ import {
     ChevronDown,
     ChevronLeft,
     ChevronRight,
+    Cloud,
     Search,
     Star,
     Play,
@@ -105,7 +106,26 @@ const HlsPlayer = ({
     const [providerStates, setProviderStates] = useState({});
     const [streamsByProvider, setStreamsByProvider] = useState({});
     const [activeStream, setActiveStream] = useState(null);
-    const src = activeStream?.url;
+    const src = useMemo(() => {
+        if (!activeStream?.url) return null;
+        let url = activeStream.url;
+        try {
+            const apiBase = import.meta.env.VITE_TMDB_EMBED_API_URL || "https://epicstream-backend.onrender.com";
+            const apiHost = new URL(apiBase).host;
+            const streamUrl = new URL(url);
+            
+            if (streamUrl.host === apiHost || streamUrl.host.includes("onrender.com")) {
+                const targetProtocol = apiBase.startsWith("https:") ? "https:" : "http:";
+                if (streamUrl.protocol !== targetProtocol) {
+                    streamUrl.protocol = targetProtocol;
+                    url = streamUrl.toString();
+                }
+            }
+        } catch (e) {
+            // Ignore parse errors
+        }
+        return url;
+    }, [activeStream]);
 
     useEffect(() => {
         onStreamChange?.(activeStream);
@@ -154,7 +174,7 @@ const HlsPlayer = ({
     const fetchStreamsForProvider = async (providerId) => {
         setProviderStates(prev => ({ ...prev, [providerId]: 'loading' }));
         try {
-            const apiBase = import.meta.env.VITE_TMDB_EMBED_API_URL || "http://localhost:8787";
+            const apiBase = import.meta.env.VITE_TMDB_EMBED_API_URL || "https://epicstream-backend.onrender.com";
             const typeParam = mediaType === "tv" ? "series" : "movie";
             let endpoint = `${apiBase}/api/streams/${providerId}/${typeParam}/${id}`;
             if (mediaType === "tv") {
@@ -308,14 +328,17 @@ const HlsPlayer = ({
         setAudioTracks([]);
         setActiveAudio(0);
 
-        let hlsInstance = null;
+        let active = true;
+        let scriptListener = null;
+        let scriptElement = null;
 
         const loadVideo = () => {
+            if (!active) return;
             const isHls = src.includes(".m3u8") || src.includes("m3u8-proxy");
 
             if (isHls) {
                 if (Hls.isSupported()) {
-                    hlsInstance = new Hls({
+                    const hlsInstance = new Hls({
                         maxMaxBufferLength: 30,
                         enableWorker: true,
                     });
@@ -324,6 +347,7 @@ const HlsPlayer = ({
                     hlsRef.current = hlsInstance;
 
                     hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                        if (!active) return;
                         const subs = hlsInstance.subtitleTracks || [];
                         setSubtitles(subs);
                         const auds = hlsInstance.audioTracks || [];
@@ -358,11 +382,12 @@ const HlsPlayer = ({
                             video.currentTime = savedProgress;
                         }
                         video.play()
-                            .then(() => setIsPlaying(true))
-                            .catch(() => setIsPlaying(false));
+                            .then(() => { if (active) setIsPlaying(true); })
+                            .catch(() => { if (active) setIsPlaying(false); });
                     });
 
                     hlsInstance.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+                        if (!active) return;
                         const subs = hlsInstance.subtitleTracks || [];
                         setSubtitles(subs);
                         const engSubIdx = subs.findIndex(t => 
@@ -377,6 +402,7 @@ const HlsPlayer = ({
                     });
 
                     hlsInstance.on(Hls.Events.AUDIO_TRACKS_UPDATED, () => {
+                        if (!active) return;
                         const auds = hlsInstance.audioTracks || [];
                         setAudioTracks(auds);
                         const defaultAudIdx = auds.findIndex(t => 
@@ -394,6 +420,7 @@ const HlsPlayer = ({
                     });
 
                     hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+                        if (!active) return;
                         if (data.fatal) {
                             switch (data.type) {
                                 case Hls.ErrorTypes.NETWORK_ERROR:
@@ -410,40 +437,59 @@ const HlsPlayer = ({
                 } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
                     video.src = src;
                     video.addEventListener("loadedmetadata", () => {
+                        if (!active) return;
                         if (savedProgress > 0) {
                             video.currentTime = savedProgress;
                         }
                         video.play()
-                            .then(() => setIsPlaying(true))
-                            .catch(() => setIsPlaying(false));
+                            .then(() => { if (active) setIsPlaying(true); })
+                            .catch(() => { if (active) setIsPlaying(false); });
                     });
                 }
             } else {
                 video.src = src;
                 video.addEventListener("loadedmetadata", () => {
+                    if (!active) return;
                     if (savedProgress > 0) {
                         video.currentTime = savedProgress;
                     }
                     video.play()
-                        .then(() => setIsPlaying(true))
-                        .catch(() => setIsPlaying(false));
+                        .then(() => { if (active) setIsPlaying(true); })
+                        .catch(() => { if (active) setIsPlaying(false); });
                 });
             }
         };
 
         if (typeof Hls === "undefined") {
-            const script = document.createElement("script");
-            script.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js";
-            script.async = true;
-            script.onload = loadVideo;
-            document.body.appendChild(script);
+            let script = document.querySelector('script[src*="hls.js"]');
+            if (!script) {
+                script = document.createElement("script");
+                script.src = "https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js";
+                script.async = true;
+                document.body.appendChild(script);
+            }
+            scriptListener = loadVideo;
+            scriptElement = script;
+            script.addEventListener("load", scriptListener);
         } else {
             loadVideo();
         }
 
         return () => {
-            if (hlsInstance) {
-                hlsInstance.destroy();
+            active = false;
+            if (scriptElement && scriptListener) {
+                scriptElement.removeEventListener("load", scriptListener);
+            }
+            if (hlsRef.current) {
+                hlsRef.current.destroy();
+                hlsRef.current = null;
+            }
+            try {
+                video.pause();
+                video.src = "";
+                video.load();
+            } catch (e) {
+                // Ignore errors resetting video
             }
         };
     }, [src, savedProgress]);

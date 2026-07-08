@@ -11,6 +11,8 @@ const { resolveImdbId } = require('./utils/tmdb');
 const { applyFilters } = require('./utils/streamFilters');
 
 const app = express();
+app.set('trust proxy', true);
+
 
 // Conditionally mount proxy routes early so downstream handlers can use them
 if (config.enableProxy) {
@@ -350,7 +352,8 @@ app.get('/api/streams/:type/:tmdbId', async (req,res) => {
     streams = applyFilters(streams, 'aggregate', config.minQualities, config.excludeCodecs);
     metrics.streamsReturned += streams.length;
     if (config.enableProxy) {
-      const serverUrl = `${req.protocol}://${req.get('host')}`;
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const serverUrl = `${protocol}://${req.get('host')}`;
       streams = processStreamsForProxy(streams, serverUrl);
       // Omit original headers when proxying to avoid leaking upstream requirements
       streams = streams.map(s => { if (s && typeof s === 'object') { const { headers, ...rest } = s; return rest; } return s; });
@@ -382,7 +385,8 @@ app.get('/api/streams/:provider/:type/:tmdbId', async (req,res) => {
     streams = applyFilters(streams, prov.name, config.minQualities, config.excludeCodecs);
     metrics.streamsReturned += streams.length;
     if (config.enableProxy) {
-      const serverUrl = `${req.protocol}://${req.get('host')}`;
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const serverUrl = `${protocol}://${req.get('host')}`;
       streams = processStreamsForProxy(streams, serverUrl);
       streams = streams.map(s => { if (s && typeof s === 'object') { const { headers, ...rest } = s; return rest; } return s; });
     }
