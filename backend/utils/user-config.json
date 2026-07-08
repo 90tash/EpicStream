@@ -4,7 +4,6 @@
     "videasy"
   ],
   "configVersion": 1,
-  "tmdbApiKeys": [],
   "enableShowboxProvider": true,
   "febboxCookies": [],
   "enable4khdhubProvider": true,

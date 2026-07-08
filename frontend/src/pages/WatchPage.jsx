@@ -89,6 +89,7 @@ const HlsPlayer = ({
     isTheaterMode,
     setIsTheaterMode,
     titleLogo,
+    onStreamChange,
 }) => {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
@@ -105,6 +106,10 @@ const HlsPlayer = ({
     const [streamsByProvider, setStreamsByProvider] = useState({});
     const [activeStream, setActiveStream] = useState(null);
     const src = activeStream?.url;
+
+    useEffect(() => {
+        onStreamChange?.(activeStream);
+    }, [activeStream, onStreamChange]);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -1203,6 +1208,7 @@ const WatchPage = () => {
     const [error, setError] = useState("");
     const [episodeQuery, setEpisodeQuery] = useState("");
     const [isSeasonMenuOpen, setIsSeasonMenuOpen] = useState(false);
+    const [activeProvider, setActiveProvider] = useState(null);
     
 
 
@@ -1305,8 +1311,8 @@ const WatchPage = () => {
 
     useEffect(() => {
         if (!details) return;
-        addToHistory(details, mediaType, mediaType === "tv" ? season : null, mediaType === "tv" ? episode : null, activeStream?.provider || null);
-    }, [details, episode, mediaType, season, activeStream]);
+        addToHistory(details, mediaType, mediaType === "tv" ? season : null, mediaType === "tv" ? episode : null, activeProvider);
+    }, [details, episode, mediaType, season, activeProvider]);
 
     useEffect(() => {
         if (!details) {
@@ -1420,6 +1426,7 @@ const WatchPage = () => {
                                     isTheaterMode={isTheaterMode}
                                     setIsTheaterMode={setIsTheaterMode}
                                     titleLogo={titleLogo}
+                                    onStreamChange={(stream) => setActiveProvider(stream?.provider || null)}
                                 />
                             )}
                         </section>

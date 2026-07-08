@@ -67,8 +67,6 @@ function getProviderNames() {
 
 function normalizeConfig(base) {
   const cfg = { ...base };
-  // Marker: if user explicitly provided an empty array for tmdbApiKeys in override file we should not resurrect legacy key
-  const explicitEmptyKeys = Array.isArray(cfg.tmdbApiKeys) && cfg.tmdbApiKeys.length === 0 && Object.prototype.hasOwnProperty.call(base,'tmdbApiKeys');
   if (!cfg.configVersion) cfg.configVersion = CONFIG_SCHEMA_VERSION;
   // Derive structured views
   cfg.minQualities = parseJsonMaybe(cfg.minQualitiesRaw) || (cfg.minQualitiesRaw ? { default: cfg.minQualitiesRaw } : null);
@@ -82,12 +80,8 @@ function normalizeConfig(base) {
     } else cfg.tmdbApiKeys = [];
   }
   if (!cfg.tmdbApiKeys || !cfg.tmdbApiKeys.length) {
-    if (!explicitEmptyKeys && cfg.tmdbApiKey) cfg.tmdbApiKeys = [cfg.tmdbApiKey];
+    if (cfg.tmdbApiKey) cfg.tmdbApiKeys = [cfg.tmdbApiKey];
     else cfg.tmdbApiKeys = [];
-  }
-  // If user explicitly cleared tmdbApiKeys via override, also clear legacy single key so it is not shown
-  if (explicitEmptyKeys) {
-    cfg.tmdbApiKey = null;
   }
   // Ensure dedupe + trim
   cfg.tmdbApiKeys = Array.from(new Set(cfg.tmdbApiKeys.map(k=>String(k).trim()).filter(Boolean)));
