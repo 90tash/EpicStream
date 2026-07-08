@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { getPlayerUrl, tmdbFetch } from "../utils/tmdb";
+import { getPlayerUrl, tmdbFetch, ACTIVE_PROVIDER } from "../utils/tmdb";
+import "./movieTvDetails.css";
 
 const WatchPage = () => {
     const { type, id } = useParams();
@@ -47,8 +48,8 @@ const WatchPage = () => {
         };
     }, [tabTitle]);
 
-    // Get the Videasy embed URL directly
-    const playerUrl = getPlayerUrl(mediaType, id, season, episode, "videasy");
+    // Get the player URL dynamically using the configured active provider
+    const playerUrl = getPlayerUrl(mediaType, id, season, episode, ACTIVE_PROVIDER);
 
     return (
         <div style={{
@@ -63,34 +64,10 @@ const WatchPage = () => {
         }}>
             {/* Floating Back Button */}
             <button
+                className="back-btn"
                 onClick={() => navigate(-1)}
-                style={{
-                    position: "absolute",
-                    top: "24px",
-                    left: "24px",
-                    zIndex: 10000,
-                    width: "44px",
-                    height: "44px",
-                    borderRadius: "50%",
-                    background: "rgba(15, 23, 42, 0.6)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    color: "#fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    backdropFilter: "blur(12px)",
-                    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)"
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(15, 23, 42, 0.9)";
-                    e.currentTarget.style.transform = "scale(1.08)";
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(15, 23, 42, 0.6)";
-                    e.currentTarget.style.transform = "scale(1)";
-                }}
+                aria-label="Go back"
+                style={{ zIndex: 10000 }}
             >
                 <ChevronLeft size={24} />
             </button>

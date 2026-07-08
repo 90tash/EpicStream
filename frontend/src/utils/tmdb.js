@@ -80,10 +80,10 @@ export const tmdbGetRecommendations = async (type, id) => {
 // To switch the main embed provider, uncomment your preferred option below 
 // and ensure all others are commented out.
 // =========================================================================
-// export const ACTIVE_PROVIDER = "videasy"; // Option 1: Videasy
+export const ACTIVE_PROVIDER = "videasy"; // Option 1: Videasy
 // export const ACTIVE_PROVIDER = "vidsrc_to"; // Option 2: VidSrc.to
 // export const ACTIVE_PROVIDER = "vidsrc_me"; // Option 3: VidSrc.me (Alternative API format)
-export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
+// export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
 
 export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIVE_PROVIDER, progress = 0) => {
     const color = "ff2633"; // Project accent color
@@ -92,9 +92,9 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
     switch (provider) {
         case "videasy":
             if (type === "movie") {
-                return `https://player.videasy.net/movie/${id}?autoplay=true&autoPlay=true&${commonParams}`;
+                return `https://player.videasy.to/movie/${id}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&${commonParams}`;
             }
-            return `https://player.videasy.net/tv/${id}/${season}/${episode}?autoplay=true&autoPlay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
+            return `https://player.videasy.to/tv/${id}/${season}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
             
         case "vidfast": {
             const theme = "ff2633"; // Project accent color
@@ -130,7 +130,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             const primaryColor = "ff2633"; // Vibrant red
             const secondaryColor = "c90713"; // Dark red
             const iconColor = "f6f7fb"; // Light grey icon color matching app text
-            const params = `primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true&autoplay=false`;
+            const params = `primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true&autoplay=true`;
             
             if (type === "movie") {
                 return `https://vidlink.pro/movie/${id}?${params}`;
@@ -151,9 +151,9 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             
         default:
             if (type === "movie") {
-                return `https://player.videasy.net/movie/${id}?autoplay=true&autoPlay=true&${commonParams}`;
+                return `https://player.videasy.to/movie/${id}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&${commonParams}`;
             }
-            return `https://player.videasy.net/tv/${id}/${season}/${episode}?autoplay=true&autoPlay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
+            return `https://player.videasy.to/tv/${id}/${season}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
     }
 };
 
@@ -161,8 +161,8 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
     switch (ACTIVE_PROVIDER) {
         case "videasy":
             return type === "movie"
-                ? `https://player.videasy.net/anime/${animeId}?autoplay=true&autoPlay=true`
-                : `https://player.videasy.net/anime/${animeId}/${episode}?autoplay=true&autoPlay=true`;
+                ? `https://player.videasy.to/anime/${animeId}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1`
+                : `https://player.videasy.to/anime/${animeId}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1`;
                 
         case "vidsrc_to":
             return type === "movie"
@@ -176,7 +176,7 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
                 
         default:
             return type === "movie"
-                ? `https://player.videasy.net/anime/${animeId}?autoplay=true&autoPlay=true`
-                : `https://player.videasy.net/anime/${animeId}/${episode}?autoplay=true&autoPlay=true`;
+                ? `https://player.videasy.to/anime/${animeId}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1`
+                : `https://player.videasy.to/anime/${animeId}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1`;
     }
 };
