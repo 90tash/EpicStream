@@ -1,5 +1,8 @@
 {
-  "defaultProviders": [],
+  "defaultProviders": [
+    "4khdhub",
+    "videasy"
+  ],
   "configVersion": 1,
   "tmdbApiKeys": [],
   "enableShowboxProvider": true,

@@ -129,7 +129,10 @@ function rewriteM3u8(content, targetUrl, baseProxyUrl, headers) {
                 if (uriMatch) {
                     try {
                         const mediaUrl = new URL(uriMatch[1], targetUrl).href;
-                        const proxyUrl = `${baseProxyUrl}/m3u8-proxy?url=${encodeURIComponent(mediaUrl)}&headers=${encodeURIComponent(JSON.stringify(headers))}`;
+                        const isSub = line.includes('TYPE=SUBTITLES') || /\.vtt/i.test(mediaUrl) || /\.srt/i.test(mediaUrl);
+                        const proxyUrl = isSub
+                            ? `${baseProxyUrl}/sub-proxy?url=${encodeURIComponent(mediaUrl)}&headers=${encodeURIComponent(JSON.stringify(headers))}`
+                            : `${baseProxyUrl}/m3u8-proxy?url=${encodeURIComponent(mediaUrl)}&headers=${encodeURIComponent(JSON.stringify(headers))}`;
                         out.push(line.replace(uriMatch[1], proxyUrl));
                     } catch { out.push(line); }
                 } else out.push(line);

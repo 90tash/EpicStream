@@ -75,7 +75,6 @@ const formatTime = (seconds) => {
 
 // Premium HLS Video Player Component with Custom Controls
 const HlsPlayer = ({
-    src,
     poster,
     savedProgress,
     onProgress,
@@ -86,9 +85,6 @@ const HlsPlayer = ({
     previousEpisode,
     nextEpisode,
     onNavigateEpisode,
-    activeStream,
-    streams,
-    setActiveStream,
     details,
     isTheaterMode,
     setIsTheaterMode,
@@ -99,6 +95,16 @@ const HlsPlayer = ({
     const hlsRef = useRef(null);
     const controlsTimeoutRef = useRef(null);
     const navigate = useNavigate();
+
+    const { id } = useParams();
+
+    const [selectedProviders, setSelectedProviders] = useState(() => {
+        return new Set(["vixsrc", "videasy", "4khdhub", "notorrent"]); // Default clouds
+    });
+    const [providerStates, setProviderStates] = useState({});
+    const [streamsByProvider, setStreamsByProvider] = useState({});
+    const [activeStream, setActiveStream] = useState(null);
+    const src = activeStream?.url;
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
@@ -121,6 +127,154 @@ const HlsPlayer = ({
     const [bufferedPercent, setBufferedPercent] = useState(0);
     const [showFloatingInfo, setShowFloatingInfo] = useState(true);
 
+    const ALL_PROVIDERS = useMemo(() => [
+        { id: "vixsrc", name: "Vixsrc" },
+        { id: "videasy", name: "Videasy" },
+        { id: "4khdhub", name: "HDHub4U" },
+        { id: "notorrent", name: "NoTorrent" },
+        { id: "showbox", name: "Showbox" },
+        { id: "vidlink", name: "Vidlink" },
+        { id: "lordflix", name: "Lordflix" },
+        { id: "dahmermovies", name: "DahmerMovies" }
+    ], []);
+
+    const getFormattedRuntime = () => {
+        const mins = details?.runtime || (details?.episode_run_time ? details.episode_run_time[0] : null);
+        if (!mins) return "";
+        const hours = Math.floor(mins / 60);
+        const remainingMins = mins % 60;
+        return hours > 0 ? `${hours}h ${remainingMins}m` : `${remainingMins}m`;
+    };
+
+    const fetchStreamsForProvider = async (providerId) => {
+        setProviderStates(prev => ({ ...prev, [providerId]: 'loading' }));
+        try {
+            const apiBase = import.meta.env.VITE_TMDB_EMBED_API_URL || "http://localhost:8787";
+            const typeParam = mediaType === "tv" ? "series" : "movie";
+            let endpoint = `${apiBase}/api/streams/${providerId}/${typeParam}/${id}`;
+            if (mediaType === "tv") {
+                endpoint += `?season=${season}&episode=${episode}`;
+            }
+            
+            const response = await fetch(endpoint);
+            if (!response.ok) throw new Error("Failed");
+            const data = await response.json();
+            
+            if (data.success && Array.isArray(data.streams)) {
+                const normalized = data.streams.map(s => ({
+                    ...s,
+                    provider: s.provider || providerId
+                }));
+                setStreamsByProvider(prev => ({ ...prev, [providerId]: normalized }));
+                setProviderStates(prev => ({ ...prev, [providerId]: 'success' }));
+            } else {
+                setStreamsByProvider(prev => ({ ...prev, [providerId]: [] }));
+                setProviderStates(prev => ({ ...prev, [providerId]: 'success' }));
+            }
+        } catch (err) {
+            console.error(`Failed to fetch from ${providerId}:`, err);
+            setProviderStates(prev => ({ ...prev, [providerId]: 'error' }));
+        }
+    };
+
+    const toggleProvider = (providerId) => {
+        setSelectedProviders(prev => {
+            const next = new Set(prev);
+            if (next.has(providerId)) {
+                next.delete(providerId);
+                setStreamsByProvider(curr => {
+                    const copy = { ...curr };
+                    delete copy[providerId];
+                    return copy;
+                });
+                setProviderStates(curr => {
+                    const copy = { ...curr };
+                    delete copy[providerId];
+                    return copy;
+                });
+            } else {
+                next.add(providerId);
+                fetchStreamsForProvider(providerId);
+            }
+            return next;
+        });
+    };
+
+    // Auto-trigger fetches on param change
+    useEffect(() => {
+        if (!id) return;
+        setStreamsByProvider({});
+        setProviderStates({});
+        setActiveStream(null);
+        
+        selectedProviders.forEach(providerId => {
+            fetchStreamsForProvider(providerId);
+        });
+    }, [id, season, episode, mediaType]);
+
+    // Combine streams from selected providers
+    const aggregatedStreams = useMemo(() => {
+        const all = [];
+        for (const providerId of selectedProviders) {
+            const list = streamsByProvider[providerId] || [];
+            all.push(...list);
+        }
+        return all;
+    }, [selectedProviders, streamsByProvider]);
+
+    const parseStreamInfo = (stream) => {
+        const title = stream.title || stream.name || "";
+        const sizeMatch = title.match(/(\d+(?:\.\d+)?\s*(?:GB|MB))/i);
+        const size = sizeMatch ? sizeMatch[1] : null;
+        
+        let provider = stream.provider || "Server";
+        if (provider.toLowerCase() === "4khdhub") {
+            provider = "HDHub4U";
+        }
+        
+        const quality = stream.quality || (title.match(/(\d{3,4}p)/i)?.[1] || "1080p");
+        return { provider, quality, size };
+    };
+
+    const getCleanStreamLabel = (stream) => {
+        const { provider, quality, size } = parseStreamInfo(stream);
+        if (size) {
+            return `${provider} (${quality}) • ${size}`;
+        }
+        return `${provider} (${quality})`;
+    };
+
+    const filteredStreams = useMemo(() => {
+        if (!aggregatedStreams || aggregatedStreams.length === 0) return [];
+        const has1080 = aggregatedStreams.some(s => s.quality === "1080p" || s.title?.includes("1080"));
+        
+        if (has1080) {
+            const unique = [];
+            const keys = new Set();
+            for (const s of aggregatedStreams) {
+                const is1080Or720 = s.quality === "1080p" || s.quality === "720p" || s.title?.includes("1080") || s.title?.includes("720");
+                if (is1080Or720) {
+                    const key = `${s.provider}-${s.quality}`;
+                    if (!keys.has(key)) {
+                        keys.add(key);
+                        unique.push(s);
+                    }
+                }
+            }
+            return unique.length > 0 ? unique : aggregatedStreams;
+        }
+        return aggregatedStreams;
+    }, [aggregatedStreams]);
+
+    // Auto-select active stream on initial load
+    useEffect(() => {
+        if (!activeStream && filteredStreams.length > 0) {
+            const historyItem = getHistory().find(h => h.id === Number(id));
+            const matched = filteredStreams.find(s => s.provider?.toLowerCase() === historyItem?.provider?.toLowerCase());
+            setActiveStream(matched || filteredStreams[0]);
+        }
+    }, [filteredStreams, activeStream, id]);
+
     // Fade floating info after 4.5 seconds
     useEffect(() => {
         setShowFloatingInfo(true);
@@ -133,7 +287,7 @@ const HlsPlayer = ({
     // Load Video stream
     useEffect(() => {
         const video = videoRef.current;
-        if (!video) return;
+        if (!video || !src) return;
 
         if (hlsRef.current) {
             hlsRef.current.destroy();
@@ -165,6 +319,36 @@ const HlsPlayer = ({
                     hlsRef.current = hlsInstance;
 
                     hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                        const subs = hlsInstance.subtitleTracks || [];
+                        setSubtitles(subs);
+                        const auds = hlsInstance.audioTracks || [];
+                        setAudioTracks(auds);
+                        
+                        // 1. Choose original/English audio
+                        const defaultAudIdx = auds.findIndex(t => 
+                            t.name?.toLowerCase().includes("original") || 
+                            t.label?.toLowerCase().includes("original") ||
+                            t.name?.toLowerCase().includes("english") ||
+                            t.lang?.toLowerCase().startsWith("en") ||
+                            t.default === true
+                        );
+                        const targetAudIdx = defaultAudIdx !== -1 ? defaultAudIdx : 0;
+                        if (auds.length > 0) {
+                            hlsInstance.audioTrack = targetAudIdx;
+                            setActiveAudio(targetAudIdx);
+                        }
+
+                        // 2. Auto-enable English subtitle
+                        const engSubIdx = subs.findIndex(t => 
+                            t.name?.toLowerCase().includes("english") || 
+                            t.label?.toLowerCase().includes("english") ||
+                            t.lang?.toLowerCase().startsWith("en")
+                        );
+                        if (engSubIdx !== -1) {
+                            hlsInstance.subtitleTrack = engSubIdx;
+                            setActiveSubtitle(engSubIdx);
+                        }
+
                         if (savedProgress > 0) {
                             video.currentTime = savedProgress;
                         }
@@ -173,12 +357,35 @@ const HlsPlayer = ({
                             .catch(() => setIsPlaying(false));
                     });
 
-                    hlsInstance.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, (event, data) => {
-                        setSubtitles(data.subtitleTracks || []);
+                    hlsInstance.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+                        const subs = hlsInstance.subtitleTracks || [];
+                        setSubtitles(subs);
+                        const engSubIdx = subs.findIndex(t => 
+                            t.name?.toLowerCase().includes("english") || 
+                            t.label?.toLowerCase().includes("english") ||
+                            t.lang?.toLowerCase().startsWith("en")
+                        );
+                        if (engSubIdx !== -1) {
+                            hlsInstance.subtitleTrack = engSubIdx;
+                            setActiveSubtitle(engSubIdx);
+                        }
                     });
 
-                    hlsInstance.on(Hls.Events.AUDIO_TRACKS_UPDATED, (event, data) => {
-                        setAudioTracks(data.audioTracks || []);
+                    hlsInstance.on(Hls.Events.AUDIO_TRACKS_UPDATED, () => {
+                        const auds = hlsInstance.audioTracks || [];
+                        setAudioTracks(auds);
+                        const defaultAudIdx = auds.findIndex(t => 
+                            t.name?.toLowerCase().includes("original") || 
+                            t.label?.toLowerCase().includes("original") ||
+                            t.name?.toLowerCase().includes("english") ||
+                            t.lang?.toLowerCase().startsWith("en") ||
+                            t.default === true
+                        );
+                        const targetAudIdx = defaultAudIdx !== -1 ? defaultAudIdx : 0;
+                        if (auds.length > 0) {
+                            hlsInstance.audioTrack = targetAudIdx;
+                            setActiveAudio(targetAudIdx);
+                        }
                     });
 
                     hlsInstance.on(Hls.Events.ERROR, (event, data) => {
@@ -522,13 +729,33 @@ const HlsPlayer = ({
     };
 
     const getVolumeIcon = () => {
-        if (isMuted || volume === 0) return <VolumeX size={18} />;
-        if (volume < 0.5) return <Volume1 size={18} />;
-        return <Volume2 size={18} />;
+        if (isMuted || volume === 0) return <VolumeX size={20} />;
+        if (volume < 0.5) return <Volume1 size={20} />;
+        return <Volume2 size={20} />;
     };
 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
     const volumePercent = isMuted ? 0 : volume * 100;
+
+    const isAnyProviderLoading = Object.values(providerStates).includes('loading');
+    
+    if (!activeStream) {
+        return (
+            <div className="epic-player-loading-container">
+                {isAnyProviderLoading ? (
+                    <>
+                        <div className="epic-player-loader-spinner" />
+                        <span className="epic-player-loader-text">Loading server clouds...</span>
+                    </>
+                ) : (
+                    <>
+                        <span className="epic-player-loader-text" style={{ color: 'var(--accent)' }}>No streams found</span>
+                        <span className="epic-player-loader-subtext">Toggle other server clouds in the menu.</span>
+                    </>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div
@@ -697,7 +924,6 @@ const HlsPlayer = ({
                         />
                     </div>
                 </div>
-
                 {/* Buttons Control Panel */}
                 <div className="epic-player-buttons-row">
                     {/* Left Actions */}
@@ -708,10 +934,10 @@ const HlsPlayer = ({
                             onClick={togglePlay}
                             title={isPlaying ? "Pause" : "Play"}
                         >
-                            {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+                            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
                         </button>
 
-                        {/* Prev Episode button (Series Mode only) */}
+                        {/* Prev/Next Episode buttons (Series Mode only) */}
                         {mediaType === "tv" && (
                             <>
                                 <button
@@ -721,7 +947,7 @@ const HlsPlayer = ({
                                     onClick={() => previousEpisode && onNavigateEpisode(previousEpisode.episode_number)}
                                     title="Previous Episode"
                                 >
-                                    <SkipBack size={16} fill="currentColor" />
+                                    <SkipBack size={20} fill="currentColor" />
                                 </button>
                                 <button
                                     type="button"
@@ -730,7 +956,7 @@ const HlsPlayer = ({
                                     onClick={() => nextEpisode && onNavigateEpisode(nextEpisode.episode_number)}
                                     title="Next Episode"
                                 >
-                                    <SkipForward size={16} fill="currentColor" />
+                                    <SkipForward size={20} fill="currentColor" />
                                 </button>
                             </>
                         )}
@@ -745,7 +971,7 @@ const HlsPlayer = ({
                             }}
                             title="Rewind 10s"
                         >
-                            <RotateCcw size={17} />
+                            <RotateCcw size={20} />
                         </button>
                         <button
                             type="button"
@@ -756,7 +982,7 @@ const HlsPlayer = ({
                             }}
                             title="Forward 10s"
                         >
-                            <RotateCw size={17} />
+                            <RotateCw size={20} />
                         </button>
 
                         {/* Volume controls */}
@@ -777,7 +1003,7 @@ const HlsPlayer = ({
                                 value={isMuted ? 0 : volume}
                                 onChange={handleVolumeChange}
                                 style={{
-                                    background: `linear-gradient(to right, #fff ${volumePercent}%, rgba(255, 255, 255, 0.2) ${volumePercent}%)`
+                                    background: `linear-gradient(to right, var(--accent) ${volumePercent}%, rgba(255, 255, 255, 0.2) ${volumePercent}%)`
                                 }}
                             />
                         </div>
@@ -789,7 +1015,7 @@ const HlsPlayer = ({
 
                     {/* Right Actions */}
                     <div className="epic-player-group">
-                        {/* Subtitle track Selector */}
+                        {/* Subtitle Selector */}
                         <div className="epic-player-settings-wrapper">
                             <button
                                 type="button"
@@ -797,7 +1023,7 @@ const HlsPlayer = ({
                                 onClick={() => toggleMenu("subtitles")}
                                 title="Subtitles"
                             >
-                                <Subtitles size={18} />
+                                <Subtitles size={20} />
                             </button>
                             {activeMenu === "subtitles" && (
                                 <div className="epic-player-menu">
@@ -834,7 +1060,7 @@ const HlsPlayer = ({
                                 onClick={() => toggleMenu("audio")}
                                 title="Audio Tracks"
                             >
-                                <Headphones size={18} />
+                                <Headphones size={20} />
                             </button>
                             {activeMenu === "audio" && (
                                 <div className="epic-player-menu">
@@ -864,7 +1090,7 @@ const HlsPlayer = ({
                                 onClick={() => toggleMenu("speed")}
                                 title="Playback Speed"
                             >
-                                <Gauge size={18} />
+                                <Gauge size={20} />
                             </button>
 
                             {activeMenu === "speed" && (
@@ -884,57 +1110,65 @@ const HlsPlayer = ({
                             )}
                         </div>
 
-                        {/* Quality & Server selector */}
+                        {/* Server Clouds (Quality & Provider selector) */}
                         <div className="epic-player-settings-wrapper">
                             <button
                                 type="button"
                                 className={`epic-player-btn ${activeMenu === "quality" ? "accent-hover active" : ""}`}
                                 onClick={() => toggleMenu("quality")}
-                                title="Server / Quality"
+                                title="Server Clouds"
                             >
-                                <Sliders size={17} />
+                                <Cloud size={20} />
                             </button>
 
                             {activeMenu === "quality" && (
-                                <div className="epic-player-menu quality-menu" style={{ width: 174 }}>
-                                    <span className="epic-player-menu-title">Server & Quality</span>
-                                    {streams.map((stream, idx) => (
-                                        <button
-                                            type="button"
-                                            key={idx}
-                                            className={`epic-player-menu-item ${activeStream?.url === stream.url ? "active" : ""}`}
-                                            onClick={() => {
-                                                setActiveStream(stream);
-                                                setActiveMenu(null);
-                                            }}
-                                        >
-                                            {stream.title || stream.name}
-                                        </button>
-                                    ))}
+                                <div className="epic-player-menu quality-menu" style={{ width: 250, maxHeight: 380, overflowY: 'auto' }}>
+                                    <span className="epic-player-menu-title">Server Clouds</span>
+                                    <div className="epic-player-clouds-grid">
+                                        {ALL_PROVIDERS.map((prov) => {
+                                            const isSelected = selectedProviders.has(prov.id);
+                                            const state = providerStates[prov.id] || 'idle';
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={prov.id}
+                                                    className={`epic-player-cloud-item ${isSelected ? "active" : ""}`}
+                                                    onClick={() => toggleProvider(prov.id)}
+                                                >
+                                                    <span className="cloud-name">{prov.name}</span>
+                                                    <span className={`cloud-status ${state}`}>
+                                                        {state === 'loading' && <span className="cloud-spinner" />}
+                                                        {state === 'success' && `${(streamsByProvider[prov.id] || []).length}L`}
+                                                        {state === 'error' && '❌'}
+                                                        {state === 'idle' && 'Off'}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    
+                                    <span className="epic-player-menu-title" style={{ marginTop: 8 }}>Available Streams</span>
+                                    <div className="epic-player-streams-list">
+                                        {filteredStreams.map((stream, idx) => (
+                                            <button
+                                                type="button"
+                                                key={idx}
+                                                className={`epic-player-menu-item ${activeStream?.url === stream.url ? "active" : ""}`}
+                                                onClick={() => {
+                                                    setActiveStream(stream);
+                                                    setActiveMenu(null);
+                                                }}
+                                            >
+                                                {getCleanStreamLabel(stream)}
+                                            </button>
+                                        ))}
+                                        {filteredStreams.length === 0 && (
+                                            <span className="epic-player-no-streams">Select a cloud to load streams</span>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>
-
-                        {/* Picture in Picture */}
-                        <button
-                            type="button"
-                            className="epic-player-btn accent-hover"
-                            onClick={togglePip}
-                            title="Picture-in-Picture"
-                        >
-                            <PictureInPicture size={18} />
-                        </button>
-
-                        {/* Theater Mode */}
-                        <button
-                            type="button"
-                            className={`epic-player-btn accent-hover ${isTheaterMode ? "active" : ""}`}
-                            onClick={() => setIsTheaterMode(!isTheaterMode)}
-                            title="Theater Mode"
-                            style={{ color: isTheaterMode ? "var(--accent)" : "" }}
-                        >
-                            <Layout size={18} />
-                        </button>
 
                         {/* Fullscreen */}
                         <button
@@ -943,7 +1177,7 @@ const HlsPlayer = ({
                             onClick={toggleFullscreen}
                             title="Fullscreen"
                         >
-                            {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                            {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
                         </button>
                     </div>
                 </div>
@@ -970,10 +1204,7 @@ const WatchPage = () => {
     const [episodeQuery, setEpisodeQuery] = useState("");
     const [isSeasonMenuOpen, setIsSeasonMenuOpen] = useState(false);
     
-    // Direct stream list and active stream source
-    const [streams, setStreams] = useState([]);
-    const [activeStream, setActiveStream] = useState(null);
-    const [isStreamsLoading, setIsStreamsLoading] = useState(false);
+
 
     // Layout configuration
     const [isTheaterMode, setIsTheaterMode] = useState(false);
@@ -1070,48 +1301,7 @@ const WatchPage = () => {
         fetchEpisodes();
     }, [id, mediaType, season]);
 
-    // Fetch video streams from TMDB Embed API
-    useEffect(() => {
-        if (!id) return;
 
-        const fetchStreams = async () => {
-            setIsStreamsLoading(true);
-            setError("");
-            setStreams([]);
-            setActiveStream(null);
-
-            try {
-                const apiBase = import.meta.env.VITE_TMDB_EMBED_API_URL || "http://localhost:8787";
-                const endpoint = mediaType === "tv"
-                    ? `${apiBase}/api/streams/series/${id}/${season}/${episode}`
-                    : `${apiBase}/api/streams/movie/${id}`;
-
-                const response = await fetch(endpoint);
-                if (!response.ok) throw new Error("Failed to fetch streams");
-
-                const data = await response.json();
-                if (data.success && Array.isArray(data.streams) && data.streams.length > 0) {
-                    setStreams(data.streams);
-                    
-                    // Look if there is a saved provider in the history for this title
-                    const historyItem = getHistory().find(h => h.id === Number(id));
-                    const matchedStream = data.streams.find(s => s.provider === historyItem?.provider);
-                    
-                    // Default to matched provider, or falls back to first stream
-                    setActiveStream(matchedStream || data.streams[0]);
-                } else {
-                    setError("No streaming sources found for this title.");
-                }
-            } catch (err) {
-                console.error("Error fetching direct streams:", err);
-                setError("Unable to connect to the streaming server. Please ensure the API is running.");
-            } finally {
-                setIsStreamsLoading(false);
-            }
-        };
-
-        fetchStreams();
-    }, [id, mediaType, season, episode]);
 
     useEffect(() => {
         if (!details) return;
@@ -1200,16 +1390,15 @@ const WatchPage = () => {
                 <section className="watch-main-grid">
                     <div className="watch-primary">
                         <section className="watch-player-card" aria-label={`${title} player`}>
-                            {(isLoading || isStreamsLoading || error) && (
+                            {(isLoading || error) && (
                                 <div className="watch-state">
                                     {!error && <div className="watch-spinner" />}
-                                    <strong>{error || (isLoading ? "Preparing player..." : "Fetching video streams...")}</strong>
+                                    <strong>{error || "Preparing player..."}</strong>
                                 </div>
                             )}
 
-                            {!isLoading && !isStreamsLoading && !error && activeStream && (
+                            {!isLoading && !error && details && (
                                 <HlsPlayer
-                                    src={activeStream.url}
                                     poster={imageUrl(backdrop, "original")}
                                     savedProgress={savedProgress}
                                     onProgress={(progress) => {
@@ -1227,9 +1416,6 @@ const WatchPage = () => {
                                     previousEpisode={previousEpisode}
                                     nextEpisode={nextEpisode}
                                     onNavigateEpisode={navigateToEpisode}
-                                    activeStream={activeStream}
-                                    streams={streams}
-                                    setActiveStream={setActiveStream}
                                     details={details}
                                     isTheaterMode={isTheaterMode}
                                     setIsTheaterMode={setIsTheaterMode}

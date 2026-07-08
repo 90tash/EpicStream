@@ -1,9 +1,12 @@
 .watch-page {
-    min-height: 100vh;
+    width: 100vw;
+    height: 100vh;
     position: relative;
-    overflow-x: hidden;
-    background: #050607;
+    overflow: hidden;
+    background: #000;
     color: var(--text);
+    margin: 0;
+    padding: 0;
 }
 
 .watch-backdrop {
@@ -78,32 +81,32 @@
 .watch-shell {
     position: relative;
     z-index: 2;
-    width: min(1840px, calc(100% - 40px));
-    margin: 0 auto;
-    padding: 24px 0 64px;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .watch-main-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-    align-items: start;
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 .watch-primary {
-    min-width: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .watch-player-card {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
-    min-height: 420px;
+    height: 100%;
     overflow: hidden;
     background: #000;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.52);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .watch-frame {
@@ -1273,27 +1276,71 @@
     display: flex;
     align-items: center;
     width: 100%;
+    height: 16px;
+    cursor: pointer;
 }
 
-.epic-player-slider {
-    flex: 1;
+.epic-player-scrub-container {
+    position: relative;
+    width: 100%;
     height: 4px;
-    outline: none;
-    border: 0;
-    border-radius: 2px;
-    cursor: pointer;
-    -webkit-appearance: none;
+    display: flex;
+    align-items: center;
     transition: height 0.15s ease;
 }
 
-.epic-player-slider:hover {
+.epic-player-scrub-container:hover {
     height: 6px;
 }
 
-.epic-player-slider::-webkit-slider-runnable-track {
+.epic-player-scrub-track-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.12); /* Grey for unplayed progress */
+    border-radius: 4px;
+    z-index: 0;
+}
+
+.epic-player-scrub-track-buffer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.25); /* Semi-transparent grey/white for buffer */
+    border-radius: 4px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.epic-player-scrub-track-played {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: var(--accent); /* Red played progress */
+    border-radius: 4px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.epic-player-slider {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    border: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    border: none;
+    outline: none;
+    -webkit-appearance: none;
+    z-index: 3;
+    cursor: pointer;
+}
+
+.epic-player-slider::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
 }
 
 .epic-player-slider::-webkit-slider-thumb {
@@ -1303,14 +1350,19 @@
     border-radius: 50%;
     background: #fff;
     border: 0;
-    margin-top: -3px;
-    transition: transform 0.15s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    margin-top: -4px; /* Centered with 4px track */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    opacity: 0; /* Only show thumb on hover */
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.epic-player-scrub-container:hover .epic-player-slider::-webkit-slider-thumb {
+    opacity: 1;
 }
 
 .epic-player-slider:hover::-webkit-slider-thumb {
-    transform: scale(1.3);
-    background: var(--accent);
+    transform: scale(1.2);
+    background: #fff;
 }
 
 /* Button & Tool rows */
@@ -1324,7 +1376,8 @@
 .epic-player-group {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
+    height: 36px;
 }
 
 .epic-player-btn {
@@ -1332,12 +1385,16 @@
     border: 0;
     color: #cbd5e1;
     cursor: pointer;
-    padding: 6px;
+    width: 36px;
+    height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: color 0.2s ease, transform 0.1s ease;
     border-radius: 6px;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
 }
 
 .epic-player-btn:hover {
@@ -1357,40 +1414,56 @@
     font-size: 13px;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    margin-left: 2px;
 }
 
-/* Volume controls */
+/* Volume controls (Pixel-Perfect Alignment) */
 .epic-player-volume-container {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    height: 36px;
+    flex-shrink: 0;
 }
 
 .epic-player-volume-slider {
     width: 0px;
-    height: 4px;
+    height: 4px; /* Fixed height (4px) */
     outline: none;
     border: 0;
-    border-radius: 2px;
+    border-radius: 2px; /* Rounded ends */
     cursor: pointer;
     -webkit-appearance: none;
-    transition: width 0.25s ease;
+    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0;
+    padding: 0;
+    display: block;
+    align-self: center;
 }
 
 .epic-player-volume-container:hover .epic-player-volume-slider,
+.epic-player-volume-container:focus-within .epic-player-volume-slider,
 .epic-player-volume-slider:focus {
-    width: 70px;
+    width: 90px; /* Proportional width (80-120px) on desktop */
+}
+
+.epic-player-volume-slider::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+    height: 100%;
 }
 
 .epic-player-volume-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #fff;
+    width: 0px; /* Hide the thumb dot! */
+    height: 0px;
     border: 0;
-    margin-top: -3px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    background: transparent;
+    box-shadow: none;
 }
 
 /* Speed / Settings menu */
@@ -1405,22 +1478,22 @@
     z-index: 100;
     width: 154px;
     padding: 6px;
-    background: rgba(10, 11, 12, 0.94);
+    background: rgba(13, 14, 16, 0.96); /* Darker and cleaner */
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
-    backdrop-filter: blur(22px);
-    -webkit-backdrop-filter: blur(22px);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
-    animation: epicMenuIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 3px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+    animation: epicMenuIn 0.22s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 @keyframes epicMenuIn {
     from {
         opacity: 0;
-        transform: translateY(8px) scale(0.96);
+        transform: translateY(10px) scale(0.95);
     }
     to {
         opacity: 1;
@@ -1433,8 +1506,9 @@
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     padding: 6px 12px;
+    opacity: 0.8;
 }
 
 .epic-player-menu-item {
@@ -1442,26 +1516,32 @@
     padding: 8px 12px;
     background: transparent;
     border: 0;
+    border-left: 3px solid transparent;
     color: #cbd5e1;
     text-align: left;
-    font-size: 13px;
-    font-weight: 650;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    border-radius: 8px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .epic-player-menu-item:hover {
     color: #fff;
     background: rgba(255, 255, 255, 0.06);
+    border-left-color: rgba(255, 255, 255, 0.25);
+    padding-left: 10px;
 }
 
 .epic-player-menu-item.active {
-    color: var(--accent);
-    background: rgba(255, 38, 51, 0.08);
+    color: #fff;
+    font-weight: 700;
+    background: rgba(255, 38, 51, 0.12);
+    border-left-color: var(--accent);
+    padding-left: 10px;
 }
 
 /* =========================================================================
@@ -1469,11 +1549,7 @@
    ========================================================================= */
 
 @media (max-width: 1024px) {
-    .epic-player-floating-info {
-        max-width: 320px;
-        bottom: 80px;
-        left: 15px;
-    }
+    /* Responsive tweaks */
 }
 
 @media (max-width: 768px) {
@@ -1482,9 +1558,6 @@
     }
     .epic-player-top-title {
         font-size: 14px;
-    }
-    .epic-player-floating-info {
-        display: none; /* Hide floating info on mobile for screen space */
     }
     .epic-player-controls {
         padding: 12px;
@@ -1511,69 +1584,87 @@
 }
 
 /* =========================================================================
-   CINEMATIC PAUSE OVERLAY (X-RAY STYLE)
+   CINEMATIC PAUSE OVERLAY (DIRECT GLASS INTEGRATION)
    ========================================================================= */
 
 .epic-player-pause-overlay {
     position: absolute;
-    top: 90px;
-    left: 40px;
-    bottom: 130px;
+    bottom: 140px; /* Float cleanly above the 104px controls and slider bar with a clear space gap */
+    left: 60px;
     z-index: 6;
     display: flex;
-    align-items: center;
-    max-width: 460px;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 16px;
+    max-width: 50%; /* Covers half the screen! */
     pointer-events: none;
-    animation: epicFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: epicFadeIn 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     transition: opacity 0.3s ease;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
 }
 
 @keyframes epicFadeIn {
     from {
         opacity: 0;
-        transform: translateX(-12px);
+        transform: translateY(12px);
     }
     to {
         opacity: 1;
-        transform: translateX(0);
+        transform: translateY(0);
     }
 }
 
-.epic-player-pause-card {
-    padding: 28px;
-    background: rgba(10, 11, 12, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 20px;
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
 .epic-player-pause-logo {
-    max-height: 80px;
-    max-width: 260px;
+    max-height: 140px; /* Big logo */
+    max-width: 380px;
     object-fit: contain;
     align-self: flex-start;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.7));
 }
 
 .epic-player-pause-title {
     color: #fff;
-    font-size: 24px;
+    font-size: 38px; /* Big title fallback */
     font-weight: 800;
     margin: 0;
+    letter-spacing: -0.03em;
+}
+
+.epic-player-pause-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #cbd5e1;
+}
+
+.epic-player-pause-meta .pause-rating {
+    color: var(--accent); /* Red rating as requested! */
+    display: inline-flex;
+    align-items: center;
+}
+
+.epic-player-pause-meta .pause-year,
+.epic-player-pause-meta .pause-runtime {
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .epic-player-pause-summary {
-    color: #cbd5e1;
-    font-size: 13px;
+    color: #e2e8f0;
+    font-size: 15px; /* Big readable summary text */
     font-weight: 450;
-    line-height: 1.55;
+    line-height: 1.6;
     margin: 0;
+    opacity: 0.95;
     display: -webkit-box;
-    -webkit-line-clamp: 5;
+    -webkit-line-clamp: 6; /* Large vertical clamp to fit screen half */
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -1583,4 +1674,142 @@
         display: none;
     }
 }
+
+/* =========================================================================
+   SERVER CLOUDS SELECTION GRID
+   ========================================================================= */
+
+.epic-player-clouds-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 4px;
+}
+
+.epic-player-cloud-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #94a3b8;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.epic-player-cloud-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.epic-player-cloud-item.active {
+    background: rgba(255, 38, 51, 0.08);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 700;
+}
+
+.epic-player-cloud-item .cloud-name {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.epic-player-cloud-item .cloud-status {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 14px;
+}
+
+.epic-player-cloud-item.active .cloud-status.success {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.epic-player-cloud-item.active .cloud-status.loading {
+    color: #eab308;
+    background: rgba(234, 179, 8, 0.1);
+}
+
+.epic-player-cloud-item.active .cloud-status.error {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.cloud-spinner {
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid rgba(234, 179, 8, 0.3);
+    border-top-color: #eab308;
+    border-radius: 50%;
+    animation: epicSpinner 0.8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes epicSpinner {
+    to { transform: rotate(360deg); }
+}
+
+.epic-player-no-streams {
+    display: block;
+    text-align: center;
+    color: #64748b;
+    font-size: 11px;
+    padding: 16px 0;
+    font-style: italic;
+}
+
+.epic-player-loading-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: #0d0e10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    z-index: 5;
+    border-radius: inherit;
+}
+
+.epic-player-loader-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 38, 51, 0.15);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: epicSpinner 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.epic-player-loader-text {
+    font-size: 14px;
+    color: #cbd5e1;
+    font-weight: 600;
+}
+
+.epic-player-loader-subtext {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
 
