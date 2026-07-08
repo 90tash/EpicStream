@@ -92,9 +92,9 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
     switch (provider) {
         case "videasy":
             if (type === "movie") {
-                return `https://player.videasy.net/movie/${id}?${commonParams}`;
+                return `https://player.videasy.net/movie/${id}?autoplay=true&autoPlay=true&${commonParams}`;
             }
-            return `https://player.videasy.net/tv/${id}/${season}/${episode}?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
+            return `https://player.videasy.net/tv/${id}/${season}/${episode}?autoplay=true&autoPlay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
             
         case "vidfast": {
             const theme = "ff2633"; // Project accent color
@@ -151,9 +151,9 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             
         default:
             if (type === "movie") {
-                return `https://player.videasy.net/movie/${id}?${commonParams}`;
+                return `https://player.videasy.net/movie/${id}?autoplay=true&autoPlay=true&${commonParams}`;
             }
-            return `https://player.videasy.net/tv/${id}/${season}/${episode}?nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
+            return `https://player.videasy.net/tv/${id}/${season}/${episode}?autoplay=true&autoPlay=true&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
     }
 };
 
@@ -161,8 +161,8 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
     switch (ACTIVE_PROVIDER) {
         case "videasy":
             return type === "movie"
-                ? `https://player.videasy.net/anime/${animeId}`
-                : `https://player.videasy.net/anime/${animeId}/${episode}`;
+                ? `https://player.videasy.net/anime/${animeId}?autoplay=true&autoPlay=true`
+                : `https://player.videasy.net/anime/${animeId}/${episode}?autoplay=true&autoPlay=true`;
                 
         case "vidsrc_to":
             return type === "movie"
@@ -176,7 +176,7 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
                 
         default:
             return type === "movie"
-                ? `https://player.videasy.net/anime/${animeId}`
-                : `https://player.videasy.net/anime/${animeId}/${episode}`;
+                ? `https://player.videasy.net/anime/${animeId}?autoplay=true&autoPlay=true`
+                : `https://player.videasy.net/anime/${animeId}/${episode}?autoplay=true&autoPlay=true`;
     }
 };
