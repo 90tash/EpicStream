@@ -1,10 +1,8 @@
 /* eslint-disable react/prop-types */
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronDown, Search, LayoutGrid, List } from "lucide-react";
 import {
-    ACTIVE_PROVIDER,
-    formatMediaType,
     getPlayerUrl,
     getTitle,
     imageUrl,
@@ -41,25 +39,26 @@ const getProviderLabel = (provider) => {
         videasy: "Videasy",
         "1embed": "1Embed",
         vidfast: "VidFast",
-        vidcore: "VidCore",
+        mapple: "Mapple TV",
+        cinesrc: "CineSrc",
     };
     return labels[provider] || provider;
 };
 
 const WATCH_PROVIDERS = [
     { id: "vidsync", name: "VidSync" },
-    { id: "videasy", name: "Videasy" },
     { id: "vidlink", name: "VidLink" },
+    { id: "videasy", name: "Videasy" },
+    { id: "mapple", name: "Mapple TV" },
+    { id: "cinesrc", name: "CineSrc" },
     { id: "1embed", name: "1Embed" },
-    { id: "vidfast", name: "VidFast" },
-    { id: "vidcore", name: "VidCore" }
+    { id: "vidfast", name: "VidFast" }
 ];
 
 const WatchPage = () => {
     const { type, id } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
-    const episodeFilterRef = useRef(null);
 
     const mediaType = type === "tv" ? "tv" : "movie";
     const season = getPositiveInt(searchParams.get("season"), 1);
@@ -79,7 +78,6 @@ const WatchPage = () => {
     
     // View mode: 'detailed' (cards with thumbs) or 'list' (compact rows)
     const [viewMode, setViewMode] = useState("detailed");
-
     // Scroll tracking for showing/hiding the scrollbar
     const [isScrollingEpisodes, setIsScrollingEpisodes] = useState(false);
     const scrollTimeoutRef = useRef(null);
@@ -187,15 +185,17 @@ const WatchPage = () => {
         resetOverlayTimeout();
     }, [isProviderMenuOpen, isSidebarOpen]);
 
-    // Handle mouse movement to show controls
+    // Handle mouse movement and touch starts to show controls
     useEffect(() => {
-        const handleMouseMove = () => {
+        const handleInteraction = () => {
             resetOverlayTimeout();
         };
 
-        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mousemove", handleInteraction);
+        window.addEventListener("touchstart", handleInteraction);
         return () => {
-            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mousemove", handleInteraction);
+            window.removeEventListener("touchstart", handleInteraction);
             if (overlayTimeoutRef.current) {
                 clearTimeout(overlayTimeoutRef.current);
             }
@@ -204,8 +204,7 @@ const WatchPage = () => {
 
     const providerMenuRef = useRef(null);
     const seasonMenuRef = useRef(null);
-    const [titleLogo, setTitleLogo] = useState(null);
-    const [logoError, setLogoError] = useState(false);
+
 
     const title = getTitle(details);
     const anime = mediaType === "tv" && isAnime(details);
@@ -360,7 +359,8 @@ const WatchPage = () => {
                 "https://vidfast.bz",
                 "https://1embed.cc",
                 "https://vidsync.live",
-                "https://vidcore.net",
+                "https://mapple.uk",
+                "https://cinesrc.st",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
@@ -370,6 +370,32 @@ const WatchPage = () => {
                 if (typeof data === "string") data = JSON.parse(data);
 
                 let playerState = data?.type === "PLAYER_EVENT" ? data.data : null;
+
+                if (!playerState && data?.type && typeof data.type === "string" && data.type.startsWith("cinesrc:")) {
+                    const eventType = data.type;
+                    if (eventType === "cinesrc:close") {
+                        navigate(-1);
+                        return;
+                    }
+                    if (eventType === "cinesrc:timeupdate" || eventType === "cinesrc:seeking" || eventType === "cinesrc:seeked" || eventType === "cinesrc:ended") {
+                        playerState = {
+                            currentTime: data.currentTime || 0,
+                            duration: data.duration || 0,
+                            percentage: data.duration > 0 ? Math.round((data.currentTime / data.duration) * 100) : 0
+                        };
+                        if (eventType === "cinesrc:ended") {
+                            playerState.percentage = 100;
+                        }
+                    } else if (eventType === "cinesrc:nextepisode") {
+                        playerState = {
+                            currentTime: 0,
+                            duration: 0,
+                            percentage: 0,
+                            season: data.season,
+                            episode: data.episode
+                        };
+                    }
+                }
 
                 if (!playerState && data?.type && (data.type === "VIDEO_PROGRESS" || data.type === "VIDEO_NINETY_PERCENT" || data.type === "VIDEO_ENDED")) {
                     const payload = data.payload || {};
@@ -401,20 +427,7 @@ const WatchPage = () => {
                     };
                 }
 
-                if (!playerState && data?.type && (data.type === "timeupdate" || data.type === "ended")) {
-                    const vidcoreData = data.data || {};
-                    const time = vidcoreData.currentTime;
-                    const duration = vidcoreData.duration || 0;
-                    let percentage = vidcoreData.percent !== undefined ? Math.round(vidcoreData.percent * 100) : (duration > 0 ? Math.round((time / duration) * 100) : 0);
-                    if (data.type === "ended") percentage = 100;
 
-                    playerState = {
-                        currentTime: time || 0,
-                        time: time || 0,
-                        duration: duration || 0,
-                        percentage,
-                    };
-                }
 
                 if (!playerState) {
                     playerState = data?.data || data;
@@ -428,11 +441,16 @@ const WatchPage = () => {
                 const duration = playerState.duration || 0;
                 const percentage = playerState.percentage !== undefined ? playerState.percentage : (duration > 0 ? Math.round((time / duration) * 100) : 0);
 
+                const extraData = {};
+                if (playerState.season !== undefined) extraData.season = playerState.season;
+                if (playerState.episode !== undefined) extraData.episode = playerState.episode;
+
                 updateHistoryProgress(id, {
                     percentage,
                     currentTime: time,
                     duration,
                     timeStr: formatTime(time),
+                    ...extraData
                 });
             } catch {
                 // Ignore errors
@@ -488,6 +506,7 @@ const WatchPage = () => {
                 }}
                 onMouseMove={resetOverlayTimeout}
                 onClick={resetOverlayTimeout}
+                onTouchStart={resetOverlayTimeout}
             />
 
             {/* Safe Area Notch-aware floating Back Button */}

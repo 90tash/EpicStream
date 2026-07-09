@@ -96,6 +96,22 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             }
             return `https://player.videasy.to/tv/${id}/${season}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
             
+        case "mapple": {
+            const theme = "ff2633"; // Project accent color
+            if (type === "movie") {
+                return `https://mapple.uk/watch/movie/${id}?autoPlay=true&theme=${theme}&title=true&poster=true`;
+            }
+            return `https://mapple.uk/watch/tv/${id}-${season}-${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true&title=true&poster=true`;
+        }
+            
+        case "cinesrc": {
+            const theme = "%23ff2633"; // Project accent color #ff2633 URL encoded
+            if (type === "movie") {
+                return `https://cinesrc.st/embed/movie/${id}?autoplay=true&color=${theme}&back=close`;
+            }
+            return `https://cinesrc.st/embed/tv/${id}?s=${season}&e=${episode}&autoplay=true&autonext=true&autoskip=true&color=${theme}&back=close`;
+        }
+            
         case "vidfast": {
             const theme = "ff2633"; // Project accent color
             if (type === "movie") {
@@ -117,14 +133,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             }
             return `https://vidsync.live/embed/tv/${id}/${season}/${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
         }
-            
-        case "vidcore": {
-            const theme = "ff2633"; // Project accent color
-            if (type === "movie") {
-                return `https://vidcore.net/movie/${id}?autoPlay=true&theme=${theme}`;
-            }
-            return `https://vidcore.net/tv/${id}/{season}/{episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
-        }
+
             
         case "vidlink": {
             const primaryColor = "ff2633"; // Vibrant red

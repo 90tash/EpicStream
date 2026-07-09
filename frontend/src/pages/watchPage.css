@@ -2559,15 +2559,6 @@
 /* =========================================================================
    MOBILE RESPONSIVE WATCHPAGE OVERRIDES
    ========================================================================= */
-@media (max-width: 768px) {
-    /* Keep all floating overlay controls always visible on mobile viewports */
-    .watch-back-btn,
-    .watch-provider-floating,
-    .watch-sidebar-toggle-btn {
-        opacity: 1 !important;
-        pointer-events: auto !important;
-    }
-}
 
 @media (max-width: 768px) and (orientation: portrait) {
     /* Portrait mobile drawer width */
@@ -2637,8 +2628,4 @@
         width: 130px;
     }
 }
-
-
-
-
 
