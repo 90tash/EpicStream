@@ -565,11 +565,6 @@ const WatchPage = () => {
                     <div className="watch-sidebar-body">
                         {/* One-Line Episode controls at the very top */}
                         <div className="watch-sidebar-controls-wrapper">
-                            {anime && (
-                                <div style={{ marginBottom: "10px" }}>
-                                    <span className="watch-anime-badge">Anime</span>
-                                </div>
-                            )}
                             <div className="watch-sidebar-controls-row">
                                 {/* Search Filter input (first as requested) */}
                                 <div className="watch-sidebar-filter">
