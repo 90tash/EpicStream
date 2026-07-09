@@ -7,7 +7,6 @@ import {
     getTitle,
     imageUrl,
     tmdbFetch,
-    tmdbGetImages,
     tmdbGetSeason,
 } from "../utils/tmdb";
 import { addToHistory, updateHistoryProgress, getHistory } from "../utils/history";
@@ -242,19 +241,8 @@ const WatchPage = () => {
 
         const fetchWatchData = async () => {
             try {
-                const [detailsData, images] = await Promise.all([
-                    tmdbFetch(`/${mediaType}/${id}`),
-                    tmdbGetImages(mediaType, id),
-                ]);
+                const detailsData = await tmdbFetch(`/${mediaType}/${id}`);
                 setDetails(detailsData);
-
-                // Find title logo
-                const logos = images.logos || [];
-                const logoPath = logos.find(l => l.iso_639_1 === "en")?.file_path ||
-                                 logos.find(l => l.iso_639_1 === null)?.file_path ||
-                                 logos[0]?.file_path;
-                setTitleLogo(logoPath);
-                setLogoError(false);
             } catch (fetchError) {
                 console.error("Error loading watch page:", fetchError);
                 setError("Unable to load this title right now.");

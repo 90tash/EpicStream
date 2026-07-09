@@ -1,9 +1,0 @@
-{
-  "info": "Initial default credentials. CHANGE THE PASSWORD IMMEDIATELY using /auth/change-password after logging in.",
-  "users": [
-    {
-      "username": "admin",
-      "hash": "3c2efa431b6de0bee19847236e2c296b:d88ccc2ee950eda254a03d073bc55bbc8d0efc263c93c4e20307154dc90fadbc3141dcc9556a150b39b52088bb8ad06b120bc8832d7d8dc35918e710803d207c"
-    }
-  ]
-}
