@@ -148,7 +148,7 @@ const WatchPage = () => {
         }
     };
 
-    // Default to the last used provider for this item, or default to "vidsync" as requested
+    // Default to the last used provider for this item, or default to "vidlink" as fallback
     const [selectedProvider, setSelectedProvider] = useState(() => {
         try {
             const historyItem = getHistory().find(h => h.id === Number(id));
@@ -159,7 +159,7 @@ const WatchPage = () => {
         } catch (e) {
             console.error("Failed to parse history for provider:", e);
         }
-        return "vidsync"; // Default to vidsync
+        return "vidlink"; // Default to vidlink
     });
 
     // Control bar visibility (fade out on inactivity)
@@ -206,7 +206,39 @@ const WatchPage = () => {
 
 
     const title = getTitle(details);
-    const anime = mediaType === "tv" && isAnime(details);
+    const isAnimeMedia = useMemo(() => isAnime(details), [details]);
+    const anime = mediaType === "tv" && isAnimeMedia;
+
+    const providersList = useMemo(() => {
+        const defaultOrder = [
+            { id: "vidlink", name: "VidLink" },
+            { id: "vidsync", name: "VidSync" },
+            { id: "videasy", name: "Videasy" },
+            { id: "mapple", name: "Mapple TV" },
+            { id: "cinesrc", name: "CineSrc" },
+            { id: "1embed", name: "1Embed" },
+            { id: "vidfast", name: "VidFast" }
+        ];
+
+        if (!details) return defaultOrder;
+
+        const isIndian = details?.origin_country?.includes("IN") || 
+                         details?.production_countries?.some(c => c.iso_3166_1 === "IN");
+
+        if (isIndian || isAnimeMedia) {
+            return [
+                { id: "vidsync", name: "VidSync" },
+                { id: "vidlink", name: "VidLink" },
+                { id: "videasy", name: "Videasy" },
+                { id: "mapple", name: "Mapple TV" },
+                { id: "cinesrc", name: "CineSrc" },
+                { id: "1embed", name: "1Embed" },
+                { id: "vidfast", name: "VidFast" }
+            ];
+        }
+
+        return defaultOrder;
+    }, [details, isAnimeMedia]);
     
     const playerUrl = useMemo(
         () => getPlayerUrl(mediaType, id, season, episode, selectedProvider),
@@ -243,6 +275,15 @@ const WatchPage = () => {
             try {
                 const detailsData = await tmdbFetch(`/${mediaType}/${id}`);
                 setDetails(detailsData);
+
+                // Set default provider based on metadata if not set in history
+                const historyItem = getHistory().find(h => h.id === Number(id));
+                if (!historyItem?.provider) {
+                    const isIndian = detailsData?.origin_country?.includes("IN") || 
+                                     detailsData?.production_countries?.some(c => c.iso_3166_1 === "IN");
+                    const isAnimeMedia = isAnime(detailsData);
+                    setSelectedProvider(isIndian || isAnimeMedia ? "vidsync" : "vidlink");
+                }
             } catch (fetchError) {
                 console.error("Error loading watch page:", fetchError);
                 setError("Unable to load this title right now.");
@@ -471,7 +512,7 @@ const WatchPage = () => {
         setSearchParams({
             season: String(targetSeason),
             episode: String(episodeNumber),
-        });
+        }, { replace: true });
     };
 
     const handleSeasonChange = (seasonNumber) => {
@@ -522,7 +563,7 @@ const WatchPage = () => {
                 </button>
                 {isProviderMenuOpen && (
                     <div className="watch-provider-dropdown">
-                        {WATCH_PROVIDERS.map((provider) => (
+                        {providersList.map((provider) => (
                             <button
                                 key={provider.id}
                                 type="button"
