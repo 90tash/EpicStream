@@ -35,22 +35,22 @@ const getProviderLabel = (provider) => {
     const labels = {
         vidlink: "VidLink",
         vidsync: "VidSync",
+        vidsuper: "VidSuper",
+        cinezo: "Cinezo",
         videasy: "Videasy",
-        "1embed": "1Embed",
         vidfast: "VidFast",
         mapple: "Mapple TV",
-        cinesrc: "CineSrc",
     };
     return labels[provider] || provider;
 };
 
 const WATCH_PROVIDERS = [
     { id: "vidsync", name: "VidSync" },
+    { id: "vidsuper", name: "VidSuper" },
+    { id: "cinezo", name: "Cinezo" },
     { id: "vidlink", name: "VidLink" },
     { id: "videasy", name: "Videasy" },
     { id: "mapple", name: "Mapple TV" },
-    { id: "cinesrc", name: "CineSrc" },
-    { id: "1embed", name: "1Embed" },
     { id: "vidfast", name: "VidFast" }
 ];
 
@@ -82,6 +82,8 @@ const WatchPage = () => {
     const scrollTimeoutRef = useRef(null);
     // Timeout tracking for delaying marquee sliding animation
     const marqueeTimeoutRef = useRef(null);
+    const initialSeasonRef = useRef(season);
+    const initialEpisodeRef = useRef(episode);
 
     const handleEpisodesScroll = () => {
         setIsScrollingEpisodes(true);
@@ -148,7 +150,7 @@ const WatchPage = () => {
         }
     };
 
-    // Default to the last used provider for this item, or default to "vidlink" as fallback
+    // Default to the last used provider for this item, or default to "vidsync" as fallback
     const [selectedProvider, setSelectedProvider] = useState(() => {
         try {
             const historyItem = getHistory().find(h => h.id === Number(id));
@@ -159,7 +161,7 @@ const WatchPage = () => {
         } catch (e) {
             console.error("Failed to parse history for provider:", e);
         }
-        return "vidlink"; // Default to vidlink
+        return "vidsync"; // Default to vidsync
     });
 
     // Control bar visibility (fade out on inactivity)
@@ -184,17 +186,32 @@ const WatchPage = () => {
         resetOverlayTimeout();
     }, [isProviderMenuOpen, isSidebarOpen]);
 
-    // Handle mouse movement and touch starts to show controls
+    // Handle mouse movement, touch starts, and fullscreen exit to show controls
     useEffect(() => {
         const handleInteraction = () => {
             resetOverlayTimeout();
         };
 
+        const handleFullscreenChange = () => {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                resetOverlayTimeout();
+            }
+        };
+
         window.addEventListener("mousemove", handleInteraction);
         window.addEventListener("touchstart", handleInteraction);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+        document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+        document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
         return () => {
             window.removeEventListener("mousemove", handleInteraction);
             window.removeEventListener("touchstart", handleInteraction);
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+            document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
             if (overlayTimeoutRef.current) {
                 clearTimeout(overlayTimeoutRef.current);
             }
@@ -210,40 +227,31 @@ const WatchPage = () => {
     const anime = mediaType === "tv" && isAnimeMedia;
 
     const providersList = useMemo(() => {
-        const defaultOrder = [
-            { id: "vidlink", name: "VidLink" },
+        return [
             { id: "vidsync", name: "VidSync" },
+            { id: "vidsuper", name: "VidSuper" },
+            { id: "cinezo", name: "Cinezo" },
+            { id: "vidlink", name: "VidLink" },
             { id: "videasy", name: "Videasy" },
             { id: "mapple", name: "Mapple TV" },
-            { id: "cinesrc", name: "CineSrc" },
-            { id: "1embed", name: "1Embed" },
             { id: "vidfast", name: "VidFast" }
         ];
-
-        if (!details) return defaultOrder;
-
-        const isIndian = details?.origin_country?.includes("IN") || 
-                         details?.production_countries?.some(c => c.iso_3166_1 === "IN");
-
-        if (isIndian || isAnimeMedia) {
-            return [
-                { id: "vidsync", name: "VidSync" },
-                { id: "vidlink", name: "VidLink" },
-                { id: "videasy", name: "Videasy" },
-                { id: "mapple", name: "Mapple TV" },
-                { id: "cinesrc", name: "CineSrc" },
-                { id: "1embed", name: "1Embed" },
-                { id: "vidfast", name: "VidFast" }
-            ];
-        }
-
-        return defaultOrder;
-    }, [details, isAnimeMedia]);
+    }, []);
     
-    const playerUrl = useMemo(
-        () => getPlayerUrl(mediaType, id, season, episode, selectedProvider),
-        [episode, id, mediaType, season, selectedProvider]
-    );
+    const playerUrl = useMemo(() => {
+        const historyItem = getHistory().find(h => h.id === Number(id));
+        let progress = 0;
+        if (mediaType === "tv") {
+            if (historyItem && historyItem.season === season && historyItem.episode === episode) {
+                progress = historyItem.currentTime || 0;
+            }
+        } else {
+            if (historyItem) {
+                progress = historyItem.currentTime || 0;
+            }
+        }
+        return getPlayerUrl(mediaType, id, season, episode, selectedProvider, progress);
+    }, [episode, id, mediaType, season, selectedProvider]);
 
     const seasonsList = useMemo(
         () => details?.seasons?.filter((item) => item.season_number > 0) || [],
@@ -271,19 +279,22 @@ const WatchPage = () => {
         setEpisodes([]);
         setEpisodeQuery("");
 
+        // Set provider from history or default to vidsync immediately when id changes
+        const historyItem = getHistory().find(h => h.id === Number(id));
+        if (historyItem?.provider) {
+            setSelectedProvider(historyItem.provider);
+        } else {
+            setSelectedProvider("vidsync");
+        }
+
+        // Reset initial season and episode refs for the new title
+        initialSeasonRef.current = getPositiveInt(searchParams.get("season"), 1);
+        initialEpisodeRef.current = getPositiveInt(searchParams.get("episode"), 1);
+
         const fetchWatchData = async () => {
             try {
                 const detailsData = await tmdbFetch(`/${mediaType}/${id}`);
                 setDetails(detailsData);
-
-                // Set default provider based on metadata if not set in history
-                const historyItem = getHistory().find(h => h.id === Number(id));
-                if (!historyItem?.provider) {
-                    const isIndian = detailsData?.origin_country?.includes("IN") || 
-                                     detailsData?.production_countries?.some(c => c.iso_3166_1 === "IN");
-                    const isAnimeMedia = isAnime(detailsData);
-                    setSelectedProvider(isIndian || isAnimeMedia ? "vidsync" : "vidlink");
-                }
             } catch (fetchError) {
                 console.error("Error loading watch page:", fetchError);
                 setError("Unable to load this title right now.");
@@ -386,10 +397,10 @@ const WatchPage = () => {
                 "https://vidfast.xyz",
                 "https://vidfast.vc",
                 "https://vidfast.bz",
-                "https://1embed.cc",
                 "https://vidsync.live",
                 "https://mapple.uk",
-                "https://cinesrc.st",
+                "https://vidsuper.net",
+                "https://player.cinezo.live",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
@@ -400,35 +411,38 @@ const WatchPage = () => {
 
                 let playerState = data?.type === "PLAYER_EVENT" ? data.data : null;
 
-                if (!playerState && data?.type && typeof data.type === "string" && data.type.startsWith("cinesrc:")) {
-                    const eventType = data.type;
-                    if (eventType === "cinesrc:close") {
-                        navigate(-1);
-                        return;
-                    }
-                    if (eventType === "cinesrc:timeupdate" || eventType === "cinesrc:seeking" || eventType === "cinesrc:seeked" || eventType === "cinesrc:ended") {
-                        playerState = {
-                            currentTime: data.currentTime || 0,
-                            duration: data.duration || 0,
-                            percentage: data.duration > 0 ? Math.round((data.currentTime / data.duration) * 100) : 0
-                        };
-                        if (eventType === "cinesrc:ended") {
-                            playerState.percentage = 100;
-                        }
-                    } else if (eventType === "cinesrc:nextepisode") {
-                        playerState = {
-                            currentTime: 0,
-                            duration: 0,
-                            percentage: 0,
-                            season: data.season,
-                            episode: data.episode
-                        };
-                    }
+                if (!playerState && event.origin === "https://player.cinezo.live" && data?.type === "WATCH_PROGRESS") {
+                    const progressData = data.data || {};
+                    const time = progressData.currentTime !== undefined ? progressData.currentTime : 0;
+                    const duration = progressData.duration || 0;
+                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                    playerState = {
+                        currentTime: time,
+                        time: time,
+                        duration: duration,
+                        percentage,
+                    };
+                }
+
+                if (!playerState && event.origin === "https://vidsuper.net" && data?.type) {
+                    const time = data.progress !== undefined ? data.progress : 0;
+                    const duration = data.duration || 0;
+                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                    playerState = {
+                        currentTime: time,
+                        time: time,
+                        duration: duration,
+                        percentage,
+                        season: data.season,
+                        episode: data.episode,
+                    };
                 }
 
                 if (!playerState && data?.type && (data.type === "VIDEO_PROGRESS" || data.type === "VIDEO_NINETY_PERCENT" || data.type === "VIDEO_ENDED")) {
                     const payload = data.payload || {};
-                    const time = payload.currentTime !== undefined ? payload.time : payload.time;
+                    const time = payload.currentTime !== undefined ? payload.currentTime : payload.time;
                     const duration = payload.duration || 0;
                     let percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
                     if (data.type === "VIDEO_NINETY_PERCENT") percentage = 90;
@@ -444,7 +458,7 @@ const WatchPage = () => {
 
                 if (!playerState && data?.type === "VIDSYNC_PLAYER_EVENT") {
                     const vidsyncData = data.data || {};
-                    const time = vidsyncData.currentTime !== undefined ? vidsyncData.time : vidsyncData.time;
+                    const time = vidsyncData.currentTime !== undefined ? vidsyncData.currentTime : vidsyncData.time;
                     const duration = vidsyncData.duration || 0;
                     const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
 
@@ -453,6 +467,25 @@ const WatchPage = () => {
                         time: time || 0,
                         duration: duration || 0,
                         percentage,
+                        season: vidsyncData.season,
+                        episode: vidsyncData.episode,
+                    };
+                }
+
+                if (!playerState && data?.type === "VIDSYNC_MEDIA_DATA") {
+                    const entry = data.data?.entry || {};
+                    const progress = entry.progress || {};
+                    const time = progress.watched !== undefined ? progress.watched : 0;
+                    const duration = progress.duration || 0;
+                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                    playerState = {
+                        currentTime: time,
+                        time: time,
+                        duration: duration,
+                        percentage,
+                        season: entry.season,
+                        episode: entry.episode,
                     };
                 }
 
@@ -540,7 +573,15 @@ const WatchPage = () => {
 
             {/* Safe Area Notch-aware floating Back Button */}
             <button
-                onClick={() => navigate(-1)}
+                onClick={() => {
+                    const isChanged = (mediaType === "tv") && 
+                                      (season !== initialSeasonRef.current || episode !== initialEpisodeRef.current);
+                    if (isChanged) {
+                        navigateToEpisode(initialEpisodeRef.current, initialSeasonRef.current);
+                    } else {
+                        navigate(-1);
+                    }
+                }}
                 aria-label="Go back"
                 className={`watch-back-btn ${showOverlays ? "visible" : ""}`}
             >
@@ -778,8 +819,9 @@ const WatchPage = () => {
                         src={playerUrl}
                         className="watch-player-iframe"
                         scrolling="no"
+                        frameBorder="0"
                         allowFullScreen
-                        allow="autoplay; encrypted-media; picture-in-picture; web-share"
+                        allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen; accelerometer; gyroscope"
                         title="EpicStream Video Player"
                         onLoad={() => setIsFrameLoading(false)}
                     />

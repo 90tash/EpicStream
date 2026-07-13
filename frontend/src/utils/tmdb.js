@@ -104,14 +104,6 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://mapple.uk/watch/tv/${id}-${season}-${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true&title=true&poster=true`;
         }
             
-        case "cinesrc": {
-            const theme = "%23ff2633"; // Project accent color #ff2633 URL encoded
-            if (type === "movie") {
-                return `https://cinesrc.st/embed/movie/${id}?autoplay=true&color=${theme}&back=close`;
-            }
-            return `https://cinesrc.st/embed/tv/${id}?s=${season}&e=${episode}&autoplay=true&autonext=true&autoskip=true&color=${theme}&back=close`;
-        }
-            
         case "vidfast": {
             const theme = "ff2633"; // Project accent color
             if (type === "movie") {
@@ -120,18 +112,32 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://vidfast.vc/tv/${id}/${season}/${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
         }
             
-        case "1embed":
-            if (type === "movie") {
-                return `https://1embed.cc/embed/movie/${id}`;
-            }
-            return `https://1embed.cc/embed/tv/${id}/${season}/${episode}`;
-            
         case "vidsync": {
             const theme = "ff2633"; // Project accent color
             if (type === "movie") {
                 return `https://vidsync.live/embed/movie/${id}?autoPlay=true&theme=${theme}`;
             }
             return `https://vidsync.live/embed/tv/${id}/${season}/${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
+        }
+            
+        case "vidsuper": {
+            const themeColor = "ff2633"; // Project accent color
+            const progressParam = progress > 0 ? `&progress=${progress}` : "";
+            const common = `autoplay=true&overlay=true&skip_intro=true&color=${themeColor}${progressParam}`;
+            if (type === "movie") {
+                return `https://vidsuper.net/movie/${id}?${common}`;
+            }
+            return `https://vidsuper.net/tv/${id}/${season}/${episode}?${common}&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true`;
+        }
+            
+        case "cinezo": {
+            const primaryColor = "ff2633"; // Vibrant red accent
+            const secondaryColor = "c90713"; // Dark red
+            const common = `primarycolor=${primaryColor}&secondarycolor=${secondaryColor}&iconcolor=ffffff&autoplay=true&poster=true&chromecast=true&servericon=true&setting=true&pip=true`;
+            if (type === "movie") {
+                return `https://player.cinezo.live/embed/movie/${id}?${common}`;
+            }
+            return `https://player.cinezo.live/embed/tv/${id}/${season}/${episode}?${common}`;
         }
 
             

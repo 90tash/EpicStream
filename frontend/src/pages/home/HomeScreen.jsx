@@ -423,6 +423,13 @@ const HomeScreen = () => {
                         const hasImage = item.backdrop_path || item.poster_path;
                         const releaseDate = item.release_date || item.first_air_date;
                         const isReleased = !releaseDate || releaseDate <= today;
+                        
+                        // Filter out anime from standard TV shows sections
+                        if (row.title === "Popular Shows" || row.title === "Top Rated: Series") {
+                            const isAnimeShow = item.genre_ids?.includes(16) && item.original_language === "ja";
+                            if (isAnimeShow) return false;
+                        }
+                        
                         return hasImage && isReleased;
                     })
                     .slice(0, row.topTen ? 10 : 20);
