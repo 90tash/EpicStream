@@ -10,7 +10,6 @@ import {
     tmdbGetSeason,
 } from "../utils/tmdb";
 import { addToHistory, updateHistoryProgress, getHistory } from "../utils/history";
-import { isAnime } from "../utils/anilist";
 import "./watchPage.css";
 
 const getPositiveInt = (value, fallback) => {
@@ -33,13 +32,15 @@ const formatDate = (dateStr) => {
 
 const getProviderLabel = (provider) => {
     const labels = {
-        vidlink: "VidLink",
         vidsync: "VidSync",
         vidsuper: "VidSuper",
+        peachify: "Peachify",
+        nxsha: "nxsha(Indian)",
         cinezo: "Cinezo",
+        vidlink: "VidLink",
         videasy: "Videasy",
-        vidfast: "VidFast",
         mapple: "Mapple TV",
+        vidfast: "VidFast",
     };
     return labels[provider] || provider;
 };
@@ -47,6 +48,8 @@ const getProviderLabel = (provider) => {
 const WATCH_PROVIDERS = [
     { id: "vidsync", name: "VidSync" },
     { id: "vidsuper", name: "VidSuper" },
+    { id: "peachify", name: "Peachify" },
+    { id: "nxsha", name: "nxsha(Indian)" },
     { id: "cinezo", name: "Cinezo" },
     { id: "vidlink", name: "VidLink" },
     { id: "videasy", name: "Videasy" },
@@ -223,19 +226,9 @@ const WatchPage = () => {
 
 
     const title = getTitle(details);
-    const isAnimeMedia = useMemo(() => isAnime(details), [details]);
-    const anime = mediaType === "tv" && isAnimeMedia;
 
     const providersList = useMemo(() => {
-        return [
-            { id: "vidsync", name: "VidSync" },
-            { id: "vidsuper", name: "VidSuper" },
-            { id: "cinezo", name: "Cinezo" },
-            { id: "vidlink", name: "VidLink" },
-            { id: "videasy", name: "Videasy" },
-            { id: "mapple", name: "Mapple TV" },
-            { id: "vidfast", name: "VidFast" }
-        ];
+        return WATCH_PROVIDERS;
     }, []);
     
     const playerUrl = useMemo(() => {
@@ -401,6 +394,8 @@ const WatchPage = () => {
                 "https://mapple.uk",
                 "https://vidsuper.net",
                 "https://player.cinezo.live",
+                "https://nxsha.space",
+                "https://peachify.top",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
@@ -410,6 +405,39 @@ const WatchPage = () => {
                 if (typeof data === "string") data = JSON.parse(data);
 
                 let playerState = data?.type === "PLAYER_EVENT" ? data.data : null;
+
+                if (!playerState && event.origin === "https://peachify.top" && data?.type === "PLAYER_EVENT") {
+                    const peachData = data.data || {};
+                    const time = peachData.currentTime !== undefined ? peachData.currentTime : 0;
+                    const duration = peachData.duration || 0;
+                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                    playerState = {
+                        currentTime: time,
+                        time: time,
+                        duration: duration,
+                        percentage,
+                        season: peachData.season ? Number(peachData.season) : undefined,
+                        episode: peachData.episode ? Number(peachData.episode) : undefined,
+                    };
+                }
+
+                if (!playerState && event.origin === "https://peachify.top" && data?.type === "MEDIA_DATA") {
+                    const peachData = data.data || {};
+                    const progressData = peachData.progress || {};
+                    const time = progressData.watched !== undefined ? progressData.watched : 0;
+                    const duration = progressData.duration || 0;
+                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                    playerState = {
+                        currentTime: time,
+                        time: time,
+                        duration: duration,
+                        percentage,
+                        season: peachData.last_season_watched ? Number(peachData.last_season_watched) : undefined,
+                        episode: peachData.last_episode_watched ? Number(peachData.last_episode_watched) : undefined,
+                    };
+                }
 
                 if (!playerState && event.origin === "https://player.cinezo.live" && data?.type === "WATCH_PROGRESS") {
                     const progressData = data.data || {};
@@ -571,6 +599,21 @@ const WatchPage = () => {
                 onTouchStart={resetOverlayTimeout}
             />
 
+            {/* Transparent backdrop to dismiss the provider dropdown when clicking/tapping anywhere outside the dropdown */}
+            {isProviderMenuOpen && (
+                <div 
+                    className="watch-dropdown-backdrop"
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        zIndex: 9999,
+                        background: "transparent"
+                    }}
+                    onClick={() => setIsProviderMenuOpen(false)}
+                    onTouchStart={() => setIsProviderMenuOpen(false)}
+                />
+            )}
+
             {/* Safe Area Notch-aware floating Back Button */}
             <button
                 onClick={() => {
@@ -593,7 +636,9 @@ const WatchPage = () => {
                 <button
                     type="button"
                     className="watch-provider-btn"
-                    onClick={() => setIsProviderMenuOpen(prev => !prev)}
+                    onClick={() => {
+                        setIsProviderMenuOpen(prev => !prev);
+                    }}
                     aria-expanded={isProviderMenuOpen}
                 >
                     <span>Server: {getProviderLabel(selectedProvider)}</span>
@@ -602,6 +647,7 @@ const WatchPage = () => {
                         transition: "transform 0.2s ease" 
                     }} />
                 </button>
+
                 {isProviderMenuOpen && (
                     <div className="watch-provider-dropdown">
                         {providersList.map((provider) => (

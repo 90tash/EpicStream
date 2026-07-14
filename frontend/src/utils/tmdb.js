@@ -80,16 +80,61 @@ export const tmdbGetRecommendations = async (type, id) => {
 // To switch the main embed provider, uncomment your preferred option below 
 // and ensure all others are commented out.
 // =========================================================================
-export const ACTIVE_PROVIDER = "videasy"; // Option 1: Videasy
+export const ACTIVE_PROVIDER = "vidsync"; // Option 1: VidSync (Default)
 // export const ACTIVE_PROVIDER = "vidsrc_to"; // Option 2: VidSrc.to
 // export const ACTIVE_PROVIDER = "vidsrc_me"; // Option 3: VidSrc.me (Alternative API format)
 // export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
 
-export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIVE_PROVIDER, progress = 0) => {
+export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIVE_PROVIDER, progress = 0, nxshaSettings = {}) => {
     const color = "ff2633"; // Project accent color
     const commonParams = `overlay=true&color=${color}`;
     
     switch (provider) {
+        case "peachify": {
+            const baseUrl = "https://peachify.top";
+            let url = "";
+            if (type === "movie") {
+                url = `${baseUrl}/embed/movie/${id}`;
+            } else {
+                url = `${baseUrl}/embed/tv/${id}/${season}/${episode}`;
+            }
+            const params = ["accent=ff2633"];
+            if (progress > 0) {
+                params.push(`t=${Math.round(progress)}`);
+            }
+            return `${url}?${params.join("&")}`;
+        }
+
+        case "nxsha": {
+            const baseUrl = "https://nxsha.space";
+            let url = "";
+            if (type === "movie") {
+                url = `${baseUrl}/embed/movie/${id}`;
+            } else {
+                url = `${baseUrl}/embed/tv/${id}/${season}/${episode}`;
+            }
+            
+            const server = nxshaSettings.server || "MbPly-[Multi-Lang]";
+            const oneServer = nxshaSettings.oneServer ?? false;
+            const sub = nxshaSettings.sub || "en";
+            const lang = nxshaSettings.lang || "";
+            const disableDl = nxshaSettings.disableDl ?? true;
+            const disableAd = nxshaSettings.disableAd ?? true;
+            
+            const params = [];
+            if (server) params.push(`server=${encodeURIComponent(server)}`);
+            if (oneServer) params.push("one_server=true");
+            if (sub) params.push(`sub=${encodeURIComponent(sub)}`);
+            if (lang) params.push(`lang=${encodeURIComponent(lang)}`);
+            if (disableDl) params.push("disable_dl_button=true");
+            if (disableAd) params.push("disable_app_ad=true");
+            
+            if (params.length > 0) {
+                url += `?${params.join("&")}`;
+            }
+            return url;
+        }
+
         case "videasy":
             if (type === "movie") {
                 return `https://player.videasy.to/movie/${id}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&${commonParams}`;
