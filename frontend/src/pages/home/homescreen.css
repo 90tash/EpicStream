@@ -1181,3 +1181,42 @@
     animation: skeletonShimmer 2s infinite linear;
 }
 
+/* Card Status Badge (Upcoming / In Cinemas / Airing Now) */
+.card-status-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    font-size: 11px;
+    font-weight: 500;
+    color: #fff;
+    text-transform: none;
+    letter-spacing: normal;
+    padding: 4px 10px;
+    line-height: 1.2;
+    pointer-events: none;
+    transition: background-color 0.3s ease;
+    
+    /* Smooth rounded corners matching the card's 8px border-radius */
+    border-top-right-radius: 8px;
+    
+    box-shadow: 2px -2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.card-status-badge.status-upcoming {
+    background: #e50914; /* Red label */
+}
+
+.card-status-badge.status-incinemas {
+    background: #e50914; /* Red label */
+}
+
+.card-status-badge.status-airing {
+    background: #e50914; /* Red label */
+}
+
+.browse-card:hover .card-status-badge {
+    background-color: #ff0a16; /* Slight glow / bright red on hover */
+}
+
+

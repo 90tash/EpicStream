@@ -1861,7 +1861,7 @@
 }
 
 /* Instant-response touch action overrides to disable double-tap delays */
-.watch-back-btn,
+.watch-close-btn,
 .watch-provider-btn,
 .watch-sidebar-toggle-btn,
 .watch-sidebar-episode-card,
@@ -1871,8 +1871,8 @@
     touch-action: manipulation;
 }
 
-/* Notch-safe Back Button styling */
-.watch-back-btn {
+/* Notch-safe Close Button styling */
+.watch-close-btn {
     position: absolute;
     top: max(16px, env(safe-area-inset-top));
     left: max(16px, env(safe-area-inset-left));
@@ -1896,12 +1896,12 @@
     transition: opacity 0.25s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.watch-back-btn.visible {
+.watch-close-btn.visible {
     opacity: 1;
     pointer-events: auto;
 }
 
-.watch-back-btn:hover {
+.watch-close-btn:hover {
     border-color: rgba(255, 38, 51, 0.4);
     color: var(--accent);
 }
@@ -2583,14 +2583,14 @@
 }
 
 @media (max-width: 560px) {
-    .watch-back-btn {
+    .watch-close-btn {
         width: 38px;
         height: 38px;
         top: 12px;
         left: 12px;
     }
     
-    .watch-back-btn svg {
+    .watch-close-btn svg {
         width: 20px;
         height: 20px;
     }

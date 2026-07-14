@@ -207,6 +207,34 @@ const MovieCard = ({ item, row, index, openDetails }) => {
     const type = getMediaType(item);
     const rating = getRating(item);
 
+    const getStatusLabel = () => {
+        const releaseDateStr = item.release_date || item.first_air_date;
+        if (!releaseDateStr) return null;
+
+        const releaseDate = new Date(releaseDateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        releaseDate.setHours(0, 0, 0, 0);
+
+        if (releaseDate > today) {
+            return { text: "Upcoming", className: "status-upcoming" };
+        }
+
+        // Recent release (within 60 days)
+        const sixtyDaysAgo = new Date(today);
+        sixtyDaysAgo.setDate(today.getDate() - 60);
+
+        if (releaseDate >= sixtyDaysAgo && releaseDate <= today) {
+            if (type === "movie") {
+                return { text: "In Cinemas", className: "status-incinemas" };
+            }
+        }
+
+        return null;
+    };
+
+    const statusLabel = getStatusLabel();
+
     return (
         <button
             type="button"
@@ -226,6 +254,11 @@ const MovieCard = ({ item, row, index, openDetails }) => {
                     alt={getTitle(item)} 
                     loading="lazy"
                 />
+                {statusLabel && (
+                    <span className={`card-status-badge ${statusLabel.className}`}>
+                        {statusLabel.text}
+                    </span>
+                )}
             </div>
             <span className="card-title">{getTitle(item)}</span>
             <span className="card-meta">
@@ -421,8 +454,6 @@ const HomeScreen = () => {
                 const results = (data.results || [])
                     .filter((item) => {
                         const hasImage = item.backdrop_path || item.poster_path;
-                        const releaseDate = item.release_date || item.first_air_date;
-                        const isReleased = !releaseDate || releaseDate <= today;
                         
                         // Filter out anime from standard TV shows sections
                         if (row.title === "Popular Shows" || row.title === "Top Rated: Series") {
@@ -430,7 +461,7 @@ const HomeScreen = () => {
                             if (isAnimeShow) return false;
                         }
                         
-                        return hasImage && isReleased;
+                        return hasImage;
                     })
                     .slice(0, row.topTen ? 10 : 20);
                 

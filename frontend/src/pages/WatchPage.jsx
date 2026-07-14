@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronDown, Search, LayoutGrid, List } from "lucide-react";
+import { ChevronLeft, ChevronDown, Search, LayoutGrid, List, X } from "lucide-react";
 import {
     getPlayerUrl,
     getTitle,
@@ -614,21 +614,15 @@ const WatchPage = () => {
                 />
             )}
 
-            {/* Safe Area Notch-aware floating Back Button */}
+            {/* Safe Area Notch-aware floating Close Button */}
             <button
                 onClick={() => {
-                    const isChanged = (mediaType === "tv") && 
-                                      (season !== initialSeasonRef.current || episode !== initialEpisodeRef.current);
-                    if (isChanged) {
-                        navigateToEpisode(initialEpisodeRef.current, initialSeasonRef.current);
-                    } else {
-                        navigate(-1);
-                    }
+                    navigate(`/${mediaType}/${id}`);
                 }}
-                aria-label="Go back"
-                className={`watch-back-btn ${showOverlays ? "visible" : ""}`}
+                aria-label="Close player"
+                className={`watch-close-btn ${showOverlays ? "visible" : ""}`}
             >
-                <ChevronLeft size={24} style={{ marginRight: "2px" }} />
+                <X size={24} />
             </button>
 
             {/* Floating Top-Center Provider Selector */}
