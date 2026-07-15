@@ -857,9 +857,10 @@
     text-overflow: ellipsis;
 }
 
-/* ==========================================================================
-   SIMILAR CONTENT GRID
-   ========================================================================== */
+.similar-section {
+    padding: 0 0 48px;
+}
+
 .similar-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1125,13 +1126,27 @@
     }
     .back-btn { width: 36px; height: 36px; top: 16px; left: 16px; }
     .details-section-title { font-size: 18px; margin: 24px 16px 12px; }
-    .episodes-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .episodes-section,
+    .similar-section {
+        padding-left: 16px;
+    }
+    .episodes-section .details-section-title,
+    .similar-section .details-section-title {
+        margin-left: 0;
+    }
+    .episodes-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding-left: 0;
+        padding-right: 0;
+    }
     .episode-list {
         flex-direction: row;
         overflow-x: auto;
         overflow-y: hidden;
         gap: 16px;
-        padding: 0 16px 24px;
+        padding: 0 16px 24px 0;
         scrollbar-width: none;
         scroll-behavior: smooth;
         -webkit-overflow-scrolling: touch;
@@ -1209,7 +1224,7 @@
         overflow-x: auto;
         overflow-y: hidden;
         gap: 12px;
-        padding: 0 16px 24px;
+        padding: 0 16px 24px 0;
         scrollbar-width: none;
         scroll-behavior: smooth;
         -webkit-overflow-scrolling: touch;
@@ -1225,6 +1240,10 @@
     .similar-grid .similar-card-img-wrapper {
         aspect-ratio: 2 / 3; /* vertical card poster style */
         border-radius: 8px;
+    }
+    .similar-grid .similar-card-meta {
+        font-size: 11px;
+        gap: 6px;
     }
 }
 

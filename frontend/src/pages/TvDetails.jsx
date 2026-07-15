@@ -506,7 +506,7 @@ const TvDetails = () => {
 
                     <div className="episode-list">
                         {isLoadingEpisodes ? (
-                            <p style={{textAlign:'center', color:'var(--muted)', padding:'40px'}}>Loading episodes...</p>
+                            <p style={{ width: '100%', textAlign: 'center', color: 'var(--muted)', padding: '40px 0', flexShrink: 0 }}>Loading episodes...</p>
                         ) : episodes.length > 0 ? (
                             episodes.map(ep => (
                                 <div 
@@ -536,7 +536,7 @@ const TvDetails = () => {
                                 </div>
                             ))
                         ) : (
-                            <p style={{textAlign:'center', color:'var(--muted)', padding:'40px'}}>No episodes available.</p>
+                            <p style={{ width: '100%', textAlign: 'center', color: 'var(--muted)', padding: '40px 0', flexShrink: 0 }}>No episodes available.</p>
                         )}
                     </div>
                 </section>
@@ -566,7 +566,7 @@ const TvDetails = () => {
                 )}
 
                 {similarTv.length > 0 && (
-                    <>
+                    <section className="similar-section">
                         <h2 id="similar" className="details-section-title">Similar TV Shows</h2>
                         <div className="similar-grid">
                             {similarTv.map((similar) => (
@@ -578,7 +578,7 @@ const TvDetails = () => {
                                 />
                             ))}
                         </div>
-                    </>
+                    </section>
                 )}
             </main>
 

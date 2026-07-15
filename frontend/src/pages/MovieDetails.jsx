@@ -499,7 +499,7 @@ const MovieDetails = () => {
                 )}
 
                 {similarMovies.length > 0 && (
-                    <>
+                    <section className="similar-section">
                         <h2 id="similar" className="details-section-title">Similar Movies</h2>
                         <div className="similar-grid">
                             {similarMovies.map((similar) => (
@@ -511,7 +511,7 @@ const MovieDetails = () => {
                                 />
                             ))}
                         </div>
-                    </>
+                    </section>
                 )}
             </main>
 
