@@ -42,6 +42,56 @@ export const getRating = (item) => (
     typeof item?.vote_average === "number" ? item.vote_average.toFixed(1) : null
 );
 
+export const getStatusLabel = (item) => {
+    if (!item) return null;
+    const type = getMediaType(item);
+
+    // Check if it's a TV show with a new season
+    if (type === "tv" && item.seasons && item.seasons.length > 0) {
+        const validSeasons = item.seasons.filter(s => s.season_number > 0);
+        if (validSeasons.length > 1) {
+            // Sort seasons by season_number descending
+            const sortedSeasons = [...validSeasons].sort((a, b) => b.season_number - a.season_number);
+            const latestSeason = sortedSeasons[0];
+            if (latestSeason.air_date) {
+                const airDate = new Date(latestSeason.air_date);
+                const today = new Date();
+                const ninetyDaysAgo = new Date();
+                ninetyDaysAgo.setDate(today.getDate() - 90);
+                
+                if (airDate > today || (airDate >= ninetyDaysAgo && airDate <= today)) {
+                    return { text: "New Season", className: "status-newseason" };
+                }
+            }
+        }
+    }
+
+    const releaseDateStr = item.release_date || item.first_air_date;
+    if (!releaseDateStr) return null;
+
+    const releaseDate = new Date(releaseDateStr);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    releaseDate.setHours(0, 0, 0, 0);
+
+    if (releaseDate > today) {
+        return { text: "Upcoming", className: "status-upcoming" };
+    }
+
+    // Recent release (within 60 days)
+    const sixtyDaysAgo = new Date(today);
+    sixtyDaysAgo.setDate(today.getDate() - 60);
+
+    if (releaseDate >= sixtyDaysAgo && releaseDate <= today) {
+        if (type === "movie") {
+            return { text: "In Cinemas", className: "status-incinemas" };
+        }
+    }
+
+    return null;
+};
+
+
 export const tmdbGetImages = async (type, id) => {
     try {
         const data = await tmdbFetch(`/${type}/${id}/images`, { include_image_language: "en,null" });

@@ -862,8 +862,8 @@
    ========================================================================== */
 .similar-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
     padding: 0 4% 64px;
 }
 
@@ -882,7 +882,7 @@
 
 .similar-card-img-wrapper {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 2 / 3;
     border-radius: 8px;
     overflow: hidden;
     background: #111;
@@ -933,16 +933,17 @@
     align-items: center;
     gap: 8px;
     color: #64748b;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     padding: 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.similar-card-meta .rating {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+.similar-card-meta svg {
     color: var(--accent);
+    flex-shrink: 0;
 }
 
 .similar-card-meta .dot {
@@ -1125,9 +1126,106 @@
     .back-btn { width: 36px; height: 36px; top: 16px; left: 16px; }
     .details-section-title { font-size: 18px; margin: 24px 16px 12px; }
     .episodes-header { flex-direction: column; align-items: flex-start; gap: 16px; }
-    .episode-card { flex-direction: column; align-items: stretch; gap: 16px; padding: 12px; }
-    .episode-thumb-wrapper { width: 100%; flex: none; }
-    .episode-info { width: 100%; }
+    .episode-list {
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 16px;
+        padding: 0 16px 24px;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+    .episode-list::-webkit-scrollbar {
+        display: none;
+    }
+    .episode-card {
+        flex: 0 0 240px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    .episode-card:hover {
+        background: transparent;
+        border-color: transparent;
+    }
+    .episode-thumb-wrapper {
+        width: 100%;
+        flex: none;
+        aspect-ratio: 16 / 9;
+        border-radius: 8px;
+    }
+    .episode-info {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .episode-title-row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 6px;
+        margin-bottom: 0;
+    }
+    .episode-title-row h3 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex: 1;
+        min-width: 140px;
+    }
+    .episode-runtime {
+        font-size: 11px;
+        color: #64748b;
+        white-space: nowrap;
+    }
+    .episode-overview {
+        font-size: 12px;
+        line-height: 1.4;
+        color: #94a3b8;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Similar movies/shows horizontal slider on mobile */
+    .similar-grid {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 12px;
+        padding: 0 16px 24px;
+        scrollbar-width: none;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+    .similar-grid::-webkit-scrollbar {
+        display: none;
+    }
+    .similar-grid .similar-card {
+        flex: 0 0 140px;
+        min-width: 140px;
+        gap: 6px;
+    }
+    .similar-grid .similar-card-img-wrapper {
+        aspect-ratio: 2 / 3; /* vertical card poster style */
+        border-radius: 8px;
+    }
 }
 
 /* --- Collection Modal --- */

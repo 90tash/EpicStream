@@ -25,39 +25,6 @@ const formatDate = (dateStr) => {
 
 /* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate }) => {
-    const [bannerUrl, setBannerUrl] = useState(null);
-
-    useEffect(() => {
-        let isMounted = true;
-        const fetchTitledBanner = async () => {
-            try {
-                const data = await tmdbGetImages(type, item.id);
-                if (!isMounted) return;
-                if (data.backdrops && data.backdrops.length > 0) {
-                    // Filter for backdrops that are NOT textless (iso_639_1 is not null)
-                    const titledBackdrops = data.backdrops.filter(b => b.iso_639_1 !== null);
-                    if (titledBackdrops.length > 0) {
-                        // Prioritize English titled backdrops
-                        const enTitled = titledBackdrops.find(b => b.iso_639_1 === 'en');
-                        const selected = enTitled || titledBackdrops[0];
-                        setBannerUrl(imageUrl(selected.file_path, "w780"));
-                        return;
-                    }
-                }
-                setBannerUrl(imageUrl(item.backdrop_path || item.poster_path, "w780"));
-            } catch (error) {
-                console.error("Error fetching images for similar item:", error);
-                if (isMounted) {
-                    setBannerUrl(imageUrl(item.backdrop_path || item.poster_path, "w780"));
-                }
-            }
-        };
-        fetchTitledBanner();
-        return () => {
-            isMounted = false;
-        };
-    }, [item.id, type]);
-
     return (
         <div 
             className="similar-card" 
@@ -67,23 +34,21 @@ const SimilarCard = ({ item, type, navigate }) => {
             }}
         >
             <div className="similar-card-img-wrapper">
-                {bannerUrl && (
-                    <img
-                        src={bannerUrl}
-                        alt={getTitle(item)}
-                        loading="lazy"
-                    />
-                )}
+                <img
+                    src={imageUrl(item.poster_path || item.backdrop_path, "w500")}
+                    alt={getTitle(item)}
+                    loading="lazy"
+                />
                 <div className="similar-card-shade" />
             </div>
             <span className="similar-card-title">{getTitle(item)}</span>
             <div className="similar-card-meta">
                 {item.vote_average > 0 && (
-                    <span className="rating">
+                    <>
                         <Star size={13} fill="currentColor" /> 
                         {item.vote_average.toFixed(1)}
                         <span className="dot" />
-                    </span>
+                    </>
                 )}
                 <span>{(item.release_date || item.first_air_date || "").slice(0, 4)}</span>
                 <span className="dot" />

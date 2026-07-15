@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
+import { formatMediaType, getMediaType, getRating, getTitle, getYear, getStatusLabel, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
 import { addToHistory, getHistory, removeFromHistory } from "../../utils/history";
 import { useWatchlistStore } from "../../stores/watchlist";
 import "./homescreen.css";
@@ -207,33 +207,7 @@ const MovieCard = ({ item, row, index, openDetails }) => {
     const type = getMediaType(item);
     const rating = getRating(item);
 
-    const getStatusLabel = () => {
-        const releaseDateStr = item.release_date || item.first_air_date;
-        if (!releaseDateStr) return null;
-
-        const releaseDate = new Date(releaseDateStr);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        releaseDate.setHours(0, 0, 0, 0);
-
-        if (releaseDate > today) {
-            return { text: "Upcoming", className: "status-upcoming" };
-        }
-
-        // Recent release (within 60 days)
-        const sixtyDaysAgo = new Date(today);
-        sixtyDaysAgo.setDate(today.getDate() - 60);
-
-        if (releaseDate >= sixtyDaysAgo && releaseDate <= today) {
-            if (type === "movie") {
-                return { text: "In Cinemas", className: "status-incinemas" };
-            }
-        }
-
-        return null;
-    };
-
-    const statusLabel = getStatusLabel();
+    const statusLabel = getStatusLabel(item);
 
     return (
         <button
@@ -465,16 +439,30 @@ const HomeScreen = () => {
                     })
                     .slice(0, row.topTen ? 10 : 20);
                 
+                // Fetch extra details for TV shows to check for "New Season"
+                const detailedResults = await Promise.all(results.map(async (item) => {
+                    if (getMediaType(item) === "tv") {
+                        try {
+                            const details = await tmdbFetch(`/tv/${item.id}`);
+                            return { ...item, ...details };
+                        } catch (e) {
+                            console.error("Error fetching tv details:", e);
+                            return item;
+                        }
+                    }
+                    return item;
+                }));
+                
                 setContentRows(prev => {
                     const next = [...prev];
-                    next[rowIndex] = { ...next[rowIndex], items: results };
+                    next[rowIndex] = { ...next[rowIndex], items: detailedResults };
                     return next;
                 });
 
                 // Use the first non-history row for hero candidates (limit to 5)
                 const firstDataRowIndex = contentRows.findIndex(r => !r.isHistory);
                 if (rowIndex === firstDataRowIndex) {
-                    const heroWithDetails = await Promise.all(results.slice(0, 5).map(async (item) => {
+                    const heroWithDetails = await Promise.all(detailedResults.slice(0, 5).map(async (item) => {
                         try {
                             const images = await tmdbGetImages(getMediaType(item), item.id);
                             // Look for English or null (textless) posters
@@ -549,6 +537,7 @@ const HomeScreen = () => {
     const rating = getRating(heroContent);
     const heroType = heroContent ? getMediaType(heroContent) : "movie";
     const heroInList = heroContent ? isItemInList(heroContent.id) : false;
+    const heroStatus = getStatusLabel(heroContent);
 
     return (
         <div className="epicstream-home">
@@ -591,6 +580,9 @@ const HomeScreen = () => {
                             )}
                             {releaseYear && <span>{releaseYear}</span>}
                             <span>{formatMediaType(getMediaType(heroContent))}</span>
+                            {heroStatus && (
+                                <span>{heroStatus.text}</span>
+                            )}
                         </div>
                         <p>{heroContent?.overview || "Movies, shows, trailers and more are ready to watch."}</p>
                         <div className="browse-actions">
