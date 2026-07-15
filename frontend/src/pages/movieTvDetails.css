@@ -947,11 +947,10 @@
     flex-shrink: 0;
 }
 
-.similar-card-meta .dot {
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: #475569;
+.rating-value-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 @media (min-width: 901px) {
@@ -1243,7 +1242,7 @@
     }
     .similar-grid .similar-card-meta {
         font-size: 11px;
-        gap: 6px;
+        gap: 8px;
     }
 }
 

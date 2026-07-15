@@ -290,3 +290,84 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
                 : `https://player.videasy.to/anime/${animeId}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1`;
     }
 };
+
+export const prioritizeSimilarContent = (currentShow, recommendationsList) => {
+    if (!currentShow || !recommendationsList || recommendationsList.length === 0) {
+        return recommendationsList;
+    }
+
+    const currentLang = currentShow.original_language;
+    const currentCountries = Array.isArray(currentShow.origin_country)
+        ? currentShow.origin_country
+        : (currentShow.production_countries?.map(c => c.iso_3166_1) || []);
+
+    const currentGenres = currentShow.genres?.map(g => g.id || g) || [];
+    
+    // 1. Anime Detection
+    const isCurrentAnime = currentGenres.includes(16) && 
+        (currentCountries.includes("JP") || currentLang === "ja");
+
+    // 2. Indian Content Detection
+    const indianLanguages = ["hi", "te", "ta", "ml", "kn", "pa", "bn", "gu", "mr", "ur"];
+    const isCurrentIndian = currentCountries.includes("IN") || indianLanguages.includes(currentLang);
+
+    // 3. Korean Content Detection
+    const isCurrentKorean = currentCountries.includes("KR") || currentLang === "ko";
+
+    const scoredList = recommendationsList.map(item => {
+        let score = 0;
+
+        const itemLang = item.original_language;
+        const itemCountries = Array.isArray(item.origin_country)
+            ? item.origin_country
+            : (item.production_countries?.map(c => c.iso_3166_1) || []);
+        const itemGenres = item.genre_ids || item.genres?.map(g => g.id || g) || [];
+
+        const isItemAnime = itemGenres.includes(16) && 
+            (itemCountries.includes("JP") || itemLang === "ja");
+
+        const isItemIndian = itemCountries.includes("IN") || indianLanguages.includes(itemLang);
+        const isItemKorean = itemCountries.includes("KR") || itemLang === "ko";
+
+        // Category matching rules
+        if (isCurrentAnime) {
+            score += isItemAnime ? 200 : -100;
+        } else if (isItemAnime) {
+            score -= 100; // Deprioritize anime if current is not anime
+        }
+
+        if (isCurrentIndian) {
+            score += isItemIndian ? 200 : -100;
+        } else if (isItemIndian) {
+            score -= 100; // Deprioritize Indian if current is not Indian
+        }
+
+        if (isCurrentKorean) {
+            score += isItemKorean ? 200 : -100;
+        } else if (isItemKorean) {
+            score -= 100; // Deprioritize Korean if current is not Korean
+        }
+
+        // Generic language matching (for Spanish, French, etc.)
+        if (itemLang === currentLang) {
+            score += 50;
+        } else if (itemLang !== "en" && currentLang !== "en") {
+            // If both are non-English and different, deprioritize slightly
+            score -= 10;
+        }
+
+        // Generic country matching
+        const matchingCountries = itemCountries.filter(c => currentCountries.includes(c));
+        score += matchingCountries.length * 30;
+
+        // Genre matching
+        const matchingGenres = itemGenres.filter(g => currentGenres.includes(g));
+        score += matchingGenres.length * 10;
+
+        return { item, score };
+    });
+
+    // Sort by score descending
+    const sorted = [...scoredList].sort((a, b) => b.score - a.score);
+    return sorted.map(entry => entry.item);
+};

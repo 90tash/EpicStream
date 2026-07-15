@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, Fragment } from "react";
 import { ChevronLeft, ChevronRight, Star, X, LayoutGrid, Plus, Check, Bookmark } from "lucide-react";
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
@@ -50,14 +50,14 @@ const SimilarCard = ({ item, type, navigate }) => {
             <span className="similar-card-title">{getTitle(item)}</span>
             <div className="similar-card-meta">
                 {item.vote_average > 0 && (
-                    <>
+                    <span className="rating-value-wrapper">
                         <Star size={13} fill="currentColor" /> 
                         {item.vote_average.toFixed(1)}
-                        <span className="dot" />
-                    </>
+                    </span>
                 )}
-                <span>{(item.release_date || item.first_air_date || "").slice(0, 4)}</span>
-                <span className="dot" />
+                {((item.release_date || item.first_air_date || "").slice(0, 4)) && (
+                    <span>{(item.release_date || item.first_air_date || "").slice(0, 4)}</span>
+                )}
                 <span>{type === "movie" ? "Movie" : "TV Show"}</span>
             </div>
         </div>
@@ -223,7 +223,8 @@ const MovieDetails = () => {
                 ]);
                 
                 setCast(castData.cast.slice(0, 10));
-                setSimilarMovies(recsData.slice(0, 10));
+                const prioritizedRecs = prioritizeSimilarContent(fullData, recsData);
+                setSimilarMovies(prioritizedRecs.slice(0, 10));
 
                 const directorObj = castData.crew?.find(member => member.job === "Director");
                 setDirector(directorObj ? { name: directorObj.name, id: directorObj.id } : null);
