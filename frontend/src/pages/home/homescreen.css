@@ -235,6 +235,14 @@
     background: rgba(255, 255, 255, 0.1); /* Subtle hover background */
 }
 
+.browse-actions .browse-action-group .browse-group-btn svg {
+    transition: color 200ms ease;
+}
+
+.browse-actions .browse-action-group .browse-group-btn:hover svg {
+    color: var(--accent);
+}
+
 .browse-actions .browse-action-group .browse-group-btn.add-list-btn.active {
     color: var(--accent);
 }
