@@ -21,7 +21,7 @@ const initialRows = [
     { 
         title: "Popular Shows", 
         path: "/discover/tv", 
-        params: { sort_by: "popularity.desc", "first_air_date.lte": today } 
+        params: { sort_by: "popularity.desc", "first_air_date.lte": today, without_genres: "10763,10767" } 
     },
     { 
         title: "Currently Airing: Anime", 
@@ -44,7 +44,7 @@ const initialRows = [
     { 
         title: "Top Rated: Series", 
         path: "/discover/tv", 
-        params: { sort_by: "vote_average.desc", "vote_count.gte": 250, "first_air_date.lte": today } 
+        params: { sort_by: "vote_average.desc", "vote_count.gte": 250, "first_air_date.lte": today, without_genres: "10763,10767" } 
     },
 ];
 
