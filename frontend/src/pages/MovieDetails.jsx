@@ -457,9 +457,6 @@ const MovieDetails = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="details-hero-genre">
-                            {movie.genres?.map(g => g.name).join(" • ") || "N/A"}
-                        </div>
                         <div className="details-hero-meta">
                             {rating && (
                                 <span className="rating">
@@ -518,6 +515,10 @@ const MovieDetails = () => {
                         <div className="side-bar-item">
                             <span className="side-bar-label">Release Date</span>
                             <span className="side-bar-value">{formatDate(movie.release_date)}</span>
+                        </div>
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Genres</span>
+                            <span className="side-bar-value">{movie.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
                         </div>
                     </div>
                 </div>

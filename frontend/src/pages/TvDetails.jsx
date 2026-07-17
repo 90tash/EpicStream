@@ -417,9 +417,6 @@ const TvDetails = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="details-hero-genre">
-                            {tv.genres?.map(g => g.name).join(" • ") || "N/A"}
-                        </div>
                         <div className="details-hero-meta">
                             {rating && (
                                 <span className="rating">
@@ -486,6 +483,10 @@ const TvDetails = () => {
                                 <span className="side-bar-value">{formatDate(tv.last_air_date)}</span>
                             </div>
                         )}
+                        <div className="side-bar-item">
+                            <span className="side-bar-label">Genres</span>
+                            <span className="side-bar-value">{tv.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
+                        </div>
                         <div className="side-bar-item">
                             <span className="side-bar-label">Seasons</span>
                             <span className="side-bar-value">{tv.number_of_seasons || "N/A"}</span>

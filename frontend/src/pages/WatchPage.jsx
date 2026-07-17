@@ -253,7 +253,6 @@ const WatchPage = () => {
     );
 
     const currentSeason = seasonsList.find((item) => item.season_number === season);
-    const currentEpisode = episodes.find((item) => item.episode_number === episode);
 
     const filteredEpisodes = useMemo(() => {
         const query = episodeQuery.trim().toLowerCase();
@@ -328,8 +327,7 @@ const WatchPage = () => {
         }
 
         if (mediaType === "tv") {
-            const episodeTitle = currentEpisode?.name ? ` - ${currentEpisode.name}` : "";
-            document.title = `${title} S${season}:E${episode}${episodeTitle} - EpicStream`;
+            document.title = `${title} S${season}:E${episode} - EpicStream`;
         } else {
             document.title = `${title} - EpicStream`;
         }
@@ -337,7 +335,7 @@ const WatchPage = () => {
         return () => {
             document.title = "EpicStream";
         };
-    }, [currentEpisode, details, episode, mediaType, season, title]);
+    }, [details, episode, mediaType, season, title]);
 
     // Save history with provider details
     useEffect(() => {

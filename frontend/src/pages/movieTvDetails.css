@@ -304,7 +304,7 @@
 .side-bar-item {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
     padding-bottom: 8px;
@@ -322,12 +322,14 @@
     color: #94a3b8; /* Sleek slate grey label */
     text-transform: none;
     letter-spacing: normal;
+    padding-top: 1px; /* Align perfectly with wrapped/non-wrapped text */
 }
 
 .side-bar-value {
     font-size: 13px;
     font-weight: 500;
     color: #cbd5e1; /* Matches synopsis color & font weight */
+    text-align: right;
 }
 
 .details-actions {
