@@ -84,6 +84,9 @@ export const getStatusLabel = (item) => {
 
     if (releaseDate >= sixtyDaysAgo && releaseDate <= today) {
         if (type === "movie") {
+            if (item.has_digital_release) {
+                return null;
+            }
             return { text: "In Cinemas", className: "status-incinemas" };
         }
     }

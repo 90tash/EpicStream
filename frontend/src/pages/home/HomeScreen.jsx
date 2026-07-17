@@ -440,14 +440,32 @@ const HomeScreen = () => {
                     })
                     .slice(0, row.topTen ? 10 : 20);
                 
-                // Fetch extra details for TV shows to check for "New Season"
+                // Fetch extra details for TV shows to check for "New Season", and movie release dates for digital release checks
                 const detailedResults = await Promise.all(results.map(async (item) => {
-                    if (getMediaType(item) === "tv") {
+                    const mediaType = getMediaType(item);
+                    if (mediaType === "tv") {
                         try {
                             const details = await tmdbFetch(`/tv/${item.id}`);
                             return { ...item, ...details };
                         } catch (e) {
                             console.error("Error fetching tv details:", e);
+                            return item;
+                        }
+                    } else if (mediaType === "movie") {
+                        try {
+                            const releaseData = await tmdbFetch(`/movie/${item.id}/release_dates`);
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const hasDigitalRelease = releaseData.results?.some(country => 
+                                country.release_dates?.some(release => {
+                                    const releaseDate = new Date(release.release_date);
+                                    releaseDate.setHours(0, 0, 0, 0);
+                                    return release.type === 4 && releaseDate <= today;
+                                })
+                            ) || false;
+                            return { ...item, has_digital_release: hasDigitalRelease };
+                        } catch (e) {
+                            console.error("Error fetching movie release dates:", e);
                             return item;
                         }
                     }

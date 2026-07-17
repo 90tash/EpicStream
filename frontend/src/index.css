@@ -150,12 +150,14 @@ a {
     font-size: 15px;
     font-weight: 650;
     cursor: pointer;
-    width: 100%;
+    width: fit-content;
+    padding: 0 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     transition: all 0.2s ease;
+    align-self: center;
 }
 
 .warning-btn-primary:hover {
