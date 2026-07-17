@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, Fragment } from "react";
 import { ChevronLeft, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark } from "lucide-react";
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel } from "../utils/tmdb";
 import { addToHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
@@ -95,6 +95,7 @@ const TvDetails = () => {
     const [logoError, setLogoError] = useState(false);
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [logoFetched, setLogoFetched] = useState(false);
+    const [showPlayWarning, setShowPlayWarning] = useState(false);
 
     const { toggleItem, isItemInList } = useWatchlistStore();
     const { customLists, toggleItemInList, getListsForItem, createList } = useCustomListsStore();
@@ -320,8 +321,13 @@ const TvDetails = () => {
                             <button 
                                 className="details-play" 
                                 onClick={() => {
-                                    addToHistory(tv, "tv", selectedSeason || 1, 1);
-                                    navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`);
+                                    const status = getStatusLabel(tv);
+                                    if (status && (status.text === "In Cinemas" || status.text === "Upcoming")) {
+                                        setShowPlayWarning(true);
+                                    } else {
+                                        addToHistory(tv, "tv", selectedSeason || 1, 1);
+                                        navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`);
+                                    }
                                 }}
                             >
                                 <svg viewBox="0 0 24 24" width={20} height={20} fill="currentColor">
@@ -669,6 +675,47 @@ const TvDetails = () => {
                                 <span className="season-option-text">Create New List</span>
                             </button>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Warning Play Modal (In Cinemas / Upcoming) */}
+            {showPlayWarning && (
+                <div className="warning-modal-overlay" onClick={() => setShowPlayWarning(false)}>
+                    <div className="warning-modal" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="warning-title">
+                            {getStatusLabel(tv)?.text === "In Cinemas" ? "Currently In Cinemas" : "Upcoming Release"}
+                        </h2>
+                        <p className="warning-description">
+                            {getStatusLabel(tv)?.text === "In Cinemas"
+                                ? "This content is currently in theatres. A high-quality digital stream may not be available yet."
+                                : "This content is scheduled for a future release. A stream may not be available or could be incomplete."}
+                        </p>
+                        <div className="warning-actions">
+                            {getStatusLabel(tv)?.text !== "Upcoming" && (
+                                <button 
+                                    type="button" 
+                                    className="warning-btn-primary"
+                                    onClick={() => {
+                                        setShowPlayWarning(false);
+                                        addToHistory(tv, "tv", selectedSeason || 1, 1);
+                                        navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`);
+                                    }}
+                                >
+                                    <svg viewBox="0 0 24 24" width={18} height={18} fill="currentColor">
+                                        <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
+                                    </svg>
+                                    <span>Play Anyway</span>
+                                </button>
+                            )}
+                            <button 
+                                type="button"
+                                className="warning-cancel-link"
+                                onClick={() => setShowPlayWarning(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

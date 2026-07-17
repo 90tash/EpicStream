@@ -358,6 +358,7 @@ const HomeScreen = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [logoError, setLogoError] = useState(false);
+    const [showPlayWarning, setShowPlayWarning] = useState(false);
     const navigate = useNavigate();
     const { toggleItem, isItemInList } = useWatchlistStore();
 
@@ -464,7 +465,14 @@ const HomeScreen = () => {
                 if (rowIndex === firstDataRowIndex) {
                     const heroWithDetails = await Promise.all(detailedResults.slice(0, 5).map(async (item) => {
                         try {
-                            const images = await tmdbGetImages(getMediaType(item), item.id);
+                            const type = getMediaType(item);
+                            const [images, releaseData] = await Promise.all([
+                                tmdbGetImages(type, item.id),
+                                type === "movie" 
+                                    ? tmdbFetch(`/movie/${item.id}/release_dates`) 
+                                    : Promise.resolve({ results: [] })
+                            ]);
+                            
                             // Look for English or null (textless) posters
                             const posters = images.posters || [];
                             const textlessPoster = posters.find(p => p.iso_639_1 === null)?.file_path;
@@ -475,7 +483,18 @@ const HomeScreen = () => {
                                               logos.find(l => l.iso_639_1 === null)?.file_path ||
                                               logos[0]?.file_path;
                             
-                            return { ...item, textless_poster: textlessPoster, title_logo: titleLogo };
+                            // Check if digitally released
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const hasDigitalRelease = releaseData.results?.some(country => 
+                                country.release_dates?.some(release => {
+                                    const releaseDate = new Date(release.release_date);
+                                    releaseDate.setHours(0, 0, 0, 0);
+                                    return release.type === 4 && releaseDate <= today;
+                                })
+                            ) || false;
+                            
+                            return { ...item, textless_poster: textlessPoster, title_logo: titleLogo, has_digital_release: hasDigitalRelease };
                         } catch (error) {
                             console.error("Error fetching images for hero candidate:", error);
                             return item;
@@ -591,8 +610,16 @@ const HomeScreen = () => {
                                 className="browse-play"
                                 onClick={() => {
                                     const type = getMediaType(heroContent);
-                                    addToHistory(heroContent, type);
-                                    navigate(`/watch/${type}/${heroContent.id}`);
+                                    const status = getStatusLabel(heroContent);
+                                    const isCinemas = status?.text === "In Cinemas";
+                                    const isUpcoming = status?.text === "Upcoming";
+                                    
+                                    if (isUpcoming || (isCinemas && !heroContent.has_digital_release)) {
+                                        setShowPlayWarning(true);
+                                    } else {
+                                        addToHistory(heroContent, type);
+                                        navigate(`/watch/${type}/${heroContent.id}`);
+                                    }
                                 }}
                             >
                                 <Play size={20} fill="currentColor" />
@@ -663,6 +690,48 @@ const HomeScreen = () => {
             )}
 
             <Footer />
+
+            {/* Warning Play Modal (In Cinemas / Upcoming) */}
+            {showPlayWarning && heroContent && (
+                <div className="warning-modal-overlay" onClick={() => setShowPlayWarning(false)}>
+                    <div className="warning-modal" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="warning-title">
+                            {getStatusLabel(heroContent)?.text === "In Cinemas" ? "Currently In Cinemas" : "Upcoming Release"}
+                        </h2>
+                        <p className="warning-description">
+                            {getStatusLabel(heroContent)?.text === "In Cinemas"
+                                ? "This movie is currently in theatres. A high-quality digital stream may not be available yet."
+                                : "This content is scheduled for a future release. A stream may not be available or could be incomplete."}
+                        </p>
+                        <div className="warning-actions">
+                            {getStatusLabel(heroContent)?.text !== "Upcoming" && (
+                                <button 
+                                    type="button" 
+                                    className="warning-btn-primary"
+                                    onClick={() => {
+                                        setShowPlayWarning(false);
+                                        const type = getMediaType(heroContent);
+                                        addToHistory(heroContent, type);
+                                        navigate(`/watch/${type}/${heroContent.id}`);
+                                    }}
+                                >
+                                    <svg viewBox="0 0 24 24" width={18} height={18} fill="currentColor">
+                                        <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
+                                    </svg>
+                                    <span>Play Anyway</span>
+                                </button>
+                            )}
+                            <button 
+                                type="button"
+                                className="warning-cancel-link"
+                                onClick={() => setShowPlayWarning(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
