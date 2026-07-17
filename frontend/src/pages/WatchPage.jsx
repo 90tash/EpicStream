@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronDown, Search, LayoutGrid, List, X } from "lucide-react";
 import {
     getPlayerUrl,
@@ -61,6 +61,7 @@ const WatchPage = () => {
     const { type, id } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const mediaType = type === "tv" ? "tv" : "movie";
     const season = getPositiveInt(searchParams.get("season"), 1);
@@ -617,7 +618,11 @@ const WatchPage = () => {
             {/* Safe Area Notch-aware floating Close Button */}
             <button
                 onClick={() => {
-                    navigate(`/${mediaType}/${id}`);
+                    if (location.key !== "default") {
+                        navigate(-1);
+                    } else {
+                        navigate(`/${mediaType}/${id}`);
+                    }
                 }}
                 aria-label="Close player"
                 className={`watch-close-btn ${showOverlays ? "visible" : ""}`}
