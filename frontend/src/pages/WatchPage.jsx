@@ -9,7 +9,7 @@ import {
     tmdbFetch,
     tmdbGetSeason,
 } from "../utils/tmdb";
-import { addToHistory, updateHistoryProgress, getHistory } from "../utils/history";
+import { addToHistory, updateHistoryProgress, getHistory, getWatchedEpisodes } from "../utils/history";
 import "./watchPage.css";
 
 const getPositiveInt = (value, fallback) => {
@@ -88,6 +88,14 @@ const WatchPage = () => {
     const marqueeTimeoutRef = useRef(null);
     const initialSeasonRef = useRef(season);
     const initialEpisodeRef = useRef(episode);
+    const [watchedEpisodes, setWatchedEpisodes] = useState({});
+
+    // Fetch watched episodes for this TV show
+    useEffect(() => {
+        if (id && mediaType === "tv") {
+            setWatchedEpisodes(getWatchedEpisodes(Number(id)));
+        }
+    }, [id, mediaType]);
 
     const handleEpisodesScroll = () => {
         setIsScrollingEpisodes(true);
@@ -341,7 +349,10 @@ const WatchPage = () => {
     useEffect(() => {
         if (!details) return;
         addToHistory(details, mediaType, mediaType === "tv" ? season : null, mediaType === "tv" ? episode : null, selectedProvider);
-    }, [details, episode, mediaType, season, selectedProvider]);
+        if (mediaType === "tv") {
+            setWatchedEpisodes(getWatchedEpisodes(Number(id)));
+        }
+    }, [details, episode, mediaType, season, selectedProvider, id]);
 
     // Lock body scrolling
     useEffect(() => {
@@ -753,13 +764,14 @@ const WatchPage = () => {
                                     <span>Loading episodes...</span>
                                 </div>
                             ) : filteredEpisodes.length > 0 ? (
-                                filteredEpisodes.map((item) => (
-                                    viewMode === "detailed" ? (
+                                filteredEpisodes.map((item) => {
+                                    const isWatched = watchedEpisodes[season]?.[item.episode_number] === true;
+                                    return viewMode === "detailed" ? (
                                         /* Detailed View Card */
                                         <button
                                             key={item.id}
                                             type="button"
-                                            className={`watch-sidebar-episode-card ${item.episode_number === episode ? "active" : ""}`}
+                                            className={`watch-sidebar-episode-card ${item.episode_number === episode ? "active" : ""} ${isWatched ? "watched" : ""}`}
                                             onClick={() => {
                                                 navigateToEpisode(item.episode_number);
                                                 if (window.innerWidth < 768) {
@@ -767,6 +779,14 @@ const WatchPage = () => {
                                                 }
                                             }}
                                         >
+                                            {isWatched && (
+                                                <div className="watched-badge" title="Watched">
+                                                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                </div>
+                                            )}
                                             <div className="watch-sidebar-episode-thumb">
                                                 <img
                                                     src={imageUrl(item.still_path, "w300", "/hero.png")}
@@ -786,7 +806,7 @@ const WatchPage = () => {
                                         <button
                                             key={item.id}
                                             type="button"
-                                            className={`watch-sidebar-episode-row ${item.episode_number === episode ? "active" : ""}`}
+                                            className={`watch-sidebar-episode-row ${item.episode_number === episode ? "active" : ""} ${isWatched ? "watched" : ""}`}
                                             onMouseEnter={handleRowMouseEnter}
                                             onMouseLeave={handleRowMouseLeave}
                                             onClick={() => {
@@ -802,9 +822,17 @@ const WatchPage = () => {
                                                     {item.name || `Episode ${item.episode_number}`}
                                                 </span>
                                             </span>
+                                            {isWatched && (
+                                                <span className="watch-sidebar-ep-row-watched" title="Watched" style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", color: "var(--accent)" }}>
+                                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                </span>
+                                            )}
                                         </button>
-                                    )
-                                ))
+                                    );
+                                })
                             ) : (
                                 <div className="watch-sidebar-status">
                                     <span>No matching episodes.</span>

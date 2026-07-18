@@ -2292,6 +2292,47 @@
     text-align: left;
     transition: background 0.2s ease, border-color 0.2s ease;
     box-sizing: border-box;
+    position: relative;
+}
+
+.watch-sidebar-episode-card.watched .watch-sidebar-episode-thumb {
+    border: 1px solid var(--accent);
+}
+
+.watch-sidebar-episode-card.watched .watch-sidebar-episode-info strong {
+    color: var(--accent);
+}
+
+.watch-sidebar-episode-card.watched .watch-sidebar-ep-badge {
+    border: 1px solid var(--accent);
+    color: var(--accent);
+}
+
+.watch-sidebar-episode-row.watched .watch-sidebar-ep-row-title-inner {
+    color: var(--accent);
+}
+
+.watch-sidebar-episode-row.watched .watch-sidebar-ep-row-number {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.watch-sidebar-episode-card .watched-badge {
+    position: absolute;
+    top: 6px;
+    right: 20px;
+    width: 20px;
+    height: 20px;
+    background: #ff2633;
+    border: 2px solid var(--panel);
+    outline: 1px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(255, 38, 51, 0.3);
+    z-index: 5;
 }
 
 .watch-sidebar-episode-card:hover {

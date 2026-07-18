@@ -1,5 +1,60 @@
 const HISTORY_KEY = "epicstream_watch_history";
+const WATCHED_EPISODES_KEY = "epicstream_watched_episodes";
 const MAX_HISTORY = 20;
+
+export const markEpisodeWatched = (showId, season, episode) => {
+    try {
+        const watched = JSON.parse(localStorage.getItem(WATCHED_EPISODES_KEY) || "{}");
+        if (!watched[showId]) {
+            watched[showId] = {};
+        }
+        if (!watched[showId][season]) {
+            watched[showId][season] = {};
+        }
+        watched[showId][season][episode] = true;
+        localStorage.setItem(WATCHED_EPISODES_KEY, JSON.stringify(watched));
+    } catch (e) {
+        console.error("Error marking episode as watched:", e);
+    }
+};
+
+export const removeEpisodeWatched = (showId, season, episode) => {
+    try {
+        const watched = JSON.parse(localStorage.getItem(WATCHED_EPISODES_KEY) || "{}");
+        if (watched[showId] && watched[showId][season]) {
+            delete watched[showId][season][episode];
+            if (Object.keys(watched[showId][season]).length === 0) {
+                delete watched[showId][season];
+            }
+            if (Object.keys(watched[showId]).length === 0) {
+                delete watched[showId];
+            }
+            localStorage.setItem(WATCHED_EPISODES_KEY, JSON.stringify(watched));
+        }
+    } catch (e) {
+        console.error("Error removing watched episode:", e);
+    }
+};
+
+export const getWatchedEpisodes = (showId) => {
+    try {
+        const watched = JSON.parse(localStorage.getItem(WATCHED_EPISODES_KEY) || "{}");
+        return watched[showId] || {};
+    } catch (e) {
+        console.error("Error getting watched episodes:", e);
+        return {};
+    }
+};
+
+export const isEpisodeWatched = (showId, season, episode) => {
+    try {
+        const watched = JSON.parse(localStorage.getItem(WATCHED_EPISODES_KEY) || "{}");
+        return !!(watched[showId]?.[season]?.[episode]);
+    } catch (e) {
+        console.error("Error checking if episode is watched:", e);
+        return false;
+    }
+};
 
 export const addToHistory = (item, type, season = null, episode = null, provider = null) => {
     try {
@@ -30,6 +85,10 @@ export const addToHistory = (item, type, season = null, episode = null, provider
         
         const newHistory = [historyItem, ...filteredHistory].slice(0, MAX_HISTORY);
         localStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory));
+
+        if (type === "tv" && season !== null && episode !== null) {
+            markEpisodeWatched(item.id, season, episode);
+        }
     } catch (e) {
         console.error("Error saving to watch history:", e);
     }

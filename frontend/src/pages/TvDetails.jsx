@@ -4,7 +4,7 @@ import { ChevronLeft, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark } 
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel } from "../utils/tmdb";
-import { addToHistory } from "../utils/history";
+import { addToHistory, getWatchedEpisodes, removeEpisodeWatched } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
 
@@ -148,6 +148,7 @@ const TvDetails = () => {
     const [showSeasonMenu, setShowSeasonMenu] = useState(false);
     const [episodes, setEpisodes] = useState([]);
     const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
+    const [watchedEpisodes, setWatchedEpisodes] = useState({});
 
     // Sync basic state from location
     useEffect(() => {
@@ -155,6 +156,13 @@ const TvDetails = () => {
             setTv(state.movie);
         }
     }, [id, state]);
+
+    // Fetch watched episodes for this TV show
+    useEffect(() => {
+        if (id) {
+            setWatchedEpisodes(getWatchedEpisodes(Number(id)));
+        }
+    }, [id]);
 
     useEffect(() => {
         if (tv) {
@@ -542,33 +550,64 @@ const TvDetails = () => {
                         {isLoadingEpisodes ? (
                             <p style={{ width: '100%', textAlign: 'center', color: 'var(--muted)', padding: '40px 0', flexShrink: 0 }}>Loading episodes...</p>
                         ) : episodes.length > 0 ? (
-                            episodes.map(ep => (
-                                <div 
-                                    key={ep.id} 
-                                    className="episode-card"
-                                    onClick={() => {
-                                        addToHistory(tv, "tv", selectedSeason || 1, ep.episode_number || 1);
-                                        navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=${ep.episode_number || 1}`);
-                                    }}
-                                >
-                                    <div className="episode-thumb-wrapper">
-                                        <img 
-                                            src={imageUrl(ep.still_path, "w500", "/hero.png")} 
-                                            alt={ep.name} 
-                                        />
-                                        <span className="episode-number-badge">{ep.episode_number}</span>
-                                    </div>
-                                    <div className="episode-info">
-                                        <div className="episode-title-row">
+                            episodes.map(ep => {
+                                const isWatched = watchedEpisodes[selectedSeason || 1]?.[ep.episode_number] === true;
+                                return (
+                                    <div 
+                                        key={ep.id} 
+                                        className={`episode-card ${isWatched ? "watched" : ""}`}
+                                        onClick={() => {
+                                            addToHistory(tv, "tv", selectedSeason || 1, ep.episode_number || 1);
+                                            setWatchedEpisodes(prev => ({
+                                                ...prev,
+                                                [selectedSeason || 1]: {
+                                                    ...(prev[selectedSeason || 1] || {}),
+                                                    [ep.episode_number || 1]: true
+                                                }
+                                            }));
+                                            navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=${ep.episode_number || 1}`);
+                                        }}
+                                    >
+                                        {isWatched && (
+                                            <div 
+                                                className="watched-badge" 
+                                                title="Watched (Click to mark unwatched)"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeEpisodeWatched(Number(id), selectedSeason || 1, ep.episode_number || 1);
+                                                    setWatchedEpisodes(prev => {
+                                                        const updated = { ...prev };
+                                                        if (updated[selectedSeason || 1]) {
+                                                            updated[selectedSeason || 1] = { ...updated[selectedSeason || 1] };
+                                                            delete updated[selectedSeason || 1][ep.episode_number || 1];
+                                                        }
+                                                        return updated;
+                                                    });
+                                                }}
+                                            >
+                                                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                    <circle cx="12" cy="12" r="3" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                        <div className="episode-thumb-wrapper">
+                                            <img 
+                                                src={imageUrl(ep.still_path, "w500", "/hero.png")} 
+                                                alt={ep.name} 
+                                            />
+                                            <span className="episode-number-badge">{ep.episode_number}</span>
+                                        </div>
+                                        <div className="episode-info">
                                             <h3>{ep.name}</h3>
                                             {ep.runtime && <span className="episode-runtime">{ep.runtime} min</span>}
+                                            <p className="episode-overview">
+                                                {ep.overview || "No description available for this episode."}
+                                            </p>
                                         </div>
-                                        <p className="episode-overview">
-                                            {ep.overview || "No description available for this episode."}
-                                        </p>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <p style={{ width: '100%', textAlign: 'center', color: 'var(--muted)', padding: '40px 0', flexShrink: 0 }}>No episodes available.</p>
                         )}
