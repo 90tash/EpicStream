@@ -887,6 +887,7 @@ const WatchPage = () => {
                         </div>
                     )}
                     <iframe
+                        key={playerUrl}
                         src={playerUrl}
                         className="watch-player-iframe"
                         scrolling="no"
