@@ -1053,9 +1053,13 @@
         top: 130px;
         z-index: 10;
     }
+    .details-hero-side-bar.tv-sidebar {
+        top: 70px;
+    }
     .episode-list {
         margin: 0 4%;
         padding: 0 8px 48px 0;
+        max-height: 698px;
     }
 }
 

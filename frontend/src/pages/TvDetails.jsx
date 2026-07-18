@@ -472,7 +472,7 @@ const TvDetails = () => {
                         </div>
                     </div>
 
-                    <div className="details-hero-side-bar">
+                    <div className="details-hero-side-bar tv-sidebar">
                         <div className="side-bar-item">
                             <span className="side-bar-label">Status</span>
                             <span className="side-bar-value">{tv.status || "N/A"}</span>
