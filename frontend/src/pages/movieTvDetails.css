@@ -1041,14 +1041,21 @@
 }
 
 @media (min-width: 901px) {
+    .details-hero {
+        padding-bottom: 32px;
+    }
     .details-hero-text {
         max-width: calc(100% - 340px);
     }
     .details-hero-side-bar {
         position: absolute;
         right: 0;
-        top: 80px;
+        top: 130px;
         z-index: 10;
+    }
+    .episode-list {
+        margin: 0 4%;
+        padding: 0 8px 48px 0;
     }
 }
 
