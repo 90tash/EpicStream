@@ -558,13 +558,7 @@ const TvDetails = () => {
                                         className={`episode-card ${isWatched ? "watched" : ""}`}
                                         onClick={() => {
                                             addToHistory(tv, "tv", selectedSeason || 1, ep.episode_number || 1);
-                                            setWatchedEpisodes(prev => ({
-                                                ...prev,
-                                                [selectedSeason || 1]: {
-                                                    ...(prev[selectedSeason || 1] || {}),
-                                                    [ep.episode_number || 1]: true
-                                                }
-                                            }));
+                                            setWatchedEpisodes(getWatchedEpisodes(Number(id)));
                                             navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=${ep.episode_number || 1}`);
                                         }}
                                     >

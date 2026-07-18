@@ -12,6 +12,15 @@ export const markEpisodeWatched = (showId, season, episode) => {
             watched[showId][season] = {};
         }
         watched[showId][season][episode] = true;
+
+        // Reset progress forward: remove any watched episodes with number > current episode
+        const currentEpNum = Number(episode);
+        Object.keys(watched[showId][season]).forEach(epKey => {
+            if (Number(epKey) > currentEpNum) {
+                delete watched[showId][season][epKey];
+            }
+        });
+
         localStorage.setItem(WATCHED_EPISODES_KEY, JSON.stringify(watched));
     } catch (e) {
         console.error("Error marking episode as watched:", e);
