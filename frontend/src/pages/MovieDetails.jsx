@@ -509,16 +509,16 @@ const MovieDetails = () => {
                             <span className="side-bar-value">{(movie.original_language || "EN").slice(0, 2).toUpperCase()}</span>
                         </div>
                         <div className="side-bar-item">
+                            <span className="side-bar-label">Genres</span>
+                            <span className="side-bar-value">{movie.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
+                        </div>
+                        <div className="side-bar-item">
                             <span className="side-bar-label">Runtime</span>
                             <span className="side-bar-value">{formatRuntime(movie.runtime)}</span>
                         </div>
                         <div className="side-bar-item">
                             <span className="side-bar-label">Release Date</span>
                             <span className="side-bar-value">{formatDate(movie.release_date)}</span>
-                        </div>
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Genres</span>
-                            <span className="side-bar-value">{movie.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
                         </div>
                     </div>
                 </div>

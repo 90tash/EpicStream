@@ -618,6 +618,27 @@
     flex-direction: column;
     gap: 12px;
     padding: 0 4% 48px;
+    max-height: 630px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.episode-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.episode-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.episode-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+.episode-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .episode-card {
@@ -1209,6 +1230,7 @@
         padding-right: 16px;
     }
     .episode-list {
+        max-height: none;
         flex-direction: row;
         overflow-x: auto;
         overflow-y: hidden;
@@ -1275,8 +1297,7 @@
         -webkit-box-orient: vertical;
         overflow: hidden;
         white-space: normal; /* Force text wrapping, preventing horizontal stretching */
-        height: 38px; /* Locked height for consistent text spacing */
-        line-height: 19px;
+        line-height: 1.3;
         flex: none;
     }
     .episode-runtime {

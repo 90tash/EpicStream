@@ -482,6 +482,10 @@ const TvDetails = () => {
                             <span className="side-bar-value">{(tv.original_language || "EN").toUpperCase()}</span>
                         </div>
                         <div className="side-bar-item">
+                            <span className="side-bar-label">Genres</span>
+                            <span className="side-bar-value">{tv.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
+                        </div>
+                        <div className="side-bar-item">
                             <span className="side-bar-label">First Aired</span>
                             <span className="side-bar-value">{formatDate(tv.first_air_date)}</span>
                         </div>
@@ -491,10 +495,6 @@ const TvDetails = () => {
                                 <span className="side-bar-value">{formatDate(tv.last_air_date)}</span>
                             </div>
                         )}
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Genres</span>
-                            <span className="side-bar-value">{tv.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
-                        </div>
                         <div className="side-bar-item">
                             <span className="side-bar-label">Seasons</span>
                             <span className="side-bar-value">{tv.number_of_seasons || "N/A"}</span>
