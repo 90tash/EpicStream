@@ -664,10 +664,6 @@
     color: var(--accent);
 }
 
-.episode-card.watched .episode-number-badge {
-    border-color: var(--accent);
-    color: var(--accent);
-}
 
 .episode-card.watched:hover {
     border-color: var(--accent) !important;

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import { ChevronLeft, ChevronDown, Search, LayoutGrid, List, X } from "lucide-react";
+import { ChevronLeft, ChevronDown, Search, LayoutGrid, List, X, Star } from "lucide-react";
 import {
     getPlayerUrl,
     getTitle,
@@ -32,29 +32,29 @@ const formatDate = (dateStr) => {
 
 const getProviderLabel = (provider) => {
     const labels = {
-        vidsync: "VidSync",
-        vidsuper: "VidSuper",
-        peachify: "Peachify",
-        nxsha: "nxsha(Indian)",
-        cinezo: "Cinezo",
-        vidlink: "VidLink",
-        videasy: "Videasy",
-        mapple: "Mapple TV",
-        vidfast: "VidFast",
+        vidsync: "Titan(Fast/HD)",
+        videasy: "Nova(Fast/HD)",
+        vidlink: "Vortex(Single-Server)",
+        nxsha: "Vayu(Best-Server)",
+        vidsuper: "Atlas(HD)",
+        cinezo: "Eclipse(Multi-Server)",
+        mapple: "Rogue(4k)",
+        peachify: "Peach(HD/Multi)",
+        vidfast: "Ghost(Fast/HD)",
     };
     return labels[provider] || provider;
 };
 
 const WATCH_PROVIDERS = [
-    { id: "vidsync", name: "VidSync" },
-    { id: "vidsuper", name: "VidSuper" },
-    { id: "peachify", name: "Peachify" },
-    { id: "nxsha", name: "nxsha(Indian)" },
-    { id: "cinezo", name: "Cinezo" },
-    { id: "vidlink", name: "VidLink" },
-    { id: "videasy", name: "Videasy" },
-    { id: "mapple", name: "Mapple TV" },
-    { id: "vidfast", name: "VidFast" }
+    { id: "vidsync", name: "Titan(Fast/HD)", rec: true },
+    { id: "videasy", name: "Nova(Fast/HD)", rec: true },
+    { id: "vidlink", name: "Vortex(Single-Server)" },
+    { id: "nxsha", name: "Vayu(Best-Server)", rec: true },
+    { id: "vidsuper", name: "Atlas(HD)" },
+    { id: "cinezo", name: "Eclipse(Multi-Server)" },
+    { id: "mapple", name: "Rogue(4k)" },
+    { id: "peachify", name: "Peach(HD/Multi)" },
+    { id: "vidfast", name: "Ghost(Fast/HD)" }
 ];
 
 const WatchPage = () => {
@@ -668,7 +668,8 @@ const WatchPage = () => {
                                     setIsProviderMenuOpen(false);
                                 }}
                             >
-                                {provider.name}
+                                <span>{provider.name}</span>
+                                {provider.rec && <Star size={13} fill="var(--accent)" color="var(--accent)" className="server-rec-star" />}
                             </button>
                         ))}
                     </div>
@@ -781,7 +782,7 @@ const WatchPage = () => {
                                         >
                                             {isWatched && (
                                                 <div className="watched-badge" title="Watched">
-                                                    <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                                                         <circle cx="12" cy="12" r="3" />
                                                     </svg>
