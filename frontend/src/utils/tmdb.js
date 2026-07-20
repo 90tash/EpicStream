@@ -190,9 +190,9 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
 
         case "videasy":
             if (type === "movie") {
-                return `https://player.videasy.to/movie/${id}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&${commonParams}`;
+                return `https://player.videasy.to/movie/${id}?${commonParams}`;
             }
-            return `https://player.videasy.to/tv/${id}/${season}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
+            return `https://player.videasy.to/tv/${id}/${season}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false&${commonParams}`;
             
         case "mapple": {
             const theme = "ff2633"; // Project accent color
@@ -264,9 +264,9 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             
         default:
             if (type === "movie") {
-                return `https://player.videasy.to/movie/${id}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&${commonParams}`;
+                return `https://player.videasy.to/movie/${id}?${commonParams}`;
             }
-            return `https://player.videasy.to/tv/${id}/${season}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true&${commonParams}`;
+            return `https://player.videasy.to/tv/${id}/${season}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false&${commonParams}`;
     }
 };
 
@@ -274,8 +274,8 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
     switch (ACTIVE_PROVIDER) {
         case "videasy":
             return type === "movie"
-                ? `https://player.videasy.to/anime/${animeId}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1`
-                : `https://player.videasy.to/anime/${animeId}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1`;
+                ? `https://player.videasy.to/anime/${animeId}`
+                : `https://player.videasy.to/anime/${animeId}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false`;
                 
         case "vidsrc_to":
             return type === "movie"
@@ -289,8 +289,8 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
                 
         default:
             return type === "movie"
-                ? `https://player.videasy.to/anime/${animeId}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1`
-                : `https://player.videasy.to/anime/${animeId}/${episode}?autoplay=true&autoPlay=true&autoplay=1&autoPlay=1`;
+                ? `https://player.videasy.to/anime/${animeId}`
+                : `https://player.videasy.to/anime/${animeId}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false`;
     }
 };
 

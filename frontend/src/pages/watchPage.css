@@ -2296,6 +2296,7 @@
 /* Episode Card */
 .watch-sidebar-episode-card {
     display: flex;
+    align-items: center;
     gap: 16px;
     padding: 8px 24px; /* Centered content padding */
     margin: 0; /* Reset negative margin as container has no padding */
@@ -2311,7 +2312,6 @@
 }
 
 .watch-sidebar-episode-card.watched {
-    border-color: var(--accent) !important;
     background: rgba(255, 38, 51, 0.02);
 }
 
@@ -2326,9 +2326,9 @@
 .watch-sidebar-episode-card .watched-badge {
     position: absolute;
     top: 0;
-    right: 16px;
-    width: 22px;
-    height: 32px;
+    right: 8px;
+    width: 18px;
+    height: 26px;
     background: #ff2633;
     color: #fff;
     border: none;
@@ -2340,7 +2340,7 @@
     align-items: center;
     justify-content: center;
     z-index: 10;
-    padding-bottom: 5px;
+    padding-bottom: 4px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -2366,17 +2366,62 @@
 .watch-sidebar-episode-thumb {
     position: relative;
     width: 100px;
-    aspect-ratio: 16 / 9;
+    height: 56px;
+    flex: 0 0 100px;
+    min-width: 100px;
+    min-height: 56px;
+    max-width: 100px;
+    max-height: 56px;
     border-radius: 6px;
     overflow: hidden;
     background: #111;
-    flex-shrink: 0;
 }
 
 .watch-sidebar-episode-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
+    transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.watch-sidebar-episode-thumb img.is-playing-img {
+    filter: blur(0.8px) brightness(0.75);
+    transform: scale(1.05);
+}
+
+.watch-sidebar-episode-thumb img.fallback-thumb-img {
+    filter: brightness(0.8);
+}
+
+.watch-sidebar-episode-thumb img.is-playing-img.fallback-thumb-img {
+    filter: blur(0.8px) brightness(0.72);
+    transform: scale(1.05);
+}
+
+.fallback-thumb-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.6) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.fallback-ep-title {
+    opacity: 0.7;
+}
+
+.watch-sidebar-play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.6)) drop-shadow(0 2px 8px rgba(255, 38, 51, 0.5));
 }
 
 .watch-sidebar-ep-badge {

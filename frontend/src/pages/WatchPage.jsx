@@ -766,13 +766,15 @@ const WatchPage = () => {
                                 </div>
                             ) : filteredEpisodes.length > 0 ? (
                                 filteredEpisodes.map((item) => {
-                                    const isWatched = watchedEpisodes[season]?.[item.episode_number] === true;
+                                    const isActive = item.episode_number === episode;
+                                    const isWatched = !isActive && watchedEpisodes[season]?.[item.episode_number] === true;
+                                    const hasStill = Boolean(item.still_path);
                                     return viewMode === "detailed" ? (
                                         /* Detailed View Card */
                                         <button
                                             key={item.id}
                                             type="button"
-                                            className={`watch-sidebar-episode-card ${item.episode_number === episode ? "active" : ""} ${isWatched ? "watched" : ""}`}
+                                            className={`watch-sidebar-episode-card ${isActive ? "active" : ""} ${isWatched ? "watched" : ""}`}
                                             onClick={() => {
                                                 navigateToEpisode(item.episode_number);
                                                 if (window.innerWidth < 768) {
@@ -780,24 +782,33 @@ const WatchPage = () => {
                                                 }
                                             }}
                                         >
-                                            {isWatched && (
-                                                <div className="watched-badge" title="Watched">
-                                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                        <circle cx="12" cy="12" r="3" />
-                                                    </svg>
-                                                </div>
-                                            )}
                                             <div className="watch-sidebar-episode-thumb">
                                                 <img
-                                                    src={imageUrl(item.still_path, "w300", "/hero.png")}
+                                                    src={imageUrl(item.still_path || details?.still_path || details?.backdrop_path || details?.poster_path, "w300", "/hero.png")}
                                                     alt=""
                                                     loading="lazy"
+                                                    className={`${isActive ? "is-playing-img" : ""} ${!hasStill ? "fallback-thumb-img" : ""}`}
                                                 />
+                                                {!hasStill && <div className="fallback-thumb-gradient" />}
+                                                {isActive && (
+                                                    <div className="watch-sidebar-play-icon">
+                                                        <svg viewBox="0 0 24 24" width="32" height="32" fill="var(--accent)">
+                                                            <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z" />
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                                {isWatched && (
+                                                    <div className="watched-badge" title="Watched">
+                                                        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                            <circle cx="12" cy="12" r="3" />
+                                                        </svg>
+                                                    </div>
+                                                )}
                                                 <span className="watch-sidebar-ep-badge">{item.episode_number}</span>
                                             </div>
                                             <div className="watch-sidebar-episode-info">
-                                                <strong>{item.name || `Episode ${item.episode_number}`}</strong>
+                                                <strong className={!hasStill ? "fallback-ep-title" : ""}>{item.name || `Episode ${item.episode_number}`}</strong>
                                                 <p>{item.overview || "No description available."}</p>
                                                 <small>{formatDate(item.air_date)}</small>
                                             </div>

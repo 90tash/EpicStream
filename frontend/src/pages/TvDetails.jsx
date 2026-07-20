@@ -552,6 +552,7 @@ const TvDetails = () => {
                         ) : episodes.length > 0 ? (
                             episodes.map(ep => {
                                 const isWatched = watchedEpisodes[selectedSeason || 1]?.[ep.episode_number] === true;
+                                const hasStill = Boolean(ep.still_path);
                                 return (
                                     <div 
                                         key={ep.id} 
@@ -562,38 +563,45 @@ const TvDetails = () => {
                                             navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=${ep.episode_number || 1}`);
                                         }}
                                     >
-                                        {isWatched && (
-                                            <div 
-                                                className="watched-badge" 
-                                                title="Watched (Click to mark unwatched)"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    removeEpisodeWatched(Number(id), selectedSeason || 1, ep.episode_number || 1);
-                                                    setWatchedEpisodes(prev => {
-                                                        const updated = { ...prev };
-                                                        if (updated[selectedSeason || 1]) {
-                                                            updated[selectedSeason || 1] = { ...updated[selectedSeason || 1] };
-                                                            delete updated[selectedSeason || 1][ep.episode_number || 1];
-                                                        }
-                                                        return updated;
-                                                    });
-                                                }}
-                                            >
-                                                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                    <circle cx="12" cy="12" r="3" />
-                                                </svg>
-                                            </div>
-                                        )}
                                         <div className="episode-thumb-wrapper">
                                             <img 
-                                                src={imageUrl(ep.still_path, "w500", "/hero.png")} 
+                                                src={imageUrl(ep.still_path || tv?.still_path || tv?.backdrop_path || tv?.poster_path, "w500", "/hero.png")} 
                                                 alt={ep.name} 
+                                                className={!hasStill ? "fallback-thumb-img" : ""}
                                             />
+                                            {!hasStill && <div className="fallback-thumb-gradient" />}
+                                            <div className="episode-thumb-play-icon">
+                                                <svg viewBox="0 0 24 24" width="32" height="32" fill="var(--accent)">
+                                                    <path d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86a1 1 0 0 0-1.5.86z" />
+                                                </svg>
+                                            </div>
+                                            {isWatched && (
+                                                <div 
+                                                    className="watched-badge" 
+                                                    title="Watched (Click to mark unwatched)"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        removeEpisodeWatched(Number(id), selectedSeason || 1, ep.episode_number || 1);
+                                                        setWatchedEpisodes(prev => {
+                                                            const updated = { ...prev };
+                                                            if (updated[selectedSeason || 1]) {
+                                                                updated[selectedSeason || 1] = { ...updated[selectedSeason || 1] };
+                                                                delete updated[selectedSeason || 1][ep.episode_number || 1];
+                                                            }
+                                                            return updated;
+                                                        });
+                                                    }}
+                                                >
+                                                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                </div>
+                                            )}
                                             <span className="episode-number-badge">{ep.episode_number}</span>
                                         </div>
                                         <div className="episode-info">
-                                            <h3>{ep.name}</h3>
+                                            <h3 className={!hasStill ? "fallback-ep-title" : ""}>{ep.name}</h3>
                                             {ep.runtime && <span className="episode-runtime">{ep.runtime} min</span>}
                                             <p className="episode-overview">
                                                 {ep.overview || "No description available for this episode."}
