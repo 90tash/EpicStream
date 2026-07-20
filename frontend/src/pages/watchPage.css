@@ -2375,6 +2375,8 @@
     border-radius: 6px;
     overflow: hidden;
     background: #111;
+    transform: translateZ(0);
+    isolation: isolate;
 }
 
 .watch-sidebar-episode-thumb img {
@@ -2382,12 +2384,16 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: filter 0.3s ease, transform 0.3s ease;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0) scale(1);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s ease;
+    will-change: transform, filter;
 }
 
 .watch-sidebar-episode-thumb img.is-playing-img {
     filter: blur(0.8px) brightness(0.75);
-    transform: scale(1.05);
+    transform: translateZ(0) scale(1.04);
 }
 
 .watch-sidebar-episode-thumb img.fallback-thumb-img {
@@ -2396,7 +2402,7 @@
 
 .watch-sidebar-episode-thumb img.is-playing-img.fallback-thumb-img {
     filter: blur(0.8px) brightness(0.72);
-    transform: scale(1.05);
+    transform: translateZ(0) scale(1.04);
 }
 
 .fallback-thumb-gradient {
