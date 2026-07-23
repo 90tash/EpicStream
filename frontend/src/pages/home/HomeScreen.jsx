@@ -21,7 +21,7 @@ const initialRows = [
     { 
         title: "Popular Shows", 
         path: "/discover/tv", 
-        params: { sort_by: "popularity.desc", "first_air_date.lte": today, without_genres: "10763,10767" } 
+        params: { sort_by: "popularity.desc", "first_air_date.lte": today, without_genres: "10763,10767,10766" } 
     },
     { 
         title: "Currently Airing: Anime", 
@@ -434,6 +434,12 @@ const HomeScreen = () => {
                         if (row.title === "Popular Shows" || row.title === "Top Rated: Series") {
                             const isAnimeShow = item.genre_ids?.includes(16) && item.original_language === "ja";
                             if (isAnimeShow) return false;
+                        }
+                        
+                        // Filter out soap dramas from Popular Shows section
+                        if (row.title === "Popular Shows") {
+                            const isSoapDrama = item.genre_ids?.includes(10766);
+                            if (isSoapDrama) return false;
                         }
                         
                         return hasImage;
