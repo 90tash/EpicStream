@@ -34,6 +34,7 @@ const getProviderLabel = (provider) => {
     const labels = {
         vidsync: "Titan(Fast/HD)",
         videasy: "Nova(Fast/HD)",
+        force: "Optimal(Multi-Server)",
         vidlink: "Vortex(Single-Server)",
         nxsha: "Vayu(Best-Server)",
         vidsuper: "Atlas(HD)",
@@ -48,6 +49,7 @@ const getProviderLabel = (provider) => {
 const WATCH_PROVIDERS = [
     { id: "vidsync", name: "Titan(Fast/HD)", rec: true },
     { id: "videasy", name: "Nova(Fast/HD)", rec: true },
+    { id: "force", name: "Optimal(Multi-Server)", rec: true },
     { id: "vidlink", name: "Vortex(Single-Server)" },
     { id: "nxsha", name: "Vayu(Best-Server)", rec: true },
     { id: "vidsuper", name: "Atlas(HD)" },
@@ -406,6 +408,7 @@ const WatchPage = () => {
                 "https://player.cinezo.live",
                 "https://nxsha.space",
                 "https://peachify.top",
+                "https://vidnest.fun",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
@@ -527,7 +530,54 @@ const WatchPage = () => {
                     };
                 }
 
+                if (!playerState && event.origin === "https://vidnest.fun" && data?.type === "PLAYER_EVENT") {
+                    const vidnestData = data.data || {};
+                    const time = vidnestData.currentTime !== undefined ? vidnestData.currentTime : 0;
+                    const duration = vidnestData.duration || 0;
+                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
 
+                    playerState = {
+                        currentTime: time,
+                        time: time,
+                        duration: duration,
+                        percentage,
+                    };
+                }
+
+                if (!playerState && event.origin === "https://vidnest.fun" && data?.type === "MEDIA_DATA") {
+                    const vidnestData = data.data || {};
+                    const currentMedia = vidnestData[id] || vidnestData;
+                    if (currentMedia) {
+                        if (mediaType === "tv") {
+                            const epKey = `s${season}e${episode}`;
+                            const epProgress = currentMedia.show_progress?.[epKey]?.progress || currentMedia.progress || {};
+                            const time = epProgress.watched !== undefined ? epProgress.watched : 0;
+                            const duration = epProgress.duration || 0;
+                            const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                            playerState = {
+                                currentTime: time,
+                                time: time,
+                                duration: duration,
+                                percentage,
+                                season: season,
+                                episode: episode,
+                            };
+                        } else {
+                            const progressData = currentMedia.progress || {};
+                            const time = progressData.watched !== undefined ? progressData.watched : 0;
+                            const duration = progressData.duration || 0;
+                            const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                            playerState = {
+                                currentTime: time,
+                                time: time,
+                                duration: duration,
+                                percentage,
+                            };
+                        }
+                    }
+                }
 
                 if (!playerState) {
                     playerState = data?.data || data;

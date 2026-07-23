@@ -194,6 +194,18 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             }
             return `https://player.videasy.to/tv/${id}/${season}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false&${commonParams}`;
             
+        case "force": {
+            if (type === "movie") {
+                const progressParam = progress > 0 ? `?startAt=${Math.round(progress)}` : "";
+                return `https://vidnest.fun/movie/${id}${progressParam}`;
+            }
+            const params = ["prevepisode=hide", "nextepisode=hide"];
+            if (progress > 0) {
+                params.push(`progress=${Math.round(progress)}`);
+            }
+            return `https://vidnest.fun/tv/${id}/${season}/${episode}?${params.join("&")}`;
+        }
+            
         case "mapple": {
             const theme = "ff2633"; // Project accent color
             if (type === "movie") {
@@ -286,6 +298,11 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
             return type === "movie"
                 ? `https://vidlink.pro/embed/anime/${animeId}`
                 : `https://vidlink.pro/embed/anime/${animeId}/${episode}`;
+
+        case "force":
+            return type === "movie"
+                ? `https://vidnest.fun/anime/${animeId}`
+                : `https://vidnest.fun/anime/${animeId}/${episode}/sub`;
                 
         default:
             return type === "movie"
