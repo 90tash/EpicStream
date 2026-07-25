@@ -840,15 +840,17 @@ const WatchPage = () => {
                     )}
                 </div>
 
-                <button
-                    type="button"
-                    className="watch-aspect-btn"
-                    onClick={() => setFitMode(prev => prev === "fill" ? "fit" : "fill")}
-                    title={fitMode === "fit" ? "Fill Screen" : "Fit 16:9 Aspect Ratio"}
-                >
-                    {fitMode === "fit" ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
-                    <span>{fitMode === "fit" ? "Fill Screen" : "Fit 16:9"}</span>
-                </button>
+                {selectedProvider === "dexter" && (
+                    <button
+                        type="button"
+                        className="watch-aspect-btn"
+                        onClick={() => setFitMode(prev => prev === "fill" ? "fit" : "fill")}
+                        title={fitMode === "fit" ? "Fill Screen" : "Fit 16:9 Aspect Ratio"}
+                    >
+                        {fitMode === "fit" ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+                        <span>{fitMode === "fit" ? "Fill Screen" : "Fit 16:9"}</span>
+                    </button>
+                )}
             </div>
 
             {/* Floating Right-Center Semicircle Sidebar Toggle Handle */}
