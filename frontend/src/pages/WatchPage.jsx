@@ -421,7 +421,7 @@ const WatchPage = () => {
                 "https://player.vidzee.wtf",
                 "https://www.viduki.net",
                 "https://viduki.net",
-                "https://vixsrc.to",
+                "https://vidzen.fun",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
@@ -442,7 +442,7 @@ const WatchPage = () => {
 
                 let playerState = data?.type === "PLAYER_EVENT" ? data.data : null;
 
-                if (playerState && event.origin === "https://vixsrc.to") {
+                if (playerState && event.origin === "https://vidzen.fun") {
                     if (mediaType === "tv") {
                         if (playerState.season === undefined) playerState.season = season;
                         if (playerState.episode === undefined) playerState.episode = episode;
@@ -1061,6 +1061,7 @@ const WatchPage = () => {
                         frameBorder="0"
                         allowFullScreen
                         allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen; accelerometer; gyroscope"
+                        sandbox="allow-scripts allow-same-origin allow-forms"
                         title="EpicStream Video Player"
                         onLoad={() => setIsFrameLoading(false)}
                     />

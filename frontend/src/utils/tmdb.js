@@ -212,19 +212,11 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             }
             return `https://viduki.net/2/tv/${id}/${season}/${episode}?color=${color}`;
             
-        case "dexter": {
-            const primaryColor = "ff2633";
-            const secondaryColor = "c90713";
-            const params = [`primaryColor=${primaryColor}`, `secondaryColor=${secondaryColor}`, "autoplay=true"];
-            if (progress > 0) {
-                params.push(`startAt=${Math.round(progress)}`);
-            }
-            const queryString = params.join("&");
+        case "dexter":
             if (type === "movie") {
-                return `https://vixsrc.to/movie/${id}?${queryString}`;
+                return `https://vidzen.fun/movie/${id}`;
             }
-            return `https://vixsrc.to/tv/${id}/${season}/${episode}?${queryString}`;
-        }
+            return `https://vidzen.fun/tv/${id}/${season}/${episode}`;
             
         case "force": {
             if (type === "movie") {
