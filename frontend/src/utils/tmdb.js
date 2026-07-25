@@ -194,6 +194,38 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             }
             return `https://player.videasy.to/tv/${id}/${season}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false&${commonParams}`;
             
+        case "vidzee":
+            if (type === "movie") {
+                return `https://player.vidzee.wtf/embed/movie/${id}`;
+            }
+            return `https://player.vidzee.wtf/embed/tv/${id}/${season}/${episode}`;
+            
+        case "goku_multi":
+            if (type === "movie") {
+                return `https://viduki.net/1/movie/${id}?color=${color}`;
+            }
+            return `https://viduki.net/1/tv/${id}/${season}/${episode}?color=${color}`;
+            
+        case "goku_indian":
+            if (type === "movie") {
+                return `https://viduki.net/2/movie/${id}?color=${color}`;
+            }
+            return `https://viduki.net/2/tv/${id}/${season}/${episode}?color=${color}`;
+            
+        case "dexter": {
+            const primaryColor = "ff2633";
+            const secondaryColor = "c90713";
+            const params = [`primaryColor=${primaryColor}`, `secondaryColor=${secondaryColor}`, "autoplay=true"];
+            if (progress > 0) {
+                params.push(`startAt=${Math.round(progress)}`);
+            }
+            const queryString = params.join("&");
+            if (type === "movie") {
+                return `https://vixsrc.to/movie/${id}?${queryString}`;
+            }
+            return `https://vixsrc.to/tv/${id}/${season}/${episode}?${queryString}`;
+        }
+            
         case "force": {
             if (type === "movie") {
                 const progressParam = progress > 0 ? `?startAt=${Math.round(progress)}` : "";

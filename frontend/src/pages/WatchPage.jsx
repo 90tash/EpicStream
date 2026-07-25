@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { ChevronLeft, ChevronDown, Search, LayoutGrid, List, X, Star } from "lucide-react";
+import toast from "react-hot-toast";
 import {
     getPlayerUrl,
     getTitle,
@@ -34,8 +35,12 @@ const getProviderLabel = (provider) => {
     const labels = {
         vidsync: "Titan(Fast/HD)",
         videasy: "Nova(Fast/HD)",
-        force: "Optimal(Multi-Server)",
+        vidzee: "Neo(Multi/HD)",
+        force: "Optimus(Multi-Server)",
         vidlink: "Vortex(Single-Server)",
+        goku_multi: "Goku(Multi-Server)",
+        goku_indian: "Goku(Indian-Server)",
+        dexter: "Dexter(Multi-HD)",
         nxsha: "Vayu(Best-Server)",
         vidsuper: "Atlas(HD)",
         cinezo: "Eclipse(Multi-Server)",
@@ -49,8 +54,12 @@ const getProviderLabel = (provider) => {
 const WATCH_PROVIDERS = [
     { id: "vidsync", name: "Titan(Fast/HD)", rec: true },
     { id: "videasy", name: "Nova(Fast/HD)", rec: true },
-    { id: "force", name: "Optimal(Multi-Server)", rec: true },
+    { id: "vidzee", name: "Neo(Multi/HD)", rec: true },
+    { id: "force", name: "Optimus(Multi-Server)", rec: true },
     { id: "vidlink", name: "Vortex(Single-Server)" },
+    { id: "goku_multi", name: "Goku(Multi-Server)", rec: true },
+    { id: "goku_indian", name: "Goku(Indian-Server)" },
+    { id: "dexter", name: "Dexter(Multi-HD)", rec: true },
     { id: "nxsha", name: "Vayu(Best-Server)", rec: true },
     { id: "vidsuper", name: "Atlas(HD)" },
     { id: "cinezo", name: "Eclipse(Multi-Server)" },
@@ -409,6 +418,10 @@ const WatchPage = () => {
                 "https://nxsha.space",
                 "https://peachify.top",
                 "https://vidnest.fun",
+                "https://player.vidzee.wtf",
+                "https://www.viduki.net",
+                "https://viduki.net",
+                "https://vixsrc.to",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
@@ -417,7 +430,99 @@ const WatchPage = () => {
                 let data = event.data;
                 if (typeof data === "string") data = JSON.parse(data);
 
+                if (event.origin === "https://www.viduki.net" || event.origin === "https://viduki.net") {
+                    if (data?.type === "viduki:all-servers-failed") {
+                        if (selectedProvider === "goku_multi") {
+                            setSelectedProvider("goku_indian");
+                            toast.error("Goku(Multi-Server) failed. Auto-switching to Goku(Indian-Server)!");
+                        }
+                        return;
+                    }
+                }
+
                 let playerState = data?.type === "PLAYER_EVENT" ? data.data : null;
+
+                if (playerState && event.origin === "https://vixsrc.to") {
+                    if (mediaType === "tv") {
+                        if (playerState.season === undefined) playerState.season = season;
+                        if (playerState.episode === undefined) playerState.episode = episode;
+                    }
+                }
+
+                if (!playerState && event.origin === "https://player.vidzee.wtf" && data?.type === "MEDIA_DATA") {
+                    const vidzeeData = data.data || {};
+                    const currentMedia = vidzeeData[id] || vidzeeData;
+                    if (currentMedia) {
+                        if (mediaType === "tv") {
+                            const epKey = `s${season}e${episode}`;
+                            const epProgress = currentMedia.show_progress?.[epKey]?.progress || currentMedia.progress || {};
+                            const time = epProgress.watched !== undefined ? epProgress.watched : 0;
+                            const duration = epProgress.duration || 0;
+                            const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                            playerState = {
+                                currentTime: time,
+                                time: time,
+                                duration: duration,
+                                percentage,
+                                season: season,
+                                episode: episode,
+                            };
+                        } else {
+                            const progressData = currentMedia.progress || {};
+                            const time = progressData.watched !== undefined ? progressData.watched : 0;
+                            const duration = progressData.duration || 0;
+                            const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                            playerState = {
+                                currentTime: time,
+                                time: time,
+                                duration: duration,
+                                percentage,
+                            };
+                        }
+                    }
+                }
+
+                if (!playerState && (event.origin === "https://www.viduki.net" || event.origin === "https://viduki.net") && data?.type === "MEDIA_DATA") {
+                    const vidukiData = data.data || {};
+                    try {
+                        localStorage.setItem("vidukinet-Progress", JSON.stringify(vidukiData));
+                    } catch (e) {
+                        console.error("Failed to save vidukinet-Progress", e);
+                    }
+                    const currentMedia = vidukiData[id] || vidukiData;
+                    if (currentMedia) {
+                        if (mediaType === "tv") {
+                            const epKey = `s${season}e${episode}`;
+                            const epProgress = currentMedia.show_progress?.[epKey]?.progress || currentMedia.progress || {};
+                            const time = epProgress.watched !== undefined ? epProgress.watched : 0;
+                            const duration = epProgress.duration || 0;
+                            const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                            playerState = {
+                                currentTime: time,
+                                time: time,
+                                duration: duration,
+                                percentage,
+                                season: season,
+                                episode: episode,
+                            };
+                        } else {
+                            const progressData = currentMedia.progress || {};
+                            const time = progressData.watched !== undefined ? progressData.watched : 0;
+                            const duration = progressData.duration || 0;
+                            const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+
+                            playerState = {
+                                currentTime: time,
+                                time: time,
+                                duration: duration,
+                                percentage,
+                            };
+                        }
+                    }
+                }
 
                 if (!playerState && event.origin === "https://peachify.top" && data?.type === "PLAYER_EVENT") {
                     const peachData = data.data || {};
@@ -609,7 +714,7 @@ const WatchPage = () => {
 
         window.addEventListener("message", handleMessage);
         return () => window.removeEventListener("message", handleMessage);
-    }, [id]);
+    }, [id, selectedProvider, mediaType, season, episode]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
