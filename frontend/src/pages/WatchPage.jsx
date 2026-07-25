@@ -1010,63 +1010,66 @@ const WatchPage = () => {
                 </aside>
             )}
 
-            {/* Spinner loader state when changing source */}
-            {(isLoading || error) && (
-                <div className="watch-state" style={{
-                    position: "absolute",
-                    inset: 0,
-                    zIndex: 4,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "18px",
-                    padding: "24px",
-                    background: "rgba(4, 5, 6, 0.88)",
-                    color: "#fff",
-                    textAlign: "center"
-                }}>
-                    {!error && <div className="watch-spinner" />}
-                    <strong>{error || "Preparing player..."}</strong>
-                </div>
-            )}
+            {/* Enforce 16:9 Aspect Ratio Container for the Player and its Loaders */}
+            <div className="watch-player-container">
+                {/* Spinner loader state when changing source */}
+                {(isLoading || error) && (
+                    <div className="watch-state" style={{
+                        position: "absolute",
+                        inset: 0,
+                        zIndex: 4,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "18px",
+                        padding: "24px",
+                        background: "rgba(4, 5, 6, 0.88)",
+                        color: "#fff",
+                        textAlign: "center"
+                    }}>
+                        {!error && <div className="watch-spinner" />}
+                        <strong>{error || "Preparing player..."}</strong>
+                    </div>
+                )}
 
-            {!isLoading && !error && (
-                <>
-                    {isFrameLoading && (
-                        <div className="watch-state floating" style={{
-                            position: "absolute",
-                            inset: 0,
-                            zIndex: 4,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "18px",
-                            padding: "24px",
-                            background: "rgba(4, 5, 6, 0.54)",
-                            color: "#fff",
-                            textAlign: "center",
-                            pointerEvents: "none"
-                        }}>
-                            <div className="watch-spinner" />
-                            <strong>Loading stream...</strong>
-                        </div>
-                    )}
-                    <iframe
-                        key={playerUrl}
-                        src={playerUrl}
-                        className="watch-player-iframe"
-                        scrolling="no"
-                        frameBorder="0"
-                        allowFullScreen
-                        allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen; accelerometer; gyroscope"
-                        sandbox="allow-scripts allow-same-origin allow-forms"
-                        title="EpicStream Video Player"
-                        onLoad={() => setIsFrameLoading(false)}
-                    />
-                </>
-            )}
+                {!isLoading && !error && (
+                    <>
+                        {isFrameLoading && (
+                            <div className="watch-state floating" style={{
+                                position: "absolute",
+                                inset: 0,
+                                zIndex: 4,
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "18px",
+                                padding: "24px",
+                                background: "rgba(4, 5, 6, 0.54)",
+                                color: "#fff",
+                                textAlign: "center",
+                                pointerEvents: "none"
+                            }}>
+                                <div className="watch-spinner" />
+                                <strong>Loading stream...</strong>
+                            </div>
+                        )}
+                        <iframe
+                            key={playerUrl}
+                            src={playerUrl}
+                            className="watch-player-iframe"
+                            scrolling="no"
+                            frameBorder="0"
+                            allowFullScreen
+                            allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen; accelerometer; gyroscope"
+                            sandbox="allow-scripts allow-same-origin allow-forms"
+                            title="EpicStream Video Player"
+                            onLoad={() => setIsFrameLoading(false)}
+                        />
+                    </>
+                )}
+            </div>
         </div>
     );
 };
