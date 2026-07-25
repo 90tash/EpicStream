@@ -1859,8 +1859,8 @@
     justify-content: center;
 }
 
-/* Enforce 16:9 Aspect Ratio Container only for Dexter server to prevent UI blowout when maximized */
-.watch-player-container.provider-dexter {
+/* Enforce 16:9 Aspect Ratio Container only when mode-fit is active */
+.watch-player-container.mode-fit {
     width: 100dvw;
     height: 56.25dvw; /* 9/16 ratio of viewport width */
     max-width: 177.78dvh; /* 16/9 ratio of viewport height */
@@ -1927,21 +1927,29 @@
     color: var(--accent);
 }
 
-/* Floating Center Provider Selector */
-.watch-provider-floating {
+/* Floating Center Controls Wrapper */
+.watch-controls-top {
     position: absolute;
     top: max(16px, env(safe-area-inset-top));
     left: 50%;
     transform: translateX(-50%);
     z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s ease;
 }
 
-.watch-provider-floating.visible {
+.watch-controls-top.visible {
     opacity: 1;
     pointer-events: auto;
+}
+
+/* Floating Center Provider Selector - Nested */
+.watch-provider-floating {
+    position: relative;
 }
 
 .watch-provider-btn {
@@ -1965,6 +1973,31 @@
 }
 
 .watch-provider-btn:hover {
+    border-color: rgba(255, 38, 51, 0.4);
+    color: var(--accent);
+}
+
+.watch-aspect-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 22px;
+    border-radius: 9999px;
+    background: rgba(8, 10, 13, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    transition: border-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+}
+
+.watch-aspect-btn:hover {
     border-color: rgba(255, 38, 51, 0.4);
     color: var(--accent);
 }
@@ -2724,11 +2757,17 @@
         height: 20px;
     }
     
-    .watch-provider-floating {
+    .watch-controls-top {
         top: 12px;
     }
     
     .watch-provider-btn {
+        height: 38px;
+        padding: 0 14px;
+        font-size: 12px;
+    }
+
+    .watch-aspect-btn {
         height: 38px;
         padding: 0 14px;
         font-size: 12px;

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import { ChevronLeft, ChevronDown, Search, LayoutGrid, List, X, Star } from "lucide-react";
+import { ChevronLeft, ChevronDown, Search, LayoutGrid, List, X, Star, Maximize2, Minimize2 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
     getPlayerUrl,
@@ -186,6 +186,14 @@ const WatchPage = () => {
         }
         return "vidsync"; // Default to vidsync
     });
+
+    // Aspect Ratio Fit Mode: 'fill' (covers whole screen) or 'fit' (constrains to 16:9)
+    const [fitMode, setFitMode] = useState("fill");
+
+    // Automatically set fitMode when selected provider changes
+    useEffect(() => {
+        setFitMode(selectedProvider === "dexter" ? "fit" : "fill");
+    }, [selectedProvider]);
 
     // Control bar visibility (fade out on inactivity)
     const [showOverlays, setShowOverlays] = useState(true);
@@ -794,41 +802,53 @@ const WatchPage = () => {
                 <X size={24} />
             </button>
 
-            {/* Floating Top-Center Provider Selector */}
-            <div className={`watch-provider-floating ${showOverlays ? "visible" : ""}`} ref={providerMenuRef}>
+            {/* Floating Top-Center Controls (Server Selector & Aspect Ratio Toggle) */}
+            <div className={`watch-controls-top ${showOverlays ? "visible" : ""}`}>
+                <div className="watch-provider-floating" ref={providerMenuRef}>
+                    <button
+                        type="button"
+                        className="watch-provider-btn"
+                        onClick={() => {
+                            setIsProviderMenuOpen(prev => !prev);
+                        }}
+                        aria-expanded={isProviderMenuOpen}
+                    >
+                        <span>Server: {getProviderLabel(selectedProvider)}</span>
+                        <ChevronDown size={15} style={{ 
+                            transform: isProviderMenuOpen ? "rotate(180deg)" : "rotate(0)", 
+                            transition: "transform 0.2s ease" 
+                        }} />
+                    </button>
+
+                    {isProviderMenuOpen && (
+                        <div className="watch-provider-dropdown">
+                            {providersList.map((provider) => (
+                                <button
+                                    key={provider.id}
+                                    type="button"
+                                    className={`watch-provider-option ${selectedProvider === provider.id ? "active" : ""}`}
+                                    onClick={() => {
+                                        setSelectedProvider(provider.id);
+                                        setIsProviderMenuOpen(false);
+                                    }}
+                                >
+                                    <span>{provider.name}</span>
+                                    {provider.rec && <Star size={13} fill="var(--accent)" color="var(--accent)" className="server-rec-star" />}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
                 <button
                     type="button"
-                    className="watch-provider-btn"
-                    onClick={() => {
-                        setIsProviderMenuOpen(prev => !prev);
-                    }}
-                    aria-expanded={isProviderMenuOpen}
+                    className="watch-aspect-btn"
+                    onClick={() => setFitMode(prev => prev === "fill" ? "fit" : "fill")}
+                    title={fitMode === "fit" ? "Fill Screen" : "Fit 16:9 Aspect Ratio"}
                 >
-                    <span>Server: {getProviderLabel(selectedProvider)}</span>
-                    <ChevronDown size={15} style={{ 
-                        transform: isProviderMenuOpen ? "rotate(180deg)" : "rotate(0)", 
-                        transition: "transform 0.2s ease" 
-                    }} />
+                    {fitMode === "fit" ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
+                    <span>{fitMode === "fit" ? "Fill Screen" : "Fit 16:9"}</span>
                 </button>
-
-                {isProviderMenuOpen && (
-                    <div className="watch-provider-dropdown">
-                        {providersList.map((provider) => (
-                            <button
-                                key={provider.id}
-                                type="button"
-                                className={`watch-provider-option ${selectedProvider === provider.id ? "active" : ""}`}
-                                onClick={() => {
-                                    setSelectedProvider(provider.id);
-                                    setIsProviderMenuOpen(false);
-                                }}
-                            >
-                                <span>{provider.name}</span>
-                                {provider.rec && <Star size={13} fill="var(--accent)" color="var(--accent)" className="server-rec-star" />}
-                            </button>
-                        ))}
-                    </div>
-                )}
             </div>
 
             {/* Floating Right-Center Semicircle Sidebar Toggle Handle */}
@@ -1011,7 +1031,7 @@ const WatchPage = () => {
             )}
 
             {/* Enforce 16:9 Aspect Ratio Container for the Player and its Loaders */}
-            <div className={`watch-player-container ${selectedProvider === "dexter" ? "provider-dexter" : ""}`}>
+            <div className={`watch-player-container ${fitMode === "fit" ? "mode-fit" : ""}`}>
                 {/* Spinner loader state when changing source */}
                 {(isLoading || error) && (
                     <div className="watch-state" style={{
