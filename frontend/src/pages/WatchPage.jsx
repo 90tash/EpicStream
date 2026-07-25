@@ -1011,7 +1011,7 @@ const WatchPage = () => {
             )}
 
             {/* Enforce 16:9 Aspect Ratio Container for the Player and its Loaders */}
-            <div className="watch-player-container">
+            <div className={`watch-player-container ${selectedProvider === "dexter" ? "provider-dexter" : ""}`}>
                 {/* Spinner loader state when changing source */}
                 {(isLoading || error) && (
                     <div className="watch-state" style={{
@@ -1063,7 +1063,7 @@ const WatchPage = () => {
                             frameBorder="0"
                             allowFullScreen
                             allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen; accelerometer; gyroscope"
-                            sandbox="allow-scripts allow-same-origin allow-forms"
+                            sandbox={selectedProvider === "dexter" ? "allow-scripts allow-same-origin allow-forms" : undefined}
                             title="EpicStream Video Player"
                             onLoad={() => setIsFrameLoading(false)}
                         />
