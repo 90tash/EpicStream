@@ -245,6 +245,20 @@ const WatchPage = () => {
         };
     }, [isProviderMenuOpen, isSidebarOpen]);
 
+    useEffect(() => {
+        if (isProviderMenuOpen) {
+            const timer = setTimeout(() => {
+                if (serverScrollRef.current) {
+                    const activeOption = serverScrollRef.current.querySelector(".watch-provider-option.active");
+                    if (activeOption) {
+                        activeOption.scrollIntoView({ block: "nearest", behavior: "auto" });
+                    }
+                }
+            }, 60);
+            return () => clearTimeout(timer);
+        }
+    }, [isProviderMenuOpen]);
+
     const providerMenuRef = useRef(null);
     const seasonMenuRef = useRef(null);
     const serverScrollRef = useRef(null);
