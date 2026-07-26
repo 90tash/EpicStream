@@ -2049,14 +2049,13 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 6px;
+    border-radius: 8px; /* Less curved to fit the layout better */
+    padding: 2px; /* Pad inside dropdown to fit the scroll arrow buttons flush */
     width: max-content;
-    min-width: 240px;
+    min-width: 280px; /* Increased width a little more */
     max-width: 90vw;
     display: flex;
     flex-direction: column;
-    gap: 4px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
     animation: slideDownWatch 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -2718,6 +2717,92 @@
     background: rgba(255, 38, 51, 0.55);
 }
 
+/* Server Dropdown Scroll Container */
+.watch-provider-scroll-container {
+    max-height: 280px; /* adjusted to fit 7 servers at once before scrolling */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 6px 4px 4px; /* clearance for scrollbar on the right */
+}
+
+/* Scroll Arrows for visual indicator and navigation functionality */
+.watch-provider-scroll-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 24px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.watch-provider-scroll-arrow:hover {
+    color: var(--accent);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.watch-provider-scroll-arrow.top {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    margin-bottom: 2px;
+}
+
+.watch-provider-scroll-arrow.bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    margin-top: 2px;
+}
+
+/* Server Dropdown Scrollbar - Always visible to indicate scroll availability */
+.watch-provider-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+.watch-provider-scroll-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+    margin: 2px 0;
+}
+.watch-provider-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22); /* Clearly visible by default */
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+.watch-provider-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 38, 51, 0.65); /* Highlight red on hover */
+}
+
+/* Layout wrapper for server name and Ad badge on the left */
+.watch-provider-name-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Ads badge styling - transparent red box background with white text */
+.server-ads-badge {
+    background: rgba(255, 38, 51, 0.25); /* Transparent red background */
+    color: #fff; /* White text */
+    font-size: 11px; /* Similar to server name size */
+    font-weight: 500;
+    padding: 3px 4px; /* Reduced width, increased height */
+    border-radius: 4px;
+    letter-spacing: 0.2px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    text-transform: none; /* Written as 'Ads' */
+    border: none; /* No outline */
+}
+
 /* =========================================================================
    MOBILE RESPONSIVE WATCHPAGE OVERRIDES
    ========================================================================= */
@@ -2775,7 +2860,7 @@
     
     .watch-provider-dropdown {
         width: max-content;
-        min-width: 220px;
+        min-width: 250px; /* Increased responsive width */
         max-width: 90vw;
         top: 44px;
     }

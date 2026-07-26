@@ -212,11 +212,29 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             }
             return `https://viduki.net/2/tv/${id}/${season}/${episode}?color=${color}`;
             
-        case "dexter":
-            if (type === "movie") {
-                return `https://vidzen.fun/movie/${id}`;
+        case "ninja": {
+            const params = ["autoPlay=true", "theme=ff2633"];
+            if (progress > 0) {
+                params.push(`startAt=${Math.round(progress)}`);
             }
-            return `https://vidzen.fun/tv/${id}/${season}/${episode}`;
+            if (type === "tv") {
+                params.push("nextButton=true", "autoNext=true");
+                return `https://vidup.to/tv/${id}/${season}/${episode}?${params.join("&")}`;
+            }
+            return `https://vidup.to/movie/${id}?${params.join("&")}`;
+        }
+
+        case "dexter": {
+            const params = ["autoPlay=true", "theme=ff2633"];
+            if (progress > 0) {
+                params.push(`startAt=${Math.round(progress)}`);
+            }
+            if (type === "tv") {
+                params.push("nextButton=true", "autoNext=true");
+                return `https://vidcore.net/tv/${id}/${season}/${episode}?${params.join("&")}`;
+            }
+            return `https://vidcore.net/movie/${id}?${params.join("&")}`;
+        }
             
         case "force": {
             if (type === "movie") {

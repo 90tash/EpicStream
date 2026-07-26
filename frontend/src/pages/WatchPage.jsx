@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import { ChevronLeft, ChevronDown, Search, LayoutGrid, List, X, Star, Maximize2, Minimize2 } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Search, LayoutGrid, List, X, Star } from "lucide-react";
 import toast from "react-hot-toast";
 import {
     getPlayerUrl,
@@ -37,12 +37,13 @@ const getProviderLabel = (provider) => {
         videasy: "Nova(Fast/HD)",
         vidzee: "Neo(Multi/HD)",
         force: "Optimus(Multi-Server)",
+        ninja: "Ninja(HD-Server)",
         vidlink: "Vortex(Single-Server)",
         goku_multi: "Goku(Multi-Server)",
         goku_indian: "Goku(Indian-Server)",
         dexter: "Dexter(Multi-HD)",
         nxsha: "Vayu(Best-Server)",
-        vidsuper: "Atlas(HD)",
+        vidsuper: "Atlas(HD-Server)",
         cinezo: "Eclipse(Multi-Server)",
         mapple: "Rogue(4k)",
         peachify: "Peach(HD/Multi)",
@@ -54,18 +55,19 @@ const getProviderLabel = (provider) => {
 const WATCH_PROVIDERS = [
     { id: "vidsync", name: "Titan(Fast/HD)", rec: true },
     { id: "videasy", name: "Nova(Fast/HD)", rec: true },
-    { id: "vidzee", name: "Neo(Multi/HD)", rec: true },
+    { id: "peachify", name: "Peach(HD/Multi)" },
     { id: "force", name: "Optimus(Multi-Server)", rec: true },
-    { id: "vidlink", name: "Vortex(Single-Server)" },
+    { id: "ninja", name: "Ninja(HD-Server)" },
+    { id: "vidsuper", name: "Atlas(HD-Server)" },
     { id: "goku_multi", name: "Goku(Multi-Server)", rec: true },
     { id: "goku_indian", name: "Goku(Indian-Server)" },
-    { id: "dexter", name: "Dexter(Multi-HD)", rec: true },
-    { id: "nxsha", name: "Vayu(Best-Server)", rec: true },
-    { id: "vidsuper", name: "Atlas(HD)" },
+    { id: "vidfast", name: "Ghost(Fast/HD)", rec: true },
+    { id: "nxsha", name: "Vayu(Best-Server)", rec: true, ads: true },
+    { id: "vidlink", name: "Vortex(Single-Server)" },
     { id: "cinezo", name: "Eclipse(Multi-Server)" },
     { id: "mapple", name: "Rogue(4k)" },
-    { id: "peachify", name: "Peach(HD/Multi)" },
-    { id: "vidfast", name: "Ghost(Fast/HD)" }
+    { id: "vidzee", name: "Neo(Multi/HD)" },
+    { id: "dexter", name: "Dexter(Multi-HD)" }
 ];
 
 const WatchPage = () => {
@@ -187,13 +189,7 @@ const WatchPage = () => {
         return "vidsync"; // Default to vidsync
     });
 
-    // Aspect Ratio Fit Mode: 'fill' (covers whole screen) or 'fit' (constrains to 16:9)
-    const [fitMode, setFitMode] = useState("fill");
 
-    // Automatically set fitMode when selected provider changes
-    useEffect(() => {
-        setFitMode(selectedProvider === "dexter" ? "fit" : "fill");
-    }, [selectedProvider]);
 
     // Control bar visibility (fade out on inactivity)
     const [showOverlays, setShowOverlays] = useState(true);
@@ -251,6 +247,16 @@ const WatchPage = () => {
 
     const providerMenuRef = useRef(null);
     const seasonMenuRef = useRef(null);
+    const serverScrollRef = useRef(null);
+
+    const scrollServers = (direction) => {
+        if (serverScrollRef.current) {
+            serverScrollRef.current.scrollBy({
+                top: direction === "up" ? -80 : 80,
+                behavior: "smooth"
+            });
+        }
+    };
 
 
     const title = getTitle(details);
@@ -429,7 +435,8 @@ const WatchPage = () => {
                 "https://player.vidzee.wtf",
                 "https://www.viduki.net",
                 "https://viduki.net",
-                "https://vidzen.fun",
+                "https://vidcore.net",
+                "https://vidup.to",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
@@ -450,7 +457,7 @@ const WatchPage = () => {
 
                 let playerState = data?.type === "PLAYER_EVENT" ? data.data : null;
 
-                if (playerState && event.origin === "https://vidzen.fun") {
+                if (playerState && (event.origin === "https://vidcore.net" || event.origin === "https://vidup.to")) {
                     if (mediaType === "tv") {
                         if (playerState.season === undefined) playerState.season = season;
                         if (playerState.episode === undefined) playerState.episode = episode;
@@ -822,35 +829,52 @@ const WatchPage = () => {
 
                     {isProviderMenuOpen && (
                         <div className="watch-provider-dropdown">
-                            {providersList.map((provider) => (
-                                <button
-                                    key={provider.id}
-                                    type="button"
-                                    className={`watch-provider-option ${selectedProvider === provider.id ? "active" : ""}`}
-                                    onClick={() => {
-                                        setSelectedProvider(provider.id);
-                                        setIsProviderMenuOpen(false);
-                                    }}
-                                >
-                                    <span>{provider.name}</span>
-                                    {provider.rec && <Star size={13} fill="var(--accent)" color="var(--accent)" className="server-rec-star" />}
-                                </button>
-                            ))}
+                            <button
+                                type="button"
+                                className="watch-provider-scroll-arrow top"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    scrollServers("up");
+                                }}
+                                aria-label="Scroll up"
+                            >
+                                <ChevronUp size={14} />
+                            </button>
+                            <div className="watch-provider-scroll-container" ref={serverScrollRef}>
+                                {providersList.map((provider) => (
+                                    <button
+                                        key={provider.id}
+                                        type="button"
+                                        className={`watch-provider-option ${selectedProvider === provider.id ? "active" : ""}`}
+                                        onClick={() => {
+                                            setSelectedProvider(provider.id);
+                                            setIsProviderMenuOpen(false);
+                                        }}
+                                    >
+                                        <div className="watch-provider-name-wrapper">
+                                            <span>{provider.name}</span>
+                                            {provider.ads && <span className="server-ads-badge">Ad</span>}
+                                        </div>
+                                        {provider.rec && <Star size={13} fill="var(--accent)" color="var(--accent)" className="server-rec-star" />}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                type="button"
+                                className="watch-provider-scroll-arrow bottom"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    scrollServers("down");
+                                }}
+                                aria-label="Scroll down"
+                            >
+                                <ChevronDown size={14} />
+                            </button>
                         </div>
                     )}
                 </div>
 
-                {selectedProvider === "dexter" && (
-                    <button
-                        type="button"
-                        className="watch-aspect-btn"
-                        onClick={() => setFitMode(prev => prev === "fill" ? "fit" : "fill")}
-                        title={fitMode === "fit" ? "Fill Screen" : "Fit 16:9 Aspect Ratio"}
-                    >
-                        {fitMode === "fit" ? <Maximize2 size={14} /> : <Minimize2 size={14} />}
-                        <span>{fitMode === "fit" ? "Fill Screen" : "Fit 16:9"}</span>
-                    </button>
-                )}
+
             </div>
 
             {/* Floating Right-Center Semicircle Sidebar Toggle Handle */}
@@ -1033,7 +1057,7 @@ const WatchPage = () => {
             )}
 
             {/* Enforce 16:9 Aspect Ratio Container for the Player and its Loaders */}
-            <div className={`watch-player-container ${fitMode === "fit" ? "mode-fit" : ""}`}>
+            <div className="watch-player-container">
                 {/* Spinner loader state when changing source */}
                 {(isLoading || error) && (
                     <div className="watch-state" style={{
@@ -1085,7 +1109,6 @@ const WatchPage = () => {
                             frameBorder="0"
                             allowFullScreen
                             allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen; accelerometer; gyroscope"
-                            sandbox={selectedProvider === "dexter" ? "allow-scripts allow-same-origin allow-forms" : undefined}
                             title="EpicStream Video Player"
                             onLoad={() => setIsFrameLoading(false)}
                         />
