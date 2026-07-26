@@ -249,9 +249,15 @@ const WatchPage = () => {
         if (isProviderMenuOpen) {
             const timer = setTimeout(() => {
                 if (serverScrollRef.current) {
-                    const activeOption = serverScrollRef.current.querySelector(".watch-provider-option.active");
-                    if (activeOption) {
-                        activeOption.scrollIntoView({ block: "nearest", behavior: "auto" });
+                    if (hasSavedScrollRef.current) {
+                        serverScrollRef.current.scrollTop = serverScrollPositionRef.current;
+                    } else {
+                        const activeOption = serverScrollRef.current.querySelector(".watch-provider-option.active");
+                        if (activeOption) {
+                            activeOption.scrollIntoView({ block: "nearest", behavior: "auto" });
+                        }
+                        serverScrollPositionRef.current = serverScrollRef.current.scrollTop;
+                        hasSavedScrollRef.current = true;
                     }
                 }
             }, 60);
@@ -262,6 +268,8 @@ const WatchPage = () => {
     const providerMenuRef = useRef(null);
     const seasonMenuRef = useRef(null);
     const serverScrollRef = useRef(null);
+    const serverScrollPositionRef = useRef(0);
+    const hasSavedScrollRef = useRef(false);
 
     const scrollServers = (direction) => {
         if (serverScrollRef.current) {
@@ -854,7 +862,13 @@ const WatchPage = () => {
                             >
                                 <ChevronUp size={14} />
                             </button>
-                            <div className="watch-provider-scroll-container" ref={serverScrollRef}>
+                            <div 
+                                className="watch-provider-scroll-container" 
+                                ref={serverScrollRef}
+                                onScroll={(e) => {
+                                    serverScrollPositionRef.current = e.currentTarget.scrollTop;
+                                }}
+                            >
                                 {providersList.map((provider) => (
                                     <button
                                         key={provider.id}
