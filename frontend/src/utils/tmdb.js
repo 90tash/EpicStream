@@ -151,9 +151,17 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             } else {
                 url = `${baseUrl}/embed/tv/${id}/${season}/${episode}`;
             }
-            const params = ["accent=ff2633"];
+            const params = [
+                "accent=ff2633",
+                "cast=hide",
+                "sub=English",
+                "autoPlay=true"
+            ];
+            if (type === "tv") {
+                params.push("showNextBtn=false");
+            }
             if (progress > 0) {
-                params.push(`t=${Math.round(progress)}`);
+                params.push(`startAt=${Math.round(progress)}`);
             }
             return `${url}?${params.join("&")}`;
         }
