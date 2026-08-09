@@ -133,7 +133,7 @@ export const tmdbGetRecommendations = async (type, id) => {
 // To switch the main embed provider, uncomment your preferred option below 
 // and ensure all others are commented out.
 // =========================================================================
-export const ACTIVE_PROVIDER = "streamrip"; // Option 1: StreamRip (Default)
+export const ACTIVE_PROVIDER = "vidlove"; // Option 1: VidLove (Default)
 // export const ACTIVE_PROVIDER = "vidsrc_to"; // Option 2: VidSrc.to
 // export const ACTIVE_PROVIDER = "vidsrc_me"; // Option 3: VidSrc.me (Alternative API format)
 // export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
@@ -272,14 +272,14 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://vidfast.vc/tv/${id}/${season}/${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
         }
             
-        case "streamrip": {
+        case "filmu": {
             if (anilistId) {
-                return `https://streamrip.fun/anime/${anilistId}/${episode}`;
+                return `https://embed.filmu.in/anime/${anilistId}/${episode}`;
             }
             if (type === "movie") {
-                return `https://streamrip.fun/movie/${id}`;
+                return `https://embed.filmu.in/movie/${id}`;
             }
-            return `https://streamrip.fun/tv/${id}/${season}/${episode}`;
+            return `https://embed.filmu.in/tv/${id}/${season}/${episode}`;
         }
             
         case "vidlove": {
@@ -289,6 +289,18 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
                 return `https://player.vidlove.cc/embed/movie/${id}?${params}`;
             }
             return `https://player.vidlove.cc/embed/tv/${id}/${season}/${episode}?${params}`;
+        }
+            
+        case "vsembed": {
+            const params = ["autoplay=1", "ds_lang=en"];
+            if (progress > 0) {
+                params.push(`startAt=${Math.round(progress)}`);
+            }
+            if (type === "tv") {
+                params.push("autonext=1");
+                return `https://vsembed.ru/embed/tv/${id}/${season}/${episode}?${params.join("&")}`;
+            }
+            return `https://vsembed.ru/embed/movie/${id}?${params.join("&")}`;
         }
             
         case "cinezo": {
@@ -335,8 +347,8 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
 
 export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
     switch (ACTIVE_PROVIDER) {
-        case "streamrip":
-            return `https://streamrip.fun/anime/${animeId}/${episode}`;
+        case "filmu":
+            return `https://embed.filmu.in/anime/${animeId}/${episode}`;
 
         case "videasy":
             return type === "movie"

@@ -34,8 +34,9 @@ const formatDate = (dateStr) => {
 
 const getProviderLabel = (provider) => {
     const labels = {
-        streamrip: "Titan(Fast/HD)",
+        filmu: "Titan(Fast/HD)",
         videasy: "Nova(Fast/HD)",
+        vsembed: "Rocky(Fast-Server)",
         vidzee: "Neo(Multi/HD)",
         vidnest: "Optimus(Multi-Server)",
         vidup: "Ninja(HD-Server)",
@@ -44,7 +45,7 @@ const getProviderLabel = (provider) => {
         viduki_indian: "Goku(Indian-Server)",
         vidcore: "Dexter(Multi-HD)",
         nxsha: "Vayu(Best-Server)",
-        vidlove: "VidLove(HD-Server)",
+        vidlove: "Atlas(HD-Server)",
         cinezo: "Eclipse(Multi-Server)",
         mapple: "Rogue(4k)",
         peachify: "Peach(HD/Multi)",
@@ -54,12 +55,13 @@ const getProviderLabel = (provider) => {
 };
 
 const WATCH_PROVIDERS = [
-    { id: "streamrip", name: "Titan(Fast/HD)", rec: true },
+    { id: "vidlove", name: "Atlas(HD-Server)" },
+    { id: "filmu", name: "Titan(Fast/HD)", rec: true },
     { id: "videasy", name: "Nova(Fast/HD)", rec: true },
+    { id: "vsembed", name: "Rocky(Fast-Server)", rec: true },
     { id: "peachify", name: "Peach(HD/Multi)" },
     { id: "vidnest", name: "Optimus(Multi-Server)", rec: true },
     { id: "vidup", name: "Ninja(HD-Server)" },
-    { id: "vidlove", name: "VidLove(HD-Server)" },
     { id: "viduki_multi", name: "Goku(Multi-Server)", rec: true },
     { id: "viduki_indian", name: "Goku(Indian-Server)" },
     { id: "vidfast", name: "Ghost(Fast/HD)", rec: true },
@@ -177,7 +179,7 @@ const WatchPage = () => {
         }
     };
 
-    // Default to the last used provider for this item, or default to "streamrip" as fallback
+    // Default to the last used provider for this item, or default to "vidlove" as fallback
     const [selectedProvider, setSelectedProvider] = useState(() => {
         try {
             const historyItem = getHistory().find(h => h.id === Number(id));
@@ -188,7 +190,7 @@ const WatchPage = () => {
         } catch (e) {
             console.error("Failed to parse history for provider:", e);
         }
-        return "streamrip"; // Default to streamrip
+        return "vidlove"; // Default to vidlove
     });
 
 
@@ -329,13 +331,13 @@ const WatchPage = () => {
         setEpisodes([]);
         setEpisodeQuery("");
 
-        // Set provider from history or default to streamrip immediately when id changes
+        // Set provider from history or default to vidlove immediately when id changes
         setAnilistId(null);
         const historyItem = getHistory().find(h => h.id === Number(id));
         if (historyItem?.provider) {
             setSelectedProvider(historyItem.provider);
         } else {
-            setSelectedProvider("streamrip");
+            setSelectedProvider("vidlove");
         }
 
         // Reset initial season and episode refs for the new title
@@ -469,7 +471,9 @@ const WatchPage = () => {
                 "https://vidfast.xyz",
                 "https://vidfast.vc",
                 "https://vidfast.bz",
-                "https://streamrip.fun",
+                "https://embed.filmu.in",
+                "https://filmu.in",
+                "https://vsembed.ru",
                 "https://mapple.uk",
                 "https://player.vidlove.cc",
                 "https://vidlove.cc",
@@ -507,6 +511,22 @@ const WatchPage = () => {
                         if (playerState.season === undefined) playerState.season = season;
                         if (playerState.episode === undefined) playerState.episode = episode;
                     }
+                }
+
+                if (playerState && event.origin === "https://vsembed.ru") {
+                    const time = playerState.player_progress !== undefined ? playerState.player_progress : 0;
+                    const duration = playerState.player_duration || 0;
+                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+                    const info = playerState.player_info || {};
+
+                    playerState = {
+                        currentTime: time,
+                        time: time,
+                        duration: duration,
+                        percentage,
+                        season: info.season ? Number(info.season) : undefined,
+                        episode: info.episode ? Number(info.episode) : undefined,
+                    };
                 }
 
                 if (!playerState && event.origin === "https://player.vidzee.wtf" && data?.type === "MEDIA_DATA") {
