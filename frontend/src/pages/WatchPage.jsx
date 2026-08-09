@@ -11,6 +11,7 @@ import {
     tmdbGetSeason,
 } from "../utils/tmdb";
 import { addToHistory, updateHistoryProgress, getHistory, getWatchedEpisodes } from "../utils/history";
+// import { isAnime, fetchAnilistAnimeList, findBestAnilistMatch } from "../utils/anilist";
 import "./watchPage.css";
 
 const getPositiveInt = (value, fallback) => {
@@ -33,17 +34,17 @@ const formatDate = (dateStr) => {
 
 const getProviderLabel = (provider) => {
     const labels = {
-        vidsync: "Titan(Fast/HD)",
+        streamrip: "Titan(Fast/HD)",
         videasy: "Nova(Fast/HD)",
         vidzee: "Neo(Multi/HD)",
-        force: "Optimus(Multi-Server)",
-        ninja: "Ninja(HD-Server)",
+        vidnest: "Optimus(Multi-Server)",
+        vidup: "Ninja(HD-Server)",
         vidlink: "Vortex(Single-Server)",
-        goku_multi: "Goku(Multi-Server)",
-        goku_indian: "Goku(Indian-Server)",
-        dexter: "Dexter(Multi-HD)",
+        viduki_multi: "Goku(Multi-Server)",
+        viduki_indian: "Goku(Indian-Server)",
+        vidcore: "Dexter(Multi-HD)",
         nxsha: "Vayu(Best-Server)",
-        vidsuper: "Atlas(HD-Server)",
+        vidlove: "VidLove(HD-Server)",
         cinezo: "Eclipse(Multi-Server)",
         mapple: "Rogue(4k)",
         peachify: "Peach(HD/Multi)",
@@ -53,21 +54,21 @@ const getProviderLabel = (provider) => {
 };
 
 const WATCH_PROVIDERS = [
-    { id: "vidsync", name: "Titan(Fast/HD)", rec: true },
+    { id: "streamrip", name: "Titan(Fast/HD)", rec: true },
     { id: "videasy", name: "Nova(Fast/HD)", rec: true },
     { id: "peachify", name: "Peach(HD/Multi)" },
-    { id: "force", name: "Optimus(Multi-Server)", rec: true },
-    { id: "ninja", name: "Ninja(HD-Server)" },
-    { id: "vidsuper", name: "Atlas(HD-Server)" },
-    { id: "goku_multi", name: "Goku(Multi-Server)", rec: true },
-    { id: "goku_indian", name: "Goku(Indian-Server)" },
+    { id: "vidnest", name: "Optimus(Multi-Server)", rec: true },
+    { id: "vidup", name: "Ninja(HD-Server)" },
+    { id: "vidlove", name: "VidLove(HD-Server)" },
+    { id: "viduki_multi", name: "Goku(Multi-Server)", rec: true },
+    { id: "viduki_indian", name: "Goku(Indian-Server)" },
     { id: "vidfast", name: "Ghost(Fast/HD)", rec: true },
     { id: "nxsha", name: "Vayu(Best-Server)", rec: true, ads: true },
     { id: "vidlink", name: "Vortex(Single-Server)" },
     { id: "cinezo", name: "Eclipse(Multi-Server)" },
     { id: "mapple", name: "Rogue(4k)" },
     { id: "vidzee", name: "Neo(Multi/HD)" },
-    { id: "dexter", name: "Dexter(Multi-HD)" }
+    { id: "vidcore", name: "Dexter(Multi-HD)" }
 ];
 
 const WatchPage = () => {
@@ -87,6 +88,7 @@ const WatchPage = () => {
     const [isEpisodesLoading, setIsEpisodesLoading] = useState(false);
     const [error, setError] = useState("");
     const [episodeQuery, setEpisodeQuery] = useState("");
+    const [anilistId, setAnilistId] = useState(null);
     
     const [isSeasonMenuOpen, setIsSeasonMenuOpen] = useState(false);
     const [isProviderMenuOpen, setIsProviderMenuOpen] = useState(false);
@@ -175,7 +177,7 @@ const WatchPage = () => {
         }
     };
 
-    // Default to the last used provider for this item, or default to "vidsync" as fallback
+    // Default to the last used provider for this item, or default to "streamrip" as fallback
     const [selectedProvider, setSelectedProvider] = useState(() => {
         try {
             const historyItem = getHistory().find(h => h.id === Number(id));
@@ -186,7 +188,7 @@ const WatchPage = () => {
         } catch (e) {
             console.error("Failed to parse history for provider:", e);
         }
-        return "vidsync"; // Default to vidsync
+        return "streamrip"; // Default to streamrip
     });
 
 
@@ -299,8 +301,8 @@ const WatchPage = () => {
                 progress = historyItem.currentTime || 0;
             }
         }
-        return getPlayerUrl(mediaType, id, season, episode, selectedProvider, progress);
-    }, [episode, id, mediaType, season, selectedProvider]);
+        return getPlayerUrl(mediaType, id, season, episode, selectedProvider, progress, {}, anilistId);
+    }, [episode, id, mediaType, season, selectedProvider, anilistId]);
 
     const seasonsList = useMemo(
         () => details?.seasons?.filter((item) => item.season_number > 0) || [],
@@ -327,12 +329,13 @@ const WatchPage = () => {
         setEpisodes([]);
         setEpisodeQuery("");
 
-        // Set provider from history or default to vidsync immediately when id changes
+        // Set provider from history or default to streamrip immediately when id changes
+        setAnilistId(null);
         const historyItem = getHistory().find(h => h.id === Number(id));
         if (historyItem?.provider) {
             setSelectedProvider(historyItem.provider);
         } else {
-            setSelectedProvider("vidsync");
+            setSelectedProvider("streamrip");
         }
 
         // Reset initial season and episode refs for the new title
@@ -343,6 +346,25 @@ const WatchPage = () => {
             try {
                 const detailsData = await tmdbFetch(`/${mediaType}/${id}`);
                 setDetails(detailsData);
+
+                // Fetch AniList ID if it is anime (put to sleep for now)
+                /*
+                if (isAnime(detailsData)) {
+                    const titleStr = detailsData.name || detailsData.title || detailsData.original_name || detailsData.original_title;
+                    const yearStr = (detailsData.first_air_date || detailsData.release_date || "").split("-")[0];
+                    const isMovieVal = mediaType === "movie";
+
+                    try {
+                        const animeList = await fetchAnilistAnimeList(titleStr);
+                        const bestMatch = findBestAnilistMatch(animeList, titleStr, yearStr, isMovieVal);
+                        if (bestMatch) {
+                            setAnilistId(bestMatch.id);
+                        }
+                    } catch (animeErr) {
+                        console.error("Failed to fetch AniList match:", animeErr);
+                    }
+                }
+                */
             } catch (fetchError) {
                 console.error("Error loading watch page:", fetchError);
                 setError("Unable to load this title right now.");
@@ -447,9 +469,10 @@ const WatchPage = () => {
                 "https://vidfast.xyz",
                 "https://vidfast.vc",
                 "https://vidfast.bz",
-                "https://vidsync.live",
+                "https://streamrip.fun",
                 "https://mapple.uk",
-                "https://vidsuper.net",
+                "https://player.vidlove.cc",
+                "https://vidlove.cc",
                 "https://player.cinezo.live",
                 "https://nxsha.space",
                 "https://peachify.top",
@@ -469,8 +492,8 @@ const WatchPage = () => {
 
                 if (event.origin === "https://www.viduki.net" || event.origin === "https://viduki.net") {
                     if (data?.type === "viduki:all-servers-failed") {
-                        if (selectedProvider === "goku_multi") {
-                            setSelectedProvider("goku_indian");
+                        if (selectedProvider === "viduki_multi") {
+                            setSelectedProvider("viduki_indian");
                             toast.error("Goku(Multi-Server) failed. Auto-switching to Goku(Indian-Server)!");
                         }
                         return;
@@ -608,10 +631,10 @@ const WatchPage = () => {
                     };
                 }
 
-                if (!playerState && event.origin === "https://vidsuper.net" && data?.type) {
-                    const time = data.progress !== undefined ? data.progress : 0;
+                if (!playerState && (event.origin === "https://player.vidlove.cc" || event.origin === "https://vidlove.cc") && (data?.type === "timeupdate" || data?.event === "timeupdate" || data?.event === "ended" || data?.type === "ended")) {
+                    const time = data.currentTime !== undefined ? data.currentTime : (data.progress !== undefined ? data.progress : 0);
                     const duration = data.duration || 0;
-                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : (data.event === "ended" || data.type === "ended" ? 100 : 0);
 
                     playerState = {
                         currentTime: time,
@@ -639,38 +662,7 @@ const WatchPage = () => {
                     };
                 }
 
-                if (!playerState && data?.type === "VIDSYNC_PLAYER_EVENT") {
-                    const vidsyncData = data.data || {};
-                    const time = vidsyncData.currentTime !== undefined ? vidsyncData.currentTime : vidsyncData.time;
-                    const duration = vidsyncData.duration || 0;
-                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
 
-                    playerState = {
-                        currentTime: time || 0,
-                        time: time || 0,
-                        duration: duration || 0,
-                        percentage,
-                        season: vidsyncData.season,
-                        episode: vidsyncData.episode,
-                    };
-                }
-
-                if (!playerState && data?.type === "VIDSYNC_MEDIA_DATA") {
-                    const entry = data.data?.entry || {};
-                    const progress = entry.progress || {};
-                    const time = progress.watched !== undefined ? progress.watched : 0;
-                    const duration = progress.duration || 0;
-                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
-
-                    playerState = {
-                        currentTime: time,
-                        time: time,
-                        duration: duration,
-                        percentage,
-                        season: entry.season,
-                        episode: entry.episode,
-                    };
-                }
 
                 if (!playerState && event.origin === "https://vidnest.fun" && data?.type === "PLAYER_EVENT") {
                     const vidnestData = data.data || {};
@@ -1136,7 +1128,7 @@ const WatchPage = () => {
                             scrolling="no"
                             frameBorder="0"
                             allowFullScreen
-                            allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen; accelerometer; gyroscope"
+                            allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen *; accelerometer; gyroscope"
                             title="EpicStream Video Player"
                             onLoad={() => setIsFrameLoading(false)}
                         />

@@ -133,12 +133,12 @@ export const tmdbGetRecommendations = async (type, id) => {
 // To switch the main embed provider, uncomment your preferred option below 
 // and ensure all others are commented out.
 // =========================================================================
-export const ACTIVE_PROVIDER = "vidsync"; // Option 1: VidSync (Default)
+export const ACTIVE_PROVIDER = "streamrip"; // Option 1: StreamRip (Default)
 // export const ACTIVE_PROVIDER = "vidsrc_to"; // Option 2: VidSrc.to
 // export const ACTIVE_PROVIDER = "vidsrc_me"; // Option 3: VidSrc.me (Alternative API format)
 // export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
 
-export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIVE_PROVIDER, progress = 0, nxshaSettings = {}) => {
+export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIVE_PROVIDER, progress = 0, nxshaSettings = {}, anilistId = null) => {
     const color = "ff2633"; // Project accent color
     const commonParams = `overlay=true&color=${color}`;
     
@@ -208,19 +208,19 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             }
             return `https://player.vidzee.wtf/embed/tv/${id}/${season}/${episode}`;
             
-        case "goku_multi":
+        case "viduki_multi":
             if (type === "movie") {
                 return `https://viduki.net/1/movie/${id}?color=${color}`;
             }
             return `https://viduki.net/1/tv/${id}/${season}/${episode}?color=${color}`;
             
-        case "goku_indian":
+        case "viduki_indian":
             if (type === "movie") {
                 return `https://viduki.net/2/movie/${id}?color=${color}`;
             }
             return `https://viduki.net/2/tv/${id}/${season}/${episode}?color=${color}`;
             
-        case "ninja": {
+        case "vidup": {
             const params = ["autoPlay=true", "theme=ff2633"];
             if (progress > 0) {
                 params.push(`startAt=${Math.round(progress)}`);
@@ -232,7 +232,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://vidup.to/movie/${id}?${params.join("&")}`;
         }
 
-        case "dexter": {
+        case "vidcore": {
             const params = ["autoPlay=true", "theme=ff2633"];
             if (progress > 0) {
                 params.push(`startAt=${Math.round(progress)}`);
@@ -244,7 +244,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://vidcore.net/movie/${id}?${params.join("&")}`;
         }
             
-        case "force": {
+        case "vidnest": {
             if (type === "movie") {
                 const progressParam = progress > 0 ? `?startAt=${Math.round(progress)}` : "";
                 return `https://vidnest.fun/movie/${id}${progressParam}`;
@@ -272,22 +272,23 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://vidfast.vc/tv/${id}/${season}/${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
         }
             
-        case "vidsync": {
-            const theme = "ff2633"; // Project accent color
-            if (type === "movie") {
-                return `https://vidsync.live/embed/movie/${id}?autoPlay=true&theme=${theme}`;
+        case "streamrip": {
+            if (anilistId) {
+                return `https://streamrip.fun/anime/${anilistId}/${episode}`;
             }
-            return `https://vidsync.live/embed/tv/${id}/${season}/${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
+            if (type === "movie") {
+                return `https://streamrip.fun/movie/${id}`;
+            }
+            return `https://streamrip.fun/tv/${id}/${season}/${episode}`;
         }
             
-        case "vidsuper": {
+        case "vidlove": {
             const themeColor = "ff2633"; // Project accent color
-            const progressParam = progress > 0 ? `&progress=${progress}` : "";
-            const common = `autoplay=true&overlay=true&skip_intro=true&color=${themeColor}${progressParam}`;
+            const params = `primarycolor=${themeColor}&iconcolor=ffffff&autoplay=true&poster=true&chromecast=true&setting=true&pip=true&servericon=true`;
             if (type === "movie") {
-                return `https://vidsuper.net/movie/${id}?${common}`;
+                return `https://player.vidlove.cc/embed/movie/${id}?${params}`;
             }
-            return `https://vidsuper.net/tv/${id}/${season}/${episode}?${common}&nextEpisode=true&autoplayNextEpisode=true&episodeSelector=true`;
+            return `https://player.vidlove.cc/embed/tv/${id}/${season}/${episode}?${params}`;
         }
             
         case "cinezo": {
@@ -334,6 +335,9 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
 
 export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
     switch (ACTIVE_PROVIDER) {
+        case "streamrip":
+            return `https://streamrip.fun/anime/${animeId}/${episode}`;
+
         case "videasy":
             return type === "movie"
                 ? `https://player.videasy.to/anime/${animeId}`
@@ -349,7 +353,7 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
                 ? `https://vidlink.pro/embed/anime/${animeId}`
                 : `https://vidlink.pro/embed/anime/${animeId}/${episode}`;
 
-        case "force":
+        case "vidnest":
             return type === "movie"
                 ? `https://vidnest.fun/anime/${animeId}`
                 : `https://vidnest.fun/anime/${animeId}/${episode}/sub`;
