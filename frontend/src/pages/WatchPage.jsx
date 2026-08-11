@@ -34,7 +34,7 @@ const formatDate = (dateStr) => {
 
 const getProviderLabel = (provider) => {
     const labels = {
-        filmu: "Titan(Fast/HD)",
+        zxc: "Titan(Fast/HD)",
         videasy: "Nova(Fast/HD)",
         vsembed: "Rocky(Fast-Server)",
         vidzee: "Neo(Multi/HD)",
@@ -63,7 +63,7 @@ const AdsIcon = () => (
 
 const WATCH_PROVIDERS = [
     { id: "vidlove", name: "Atlas(HD-Server)" },
-    { id: "filmu", name: "Titan(Fast/HD)", rec: true },
+    { id: "zxc", name: "Titan(Fast/HD)", rec: true },
     { id: "videasy", name: "Nova(Fast/HD)", rec: true },
     { id: "vsembed", name: "Rocky(Fast-Server)", rec: true },
     { id: "peachify", name: "Peach(HD/Multi)" },
@@ -197,7 +197,7 @@ const WatchPage = () => {
         } catch (e) {
             console.error("Failed to parse history for provider:", e);
         }
-        return "vidlove"; // Default to vidlove
+        return "zxc"; // Default to Titan (zxcstream.xyz)
     });
 
 
@@ -478,8 +478,7 @@ const WatchPage = () => {
                 "https://vidfast.xyz",
                 "https://vidfast.vc",
                 "https://vidfast.bz",
-                "https://embed.filmu.in",
-                "https://filmu.in",
+                "https://zxcstream.xyz",
                 "https://vsembed.ru",
                 "https://mapple.uk",
                 "https://player.vidlove.cc",

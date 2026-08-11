@@ -133,7 +133,7 @@ export const tmdbGetRecommendations = async (type, id) => {
 // To switch the main embed provider, uncomment your preferred option below 
 // and ensure all others are commented out.
 // =========================================================================
-export const ACTIVE_PROVIDER = "vidlove"; // Option 1: VidLove (Default)
+export const ACTIVE_PROVIDER = "zxc"; // Option 1: Titan — zxcstream.xyz (Default)
 // export const ACTIVE_PROVIDER = "vidsrc_to"; // Option 2: VidSrc.to
 // export const ACTIVE_PROVIDER = "vidsrc_me"; // Option 3: VidSrc.me (Alternative API format)
 // export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
@@ -272,14 +272,13 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://vidfast.vc/tv/${id}/${season}/${episode}?autoPlay=true&theme=${theme}&nextButton=true&autoNext=true`;
         }
             
-        case "filmu": {
-            if (anilistId) {
-                return `https://embed.filmu.in/anime/${anilistId}/${episode}`;
-            }
+        case "zxc": {
+            const themeColor = "ff2633"; // Project accent color
+            const params = `color=${themeColor}&autoplay=true`;
             if (type === "movie") {
-                return `https://embed.filmu.in/movie/${id}`;
+                return `https://zxcstream.xyz/player/movie/${id}?${params}`;
             }
-            return `https://embed.filmu.in/tv/${id}/${season}/${episode}`;
+            return `https://zxcstream.xyz/player/tv/${id}/${season}/${episode}?${params}`;
         }
             
         case "vidlove": {
@@ -347,8 +346,12 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
 
 export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
     switch (ACTIVE_PROVIDER) {
-        case "filmu":
-            return `https://embed.filmu.in/anime/${animeId}/${episode}`;
+        case "zxc": {
+            const params = `color=ff2633&autoplay=true`;
+            return type === "movie"
+                ? `https://zxcstream.xyz/player/movie/${animeId}?${params}`
+                : `https://zxcstream.xyz/player/tv/${animeId}/1/${episode}?${params}`;
+        }
 
         case "videasy":
             return type === "movie"
