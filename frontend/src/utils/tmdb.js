@@ -202,6 +202,12 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             }
             return `https://player.videasy.to/tv/${id}/${season}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false&${commonParams}`;
             
+        case "modiplay":
+            if (type === "movie") {
+                return `https://rozgarlelo.modiplay.xyz/embed/tmdb/movie?id=${id}&without_ad=1`;
+            }
+            return `https://rozgarlelo.modiplay.xyz/embed/tmdb/tv?id=${id}&s=${season}&e=${episode}&without_ad=1`;
+            
         case "vidzee":
             if (type === "movie") {
                 return `https://player.vidzee.wtf/embed/movie/${id}`;

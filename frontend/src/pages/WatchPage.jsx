@@ -36,6 +36,7 @@ const getProviderLabel = (provider) => {
     const labels = {
         zxc: "Titan(Fast/HD)",
         videasy: "Nova(Fast/HD)",
+        modiplay: "Ashoka(Indian-Server)",
         vsembed: "Rocky(Fast-Server)",
         vidzee: "Neo(Multi/HD)",
         vidnest: "Optimus(Multi-Server)",
@@ -62,9 +63,10 @@ const AdsIcon = () => (
 );
 
 const WATCH_PROVIDERS = [
-    { id: "vidlove", name: "Atlas(HD-Server)" },
     { id: "zxc", name: "Titan(Fast/HD)", rec: true },
+    { id: "vidlove", name: "Atlas(HD-Server)" },
     { id: "videasy", name: "Nova(Fast/HD)", rec: true },
+    { id: "modiplay", name: "Ashoka(Indian-Server)", rec: true },
     { id: "vsembed", name: "Rocky(Fast-Server)", rec: true },
     { id: "peachify", name: "Peach(HD/Multi)" },
     { id: "vidnest", name: "Optimus(Multi-Server)", rec: true },
@@ -186,7 +188,7 @@ const WatchPage = () => {
         }
     };
 
-    // Default to the last used provider for this item, or default to "vidlove" as fallback
+    // Default to the last used provider for this item, or default to "zxc" as fallback
     const [selectedProvider, setSelectedProvider] = useState(() => {
         try {
             const historyItem = getHistory().find(h => h.id === Number(id));
@@ -338,13 +340,13 @@ const WatchPage = () => {
         setEpisodes([]);
         setEpisodeQuery("");
 
-        // Set provider from history or default to vidlove immediately when id changes
+        // Set provider from history or default to zxc immediately when id changes
         setAnilistId(null);
         const historyItem = getHistory().find(h => h.id === Number(id));
         if (historyItem?.provider) {
             setSelectedProvider(historyItem.provider);
         } else {
-            setSelectedProvider("vidlove");
+            setSelectedProvider("zxc");
         }
 
         // Reset initial season and episode refs for the new title
@@ -492,6 +494,7 @@ const WatchPage = () => {
                 "https://viduki.net",
                 "https://vidcore.net",
                 "https://vidup.to",
+                "https://rozgarlelo.modiplay.xyz",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
