@@ -100,9 +100,8 @@
 
 .search-category > button:hover,
 .search-close:hover {
-    border-color: rgba(255, 38, 51, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
     color: var(--accent);
-    transform: scale(1.05);
 }
 
 .search-category svg {
@@ -146,9 +145,13 @@
     transition: all 0.2s ease;
 }
 
-.search-category-menu button.active,
 .search-category-menu button:hover {
     color: var(--accent);
+}
+
+.search-category-menu button.active {
+    color: #ffffff;
+    font-weight: 600;
 }
 
 .search-input-wrap {
@@ -168,8 +171,8 @@
 }
 
 .search-input-wrap:focus-within {
-    border-color: rgba(255, 38, 51, 0.4);
-    box-shadow: 0 0 0 4px rgba(255, 38, 51, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
 }
 
 .search-input-wrap:focus-within svg {
@@ -325,20 +328,20 @@
     gap: 4px;
 }
 
-.search-result-meta > span:not(:last-child)::after {
-    content: "•";
-    margin-left: 8px;
-    opacity: 0.3;
-}
-
 .search-result-meta .rating {
     color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
 }
 
 .search-result-meta .rating svg {
-    fill: none;
-    stroke: var(--accent);
-    stroke-width: 2.5px;
+    width: 10px;
+    height: 10px;
+    margin-top: -1px;
+    vertical-align: middle;
+    fill: currentColor;
+    stroke: none;
     transition: all 0.3s ease;
     flex-shrink: 0;
 }

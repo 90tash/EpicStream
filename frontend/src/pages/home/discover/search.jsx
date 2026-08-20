@@ -60,6 +60,27 @@ const SearchPage = () => {
     }, [categoryOpen]);
 
     useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+                e.preventDefault();
+                const currentParams = new URLSearchParams(location.search);
+                if (currentParams.get("search") === "true") {
+                    currentParams.delete("search");
+                } else {
+                    currentParams.set("search", "true");
+                }
+                const queryString = currentParams.toString();
+                navigate(`${location.pathname}${queryString ? `?${queryString}` : ""}`);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [location, navigate]);
+
+    useEffect(() => {
         if (!searchTerm.trim()) {
             setSearchResults([]);
             setHasSearched(false);
@@ -187,13 +208,21 @@ const SearchPage = () => {
                                             <span>
                                                 <strong>{getTitle(result)}</strong>
                                                 <span className="search-result-meta">
-                                                    {formatMediaType(getMediaType(result))}
-                                                    {getYear(result) && <span>{getYear(result)}</span>}
+                                                    <span>{formatMediaType(getMediaType(result))}</span>
+                                                    {getYear(result) && (
+                                                        <>
+                                                            <span className="dot" />
+                                                            <span>{getYear(result)}</span>
+                                                        </>
+                                                    )}
                                                     {rating && (
-                                                        <span className="rating">
-                                                            <Star size={13} />
-                                                            {rating}
-                                                        </span>
+                                                        <>
+                                                            <span className="dot" />
+                                                            <span className="rating">
+                                                                <Star size={10} fill="currentColor" />
+                                                                {rating}
+                                                            </span>
+                                                        </>
                                                     )}
                                                 </span>
                                             </span>

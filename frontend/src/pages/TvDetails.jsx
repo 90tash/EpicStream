@@ -23,6 +23,23 @@ const formatDate = (dateStr) => {
     }
 };
 
+const formatEpisodeDate = (dateStr) => {
+    if (!dateStr) return "";
+    try {
+        const date = new Date(dateStr);
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const monthName = months[date.getMonth()];
+        const day = date.getDate();
+        const year = date.getFullYear();
+        return `${monthName} ${day}, ${year}`;
+    } catch {
+        return dateStr;
+    }
+};
+
 /* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate }) => {
     const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
@@ -602,7 +619,11 @@ const TvDetails = () => {
                                         </div>
                                         <div className="episode-info">
                                             <h3 className={!hasStill ? "fallback-ep-title" : ""}>{ep.name}</h3>
-                                            {ep.runtime && <span className="episode-runtime">{ep.runtime} min</span>}
+                                            <div className="episode-meta-row">
+                                                {ep.runtime && <span className="episode-runtime">{ep.runtime}min</span>}
+                                                {ep.runtime && ep.air_date && <span className="dot" />}
+                                                {ep.air_date && <span className="episode-air-date">{formatEpisodeDate(ep.air_date)}</span>}
+                                            </div>
                                             <p className="episode-overview">
                                                 {ep.overview || "No description available for this episode."}
                                             </p>

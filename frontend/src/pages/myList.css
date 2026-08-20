@@ -50,13 +50,6 @@
     letter-spacing: 0;
 }
 
-.my-list-empty-header h1::before {
-    content: "";
-    width: 4px;
-    height: 0.85em;
-    border-radius: 4px;
-    background: var(--accent);
-}
 
 .my-list-empty-header p {
     margin: 0;
@@ -200,13 +193,6 @@
     gap: 10px;
 }
 
-.my-list-container h1::before {
-    content: "";
-    width: 4px;
-    height: clamp(14px, 2.2vw, 18px);
-    border-radius: 999px;
-    background: var(--accent);
-}
 
 .my-list-grid {
     display: grid;
@@ -326,8 +312,8 @@
 }
 
 .inline-creation-bar:focus-within {
-    border-color: rgba(255, 38, 51, 0.4);
-    box-shadow: 0 0 0 4px rgba(255, 38, 51, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
 }
 
 .inline-creation-input {
@@ -384,9 +370,9 @@
 }
 
 .shuffle-btn:hover {
-    background: rgba(255, 38, 51, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     color: var(--accent);
-    border-color: rgba(255, 38, 51, 0.2);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .create-btn {
@@ -396,7 +382,7 @@
     font-weight: 700;
     font-size: 13px;
     background: var(--accent);
-    color: #fff;
+    color: #000;
     border: 1px solid transparent;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -410,7 +396,7 @@
 }
 
 .create-btn:not(:disabled):hover {
-    background: #ff4754;
+    background: var(--accent-hover);
 }
 
 /* Lists Folder Grid */
@@ -627,7 +613,7 @@
 }
 
 .remove-item-badge:hover {
-    border-color: rgba(255, 38, 51, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
     color: var(--accent);
 }
 
@@ -820,7 +806,7 @@
 }
 
 .expanded-action-btn:hover {
-    border-color: rgba(255, 38, 51, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
     color: var(--accent);
 }
 
@@ -832,8 +818,8 @@
 
 .expanded-action-btn.delete-list-btn {
     color: var(--accent);
-    background: rgba(255, 38, 51, 0.08);
-    border-color: rgba(255, 38, 51, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .expanded-action-btn.delete-list-btn:hover {
@@ -907,9 +893,6 @@
         margin-bottom: 4px !important;
     }
 
-    .my-list-container h1::before {
-        height: 14px !important;
-    }
 
     .delete-list-btn span {
         display: none !important;
@@ -1049,7 +1032,7 @@
 }
 
 .reorder-action-btn:hover:not(:disabled) {
-    border-color: rgba(255, 38, 51, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
     color: var(--accent);
 }
 

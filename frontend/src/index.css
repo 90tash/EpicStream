@@ -1,29 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap');
 
 :root {
-    --app-font: "Inter", "Helvetica Neue", Arial, sans-serif;
-    --bg: #050607;
-    --panel: #0b0d10;
-    --panel-soft: #12151a;
-    --line: #20242c;
-    --text: #f6f7fb;
-    --muted: #9aa3b2;
-    --accent: #ff2633;
-    --accent-dark: #c90713;
+    --app-font: "Geist", "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono-font: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --bg: #08090a;
+    --panel: #0f1115;
+    --panel-soft: #16181d;
+    --line: #1c1f26;
+    --text: #ffffff;
+    --muted: #8a8e98;
+    --text-muted: #8a8e98;
+    --text-dim: #54575f;
+    --accent: #ffffff;
+    --accent-hover: #e4e5e7;
+    --brand-red: #ffffff;
+    --accent-dark: #8a8e98;
+}
+
+body, html {
+    font-family: var(--app-font) !important;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: var(--app-font);
+    font-family: inherit;
 }
 
 body {
-    background: 
-        radial-gradient(circle 600px at 50% 0%, rgba(255, 38, 51, 0.12) 0%, rgba(5, 6, 7, 0) 100%),
-        radial-gradient(circle 400px at 0% 100%, rgba(255, 38, 51, 0.05) 0%, rgba(5, 6, 7, 0) 100%),
-        var(--bg);
+    background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -68,7 +74,7 @@ a {
 }
 
 .back-btn-simple:hover {
-    border-color: rgba(255, 38, 51, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
     color: var(--accent);
 }
 
@@ -161,7 +167,7 @@ a {
 }
 
 .warning-btn-primary:hover {
-    border-color: rgba(255, 38, 51, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
     color: var(--accent);
     background: rgba(255, 255, 255, 0.08);
 }
@@ -218,4 +224,79 @@ a {
         font-size: 13px;
         margin-top: 8px;
     }
+}
+
+/* Base Headings - Editorial Styling (Queuebrick aesthetic) */
+h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.03em;
+    font-weight: 600;
+}
+
+/* Technical/Metadata labels styled with monospaced typeface */
+.metadata, 
+.movie-year, 
+.rating-pill, 
+.shortcut-key,
+.search-result-meta,
+.rating,
+.rating-value-wrapper,
+.similar-card-meta,
+.browse-meta,
+.my-list-meta,
+.credit-meta,
+.watch-meta-row,
+.card-meta,
+.card-status-badge,
+.people-metadata {
+    font-family: var(--mono-font) !important;
+}
+
+/* Inline separator dot matching the Queuebrick/Letterboxd card design */
+.dot {
+    display: inline-block;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background-color: var(--text-dim);
+    margin: 0 6px;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Explicitly enforce Geist font on cast elements and warning modals */
+.cast-name, 
+.cast-character,
+.warning-modal, 
+.warning-title, 
+.warning-description, 
+.warning-btn-primary, 
+.warning-cancel-link {
+    font-family: var(--app-font) !important;
+}
+
+/* Global Monochrome Hover/Focus overrides to replace red outlines with white/gray */
+.back-btn-simple:hover,
+.warning-btn-primary:hover,
+.search-category button:hover,
+.search-input-wrap:focus-within,
+.back-btn:hover,
+.slider-control:hover,
+.season-dropdown-trigger:hover,
+.custom-season-dropdown button:hover,
+.dropdown-options button:hover,
+.details-action-btn:hover,
+.details-group-btn:hover,
+.episode-card:hover,
+.episode-card.watched:hover {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Ensure ticks, dots, and ratings use white/gray accents instead of brand-red */
+.active-tick, 
+.active-dot, 
+.rating, 
+.similar-card-meta svg, 
+.card-meta svg {
+    color: #ffffff !important;
 }

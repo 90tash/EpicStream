@@ -27,8 +27,8 @@ function App() {
           style: {
             background: 'rgba(11, 13, 16, 0.98)',
             color: '#f6f7fb',
-            border: '1px solid rgba(255, 38, 51, 0.25)',
-            fontFamily: '"Inter", sans-serif',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            fontFamily: 'var(--app-font)',
             fontSize: '14px',
             fontWeight: '500',
             borderRadius: '16px',
@@ -39,14 +39,14 @@ function App() {
           },
           success: {
             iconTheme: {
-              primary: '#ff2633',
-              secondary: '#f6f7fb',
+              primary: '#ffffff',
+              secondary: '#0b0d10',
             },
           },
           error: {
             iconTheme: {
-              primary: '#ff2633',
-              secondary: '#f6f7fb',
+              primary: '#ffffff',
+              secondary: '#0b0d10',
             },
           },
         }}

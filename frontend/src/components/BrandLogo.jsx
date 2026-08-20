@@ -6,7 +6,7 @@ const BrandLogo = ({ compact = false }) => {
         <span className={`brand-logo ${compact ? "compact" : ""}`} aria-label="EpicStream">
             <span className="brand-mark">
                 <img 
-                    src="/logo.png" 
+                    src="/favicon.png" 
                     alt="EpicStream Logo" 
                     className="logo-image"
                 />
