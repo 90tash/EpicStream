@@ -256,7 +256,6 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemI
         if (window.innerWidth <= 768) {
             if (!isMobileActive) {
                 e.preventDefault();
-                e.stopPropagation();
                 setIsMobileActive(true);
                 return;
             }

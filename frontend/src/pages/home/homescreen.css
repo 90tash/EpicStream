@@ -1390,7 +1390,7 @@
     }
     
     .browse-card.mobile-active .card-mobile-title {
-        transform: translateY(-44px);
+        transform: translateY(-34px);
         opacity: 1;
         text-align: center;
         width: 100%;

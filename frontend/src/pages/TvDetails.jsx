@@ -107,7 +107,6 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
         if (window.innerWidth <= 768) {
             if (!isMobileActive) {
                 e.preventDefault();
-                e.stopPropagation();
                 setIsMobileActive(true);
                 return;
             }
