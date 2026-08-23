@@ -680,6 +680,7 @@
 
 /* Internal Zoom Effect */
 .card-img-wrapper {
+    position: relative;
     width: 100%;
     aspect-ratio: 2 / 3; /* Vertical poster ratio */
     border-radius: 8px; /* Slightly softer corners */
@@ -1236,4 +1237,62 @@
     background-color: #e4e5e7;
 }
 
+
+
+/* Screenshot-style Card Hover Actions */
+.card-hover-actions {
+    position: absolute;
+    bottom: 12px;
+    left: 8%;
+    width: 84%;
+    display: flex;
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    pointer-events: none;
+    z-index: 10;
+    height: 38px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.browse-card:hover .card-hover-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.card-action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-right: 1px solid rgba(255,255,255,0.15);
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    height: 100%;
+    border-radius: 0;
+}
+
+.card-action-btn:last-child {
+    border-right: none;
+}
+
+.card-action-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+}
+
+.card-action-btn.liked {
+    color: #ff3b30;
+}
+
+.card-action-btn.liked:hover {
+    background: rgba(255, 59, 48, 0.15);
+}
 

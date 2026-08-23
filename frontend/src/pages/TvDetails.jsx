@@ -1,10 +1,11 @@
 import { useLocation, useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useRef, Fragment } from "react";
-import { ChevronLeft, ChevronRight, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark, Heart, Play, Eye, Info } from "lucide-react";
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
+import ListModal from "../components/ListModal";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel } from "../utils/tmdb";
-import { addToHistory, getWatchedEpisodes, removeEpisodeWatched } from "../utils/history";
+import { addToHistory, getWatchedEpisodes, removeEpisodeWatched, getHistory, removeFromHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
 
@@ -41,18 +42,17 @@ const formatEpisodeDate = (dateStr) => {
 };
 
 /* eslint-disable react/prop-types */
-const SimilarCard = ({ item, type, navigate }) => {
+const SimilarCard = ({ item, type, navigate, onAddToList }) => {
     const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
+    const [isWatched, setIsWatched] = useState(() => getHistory().some(h => h.id === item.id));
 
     useEffect(() => {
         const fetchTitledBanner = async () => {
             try {
                 const data = await tmdbGetImages(type, item.id);
                 if (data.backdrops && data.backdrops.length > 0) {
-                    // Filter for backdrops that are NOT textless (iso_639_1 is not null)
                     const titledBackdrops = data.backdrops.filter(b => b.iso_639_1 !== null);
                     if (titledBackdrops.length > 0) {
-                        // Prioritize English titled backdrops
                         const enTitled = titledBackdrops.find(b => b.iso_639_1 === 'en');
                         const selected = enTitled || titledBackdrops[0];
                         setBannerUrl(imageUrl(selected.file_path, "w780"));
@@ -64,6 +64,25 @@ const SimilarCard = ({ item, type, navigate }) => {
         };
         fetchTitledBanner();
     }, [item.id, type]);
+
+    const handlePlay = (e) => {
+        e.stopPropagation();
+        addToHistory(item, type, type === "tv" ? 1 : null, type === "tv" ? 1 : null);
+        navigate(`/watch/${type}/${item.id}${type === "tv" ? "?season=1&episode=1" : ""}`);
+    };
+
+    const handleWatched = (e) => {
+        e.stopPropagation();
+        if (isWatched) {
+            removeFromHistory(item.id);
+            setIsWatched(false);
+            toast.success("Removed from watched");
+        } else {
+            addToHistory(item, type, type === "tv" ? 1 : null, type === "tv" ? 1 : null);
+            setIsWatched(true);
+            toast.success("Marked as watched");
+        }
+    };
 
     return (
         <div 
@@ -83,6 +102,41 @@ const SimilarCard = ({ item, type, navigate }) => {
                     />
                 </picture>
                 <div className="similar-card-shade" />
+                
+                <div className="card-hover-actions">
+                    <button 
+                        className="card-action-btn hover-play-btn"
+                        title="Play"
+                        onClick={handlePlay}
+                    >
+                        <Play size={16} fill="currentColor" />
+                    </button>
+                    <button 
+                        className="card-action-btn"
+                        title="Info"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/${type}/${item.id}`, { state: { movie: item } });
+                            window.scrollTo(0, 0);
+                        }}
+                    >
+                        <Info size={16} />
+                    </button>
+                    <button 
+                        className="card-action-btn"
+                        title={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                        onClick={handleWatched}
+                    >
+                        <Eye size={16} color={isWatched ? "#4cd964" : "currentColor"} />
+                    </button>
+                    <button 
+                        className="card-action-btn"
+                        title="Add to List"
+                        onClick={(e) => { e.stopPropagation(); if(onAddToList) onAddToList(item); }}
+                    >
+                        <Plus size={16} />
+                    </button>
+                </div>
             </div>
             <span className="similar-card-title">{getTitle(item)}</span>
             <div className="similar-card-meta">
@@ -113,6 +167,7 @@ const TvDetails = () => {
     const [showFullOverview, setShowFullOverview] = useState(false);
     const [logoFetched, setLogoFetched] = useState(false);
     const [showPlayWarning, setShowPlayWarning] = useState(false);
+    const [listModalItem, setListModalItem] = useState(null);
 
     const { toggleItem, isItemInList } = useWatchlistStore();
     const { customLists, toggleItemInList, getListsForItem, createList } = useCustomListsStore();
@@ -765,6 +820,7 @@ const TvDetails = () => {
                                     item={similar} 
                                     type="tv" 
                                     navigate={navigate} 
+                                    onAddToList={setListModalItem}
                                 />
                             ))}
                         </div>
@@ -876,8 +932,16 @@ const TvDetails = () => {
                     </div>
                 </div>
             )}
+            
+            {listModalItem && (
+                <ListModal 
+                    item={listModalItem} 
+                    onClose={() => setListModalItem(null)} 
+                />
+            )}
         </div>
     );
 };
 
 export default TvDetails;
+

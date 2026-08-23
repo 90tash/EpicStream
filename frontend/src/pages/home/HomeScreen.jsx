@@ -1,12 +1,15 @@
 /* eslint-disable react/prop-types */
-import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check, Plus, Bookmark } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check, Plus, Bookmark, Heart, Eye } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import ListModal from "../../components/ListModal";
 import { formatMediaType, getMediaType, getRating, getTitle, getYear, getStatusLabel, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
 import { addToHistory, getHistory, removeFromHistory } from "../../utils/history";
 import { useWatchlistStore } from "../../stores/watchlist";
+import { useCustomListsStore } from "../../stores/customLists";
+import toast from "react-hot-toast";
 import "./homescreen.css";
 
 const today = new Date().toISOString().split("T")[0];
@@ -203,11 +206,32 @@ const HistoryCard = ({ item, openWatch, openDetails, onRemove, isEditing }) => {
     );
 };
 
-const MovieCard = ({ item, row, index, openDetails }) => {
+const MovieCard = ({ item, row, index, openDetails, onAddToList }) => {
     const type = getMediaType(item);
     const rating = getRating(item);
-
     const statusLabel = getStatusLabel(item);
+    
+    const navigate = useNavigate();
+    const [isWatched, setIsWatched] = useState(() => getHistory().some(h => h.id === item.id));
+
+    const handlePlay = (e) => {
+        e.stopPropagation();
+        addToHistory(item, type, type === "tv" ? 1 : null, type === "tv" ? 1 : null);
+        navigate(`/watch/${type}/${item.id}${type === "tv" ? "?season=1&episode=1" : ""}`);
+    };
+
+    const handleWatched = (e) => {
+        e.stopPropagation();
+        if (isWatched) {
+            removeFromHistory(item.id);
+            setIsWatched(false);
+            toast.success("Removed from watched");
+        } else {
+            addToHistory(item, type, type === "tv" ? 1 : null, type === "tv" ? 1 : null);
+            setIsWatched(true);
+            toast.success("Marked as watched");
+        }
+    };
 
     return (
         <button
@@ -233,6 +257,36 @@ const MovieCard = ({ item, row, index, openDetails }) => {
                         {statusLabel.text}
                     </span>
                 )}
+                <div className="card-hover-actions">
+                    <button 
+                        className="card-action-btn hover-play-btn"
+                        title="Play"
+                        onClick={handlePlay}
+                    >
+                        <Play size={16} fill="currentColor" />
+                    </button>
+                    <button 
+                        className="card-action-btn"
+                        title="Info"
+                        onClick={(e) => { e.stopPropagation(); openDetails(item); }}
+                    >
+                        <Info size={16} />
+                    </button>
+                    <button 
+                        className="card-action-btn"
+                        title={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                        onClick={handleWatched}
+                    >
+                        <Eye size={16} color={isWatched ? "#4cd964" : "currentColor"} />
+                    </button>
+                    <button 
+                        className="card-action-btn"
+                        title="Add to List"
+                        onClick={(e) => { e.stopPropagation(); if(onAddToList) onAddToList(item); }}
+                    >
+                        <Plus size={16} />
+                    </button>
+                </div>
             </div>
             <span className="card-title">{getTitle(item)}</span>
             <span className="card-meta">
@@ -255,7 +309,7 @@ const MovieCard = ({ item, row, index, openDetails }) => {
     );
 };
 
-const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory }) => {
+const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory, onAddToList }) => {
     const sliderRef = useRef(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(false);
@@ -333,7 +387,8 @@ const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory }) => {
                                 item={item} 
                                 row={row} 
                                 index={index}
-                                openDetails={openDetails} 
+                                openDetails={openDetails}
+                                onAddToList={onAddToList}
                             />
                         )
                     ))}
@@ -359,6 +414,7 @@ const HomeScreen = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [logoError, setLogoError] = useState(false);
     const [showPlayWarning, setShowPlayWarning] = useState(false);
+    const [listModalItem, setListModalItem] = useState(null);
     const navigate = useNavigate();
     const { toggleItem, isItemInList } = useWatchlistStore();
 
@@ -704,9 +760,17 @@ const HomeScreen = () => {
                         openDetails={openDetails} 
                         openWatch={openWatch}
                         onRemoveHistory={handleRemoveFromHistory}
+                        onAddToList={setListModalItem}
                     />
                 ))}
             </main>
+
+            {listModalItem && (
+                <ListModal 
+                    item={listModalItem} 
+                    onClose={() => setListModalItem(null)} 
+                />
+            )}
 
             {showScrollTop && (
                 <button className="scroll-to-top" onClick={scrollToTop} aria-label="Scroll to top">
@@ -762,3 +826,5 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
+
+
