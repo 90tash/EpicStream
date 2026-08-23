@@ -26,8 +26,16 @@ const ListModal = ({ item, anchorRect, onClose }) => {
             const menu = menuRef.current;
             const menuRect = menu.getBoundingClientRect();
             
-            // Default position: above the button, centered horizontally
-            let top = anchorRect.top - menuRect.height - 10;
+            // Show below the button if space is there, otherwise show above
+            const spaceBelow = window.innerHeight - anchorRect.bottom;
+            const spaceNeeded = menuRect.height + 10;
+            let top;
+            if (spaceBelow >= spaceNeeded) {
+                top = anchorRect.bottom + 10;
+            } else {
+                top = anchorRect.top - spaceNeeded;
+            }
+
             let left = anchorRect.left + (anchorRect.width / 2) - (menuRect.width / 2);
             
             // Prevent going off-screen horizontally
@@ -36,7 +44,7 @@ const ListModal = ({ item, anchorRect, onClose }) => {
                 left = window.innerWidth - menuRect.width - 10;
             }
             
-            // If it goes off-screen vertically (top), show below the button instead
+            // If fallback top is off-screen (above), default back to bottom
             if (top < 10) {
                 top = anchorRect.bottom + 10;
             }
@@ -121,6 +129,7 @@ const ListModal = ({ item, anchorRect, onClose }) => {
                 ) : (
                     <button 
                         className="season-option create-list-option"
+                        style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
                         onClick={() => setIsCreatingInline(true)}
                     >
                         <span className="create-list-plus">+</span>

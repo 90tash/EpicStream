@@ -1135,11 +1135,13 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1), filter 0.4s cubic-bezier(0.2, 1, 0.3, 1);
 }
 
-.similar-card:hover img {
+.similar-card:hover img,
+.similar-card:has(.force-show) img {
     transform: scale(1.06);
+    filter: brightness(0.55); /* Dim the card when hover actions appear */
 }
 
 .similar-card-title {
@@ -2101,7 +2103,8 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
-.similar-card:hover .card-hover-actions {
+.similar-card:hover .card-hover-actions,
+.card-hover-actions.force-show {
     opacity: 1;
     pointer-events: auto;
 }
@@ -2137,5 +2140,97 @@
 
 .card-action-btn.liked:hover {
     background: rgba(255, 59, 48, 0.15);
+}
+
+/* Card Mobile Info Styling (hidden by default on desktop, shown on mobile) */
+.card-mobile-info-container {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Hide the title & rating below the card on mobile */
+    .similar-card .similar-card-title,
+    .similar-card .similar-card-meta,
+    .card-status-badge {
+        display: none !important;
+    }
+
+    /* Add a low-density gradient overlay inside similar-card-img-wrapper on mobile */
+    .similar-card-img-wrapper::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 75%);
+        pointer-events: none;
+        z-index: 2;
+    }
+    
+    /* Position info container inside the card wrapper */
+    .card-mobile-info-container {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        bottom: 8px;
+        left: 10px;
+        right: 10px;
+        z-index: 5;
+        text-align: left;
+        pointer-events: none;
+        transition: transform 0.35s cubic-bezier(0.2, 1, 0.3, 1);
+    }
+    
+    /* Title styling: bold, slightly dim, above metadata */
+    .card-mobile-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffff;
+        opacity: 0.9;
+        line-height: 1.25;
+        margin-bottom: 2px;
+        transition: transform 0.35s cubic-bezier(0.2, 1, 0.3, 1);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Metadata styling: dim, small, below the title */
+    .card-mobile-meta {
+        font-size: 10px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.7);
+        opacity: 0.8;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    
+    /* Smooth sliding animation when active / hover:
+       - Metadata below the title fades out
+       - Title moves up smoothly
+       - Hover action bar appears below the title */
+    .similar-card.mobile-active .card-mobile-meta {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    
+    .similar-card.mobile-active .card-mobile-title {
+        transform: translateY(-16px);
+        opacity: 1;
+    }
+    
+    /* Adjust actions bar for mobile view to sit under the shifted title */
+    .similar-card .card-hover-actions {
+        bottom: 6px;
+        left: 6%;
+        width: 88%;
+        height: 34px;
+        transform: translateY(10px);
+        opacity: 0;
+        transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.3s ease;
+    }
+    
+    .similar-card.mobile-active .card-hover-actions {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
 }
 

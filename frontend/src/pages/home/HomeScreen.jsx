@@ -206,13 +206,15 @@ const HistoryCard = ({ item, openWatch, openDetails, onRemove, isEditing }) => {
     );
 };
 
-const MovieCard = ({ item, row, index, openDetails, onAddToList }) => {
+const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemId }) => {
     const type = getMediaType(item);
     const rating = getRating(item);
     const statusLabel = getStatusLabel(item);
+    const isListOpen = activeListItemId === item.id;
     
     const navigate = useNavigate();
     const [isWatched, setIsWatched] = useState(() => getHistory().some(h => h.id === item.id));
+    const [isMobileActive, setIsMobileActive] = useState(false);
 
     const handlePlay = (e) => {
         e.stopPropagation();
@@ -233,12 +235,43 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList }) => {
         }
     };
 
+    useEffect(() => {
+        if (!isListOpen) {
+            setIsMobileActive(false);
+        }
+    }, [isListOpen]);
+
+    useEffect(() => {
+        if (!isMobileActive) return;
+        const handleOutsideClick = (e) => {
+            // If clicking inside the card, let the card handle it
+            if (e.target.closest('.browse-card')) return;
+            setIsMobileActive(false);
+        };
+        document.addEventListener("click", handleOutsideClick);
+        return () => document.removeEventListener("click", handleOutsideClick);
+    }, [isMobileActive]);
+
+    const handleCardClick = (e) => {
+        if (window.innerWidth <= 768) {
+            if (!isMobileActive) {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsMobileActive(true);
+                return;
+            }
+        }
+        openDetails(item);
+    };
+
+    const isCardActive = isMobileActive || isListOpen;
+
     return (
         <button
             type="button"
-            className={`browse-card ${row.topTen ? "top-ten-card" : ""}`}
+            className={`browse-card ${row.topTen ? "top-ten-card" : ""} ${isCardActive ? "mobile-active" : ""}`}
             key={`${row.title}-${item.id}-${type}`}
-            onClick={() => openDetails(item)}
+            onClick={handleCardClick}
         >
             {row.topTen && (
                 <span className="rank-ribbon">
@@ -257,7 +290,19 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList }) => {
                         {statusLabel.text}
                     </span>
                 )}
-                <div className="card-hover-actions">
+                {/* Mobile view info overlay */}
+                <div className="card-mobile-info-container">
+                    <div className="card-mobile-title">{getTitle(item)}</div>
+                    <div className="card-mobile-meta">
+                        {rating && parseFloat(rating) > 0 && <span><span className="rating-mono">{rating}</span> • </span>}
+                        {((item.release_date || item.first_air_date || "").slice(0, 4)) && (
+                            <span>{(item.release_date || item.first_air_date || "").slice(0, 4)} • </span>
+                        )}
+                        <span>{type === "movie" ? "Movie" : "TV Show"}</span>
+                    </div>
+                </div>
+
+                <div className={`card-hover-actions${isCardActive ? ' force-show' : ''}`}>
                     <button 
                         className="card-action-btn hover-play-btn"
                         title="Play"
@@ -282,7 +327,7 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList }) => {
                     <button 
                         className="card-action-btn"
                         title="Add to List"
-                        onClick={(e) => { e.stopPropagation(); if(onAddToList) onAddToList(item); }}
+                        onClick={(e) => { e.stopPropagation(); if(onAddToList) { const rect = e.currentTarget.getBoundingClientRect(); onAddToList({ item, rect }); } }}
                     >
                         <Plus size={16} />
                     </button>
@@ -309,7 +354,7 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList }) => {
     );
 };
 
-const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory, onAddToList }) => {
+const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory, onAddToList, activeListItemId }) => {
     const sliderRef = useRef(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(false);
@@ -389,6 +434,7 @@ const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory, onAddToList })
                                 index={index}
                                 openDetails={openDetails}
                                 onAddToList={onAddToList}
+                                activeListItemId={activeListItemId}
                             />
                         )
                     ))}
@@ -761,13 +807,15 @@ const HomeScreen = () => {
                         openWatch={openWatch}
                         onRemoveHistory={handleRemoveFromHistory}
                         onAddToList={setListModalItem}
+                        activeListItemId={listModalItem?.item?.id ?? listModalItem?.id}
                     />
                 ))}
             </main>
 
             {listModalItem && (
                 <ListModal 
-                    item={listModalItem} 
+                    item={listModalItem.item ?? listModalItem} 
+                    anchorRect={listModalItem.rect}
                     onClose={() => setListModalItem(null)} 
                 />
             )}

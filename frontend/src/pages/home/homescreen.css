@@ -701,11 +701,13 @@
     height: 100%;
     display: block;
     object-fit: cover;
-    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1), filter 0.4s cubic-bezier(0.2, 1, 0.3, 1);
 }
 
-.browse-card:hover img {
+.browse-card:hover img,
+.browse-card:has(.force-show) img {
     transform: scale(1.06); /* Even subtler zoom for premium feel */
+    filter: brightness(0.55); /* Dim the card when hover actions appear */
 }
 
 .card-title {
@@ -1047,7 +1049,7 @@
     }
 
     .browse-row {
-        margin-bottom: 36px;
+        margin-bottom: 16px;
         padding-left: 16px;
     }
 
@@ -1205,7 +1207,7 @@
     line-height: 1.2;
     text-align: center;
     pointer-events: none;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease, opacity 0.25s ease-in-out;
     width: max-content;
     
     /* Curved edges only at top left and right */
@@ -1233,8 +1235,11 @@
     background: #ffffff;
 }
 
-.browse-card:hover .card-status-badge {
-    background-color: #e4e5e7;
+.browse-card:hover .card-status-badge,
+.browse-card.mobile-active .card-status-badge,
+.browse-card:has(.force-show) .card-status-badge {
+    opacity: 0;
+    pointer-events: none;
 }
 
 
@@ -1258,7 +1263,8 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
-.browse-card:hover .card-hover-actions {
+.browse-card:hover .card-hover-actions,
+.card-hover-actions.force-show {
     opacity: 1;
     pointer-events: auto;
 }
@@ -1294,5 +1300,97 @@
 
 .card-action-btn.liked:hover {
     background: rgba(255, 59, 48, 0.15);
+}
+
+/* Card Mobile Info Styling (hidden by default on desktop, shown on mobile) */
+.card-mobile-info-container {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Hide the title & rating below the card on mobile */
+    .browse-card .card-title,
+    .browse-card .card-meta,
+    .card-status-badge {
+        display: none !important;
+    }
+
+    /* Add a low-density gradient overlay inside the card image wrapper on mobile */
+    .card-img-wrapper::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 75%);
+        pointer-events: none;
+        z-index: 2;
+    }
+    
+    /* Position info container inside the card wrapper */
+    .card-mobile-info-container {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        bottom: 8px;
+        left: 10px;
+        right: 10px;
+        z-index: 5;
+        text-align: left;
+        pointer-events: none;
+        transition: transform 0.35s cubic-bezier(0.2, 1, 0.3, 1);
+    }
+    
+    /* Title styling: bold, slightly dim, above metadata */
+    .card-mobile-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffff;
+        opacity: 0.9;
+        line-height: 1.25;
+        margin-bottom: 2px;
+        transition: transform 0.35s cubic-bezier(0.2, 1, 0.3, 1);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Metadata styling: dim, small, below the title */
+    .card-mobile-meta {
+        font-size: 10px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.7);
+        opacity: 0.8;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    
+    /* Smooth sliding animation when active / hover:
+       - Metadata below the title fades out
+       - Title moves up smoothly
+       - Hover action bar appears below the title */
+    .browse-card.mobile-active .card-mobile-meta {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    
+    .browse-card.mobile-active .card-mobile-title {
+        transform: translateY(-16px);
+        opacity: 1;
+    }
+    
+    /* Adjust actions bar for mobile view to sit under the shifted title */
+    .browse-card .card-hover-actions {
+        bottom: 6px;
+        left: 6%;
+        width: 88%;
+        height: 34px;
+        transform: translateY(10px);
+        opacity: 0;
+        transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.3s ease;
+    }
+    
+    .browse-card.mobile-active .card-hover-actions {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
 }
 
