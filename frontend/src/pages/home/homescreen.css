@@ -1386,10 +1386,13 @@
     }
     
     .browse-card.mobile-active .card-mobile-title {
-        transform: translateY(-55px);
         opacity: 1;
         text-align: center;
         text-overflow: clip;
+        white-space: nowrap;
+        overflow: visible;
+        display: inline-block;
+        width: 100%;
         animation: mobile-title-scroll 8s linear infinite alternate;
     }
     
@@ -1418,16 +1421,16 @@
 
 @keyframes mobile-title-scroll {
     0% {
-        text-indent: 0%;
+        transform: translate3d(0, -44px, 0);
     }
     15% {
-        text-indent: 0%;
+        transform: translate3d(0, -44px, 0);
     }
     85% {
-        text-indent: -35%;
+        transform: translate3d(-35%, -44px, 0);
     }
     100% {
-        text-indent: -35%;
+        transform: translate3d(-35%, -44px, 0);
     }
 }
 
