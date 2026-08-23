@@ -488,7 +488,7 @@
 .episodes-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     flex-wrap: wrap;
     gap: 24px;
     padding: 0 4%;
@@ -497,7 +497,11 @@
     z-index: 100;
 }
 
-.episodes-title-group {
+.episodes-header .details-section-title {
+    margin: 0;
+}
+
+.episodes-controls-row {
     display: flex;
     align-items: center;
     gap: 24px;
@@ -507,8 +511,8 @@
     display: none;
 }
 
-.episodes-title-group .details-section-title {
-    margin: 0;
+.similar-nav-arrows {
+    display: none;
 }
 
 /* Custom Season Dropdown */
@@ -1008,6 +1012,8 @@
     text-align: center;
     gap: 12px;
     flex: 0 0 110px; /* Fixed width per cast member in slider */
+    width: 110px;
+    max-width: 110px;
     cursor: pointer;
     background: transparent;
     border: none;
@@ -1063,6 +1069,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
+    line-height: 16px;
+    min-height: 16px;
 }
 
 .cast-character {
@@ -1075,6 +1083,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
+    line-height: 14px;
+    min-height: 14px;
 }
 
 .similar-section {
@@ -1332,6 +1342,8 @@
     }
     .cast-card {
         flex: 0 0 90px;
+        width: 90px;
+        max-width: 90px;
     }
     .cast-img-wrapper {
         width: 80px;
@@ -1408,24 +1420,33 @@
     .similar-section .details-section-title {
         margin-left: 0;
     }
+    .similar-section .section-header-with-arrows {
+        margin-left: 0;
+        margin-right: 16px;
+    }
     .episodes-header {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        gap: 12px;
+        padding-left: 0;
+        padding-right: 16px;
+    }
+    .episodes-controls-row {
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
         width: 100%;
         gap: 16px;
-        padding-left: 0;
-        padding-right: 16px;
-    }
-    .episodes-title-group {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
     }
     .episodes-nav-arrows {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .similar-nav-arrows {
         display: flex;
         align-items: center;
         gap: 8px;

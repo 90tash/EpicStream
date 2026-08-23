@@ -1,6 +1,6 @@
 import { useLocation, useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useRef, Fragment } from "react";
-import { ChevronLeft, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark } from "lucide-react";
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
 import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel } from "../utils/tmdb";
@@ -161,6 +161,7 @@ const TvDetails = () => {
     const seasonRef = useRef(null);
     const castSliderRef = useRef(null);
     const episodeSliderRef = useRef(null);
+    const similarSliderRef = useRef(null);
 
     const scrollCast = (direction) => {
         if (!castSliderRef.current) return;
@@ -175,6 +176,15 @@ const TvDetails = () => {
         if (!episodeSliderRef.current) return;
         const { scrollLeft, clientWidth } = episodeSliderRef.current;
         episodeSliderRef.current.scrollTo({
+            left: direction === "left" ? scrollLeft - clientWidth * 0.75 : scrollLeft + clientWidth * 0.75,
+            behavior: "smooth",
+        });
+    };
+
+    const scrollSimilar = (direction) => {
+        if (!similarSliderRef.current) return;
+        const { scrollLeft, clientWidth } = similarSliderRef.current;
+        similarSliderRef.current.scrollTo({
             left: direction === "left" ? scrollLeft - clientWidth * 0.75 : scrollLeft + clientWidth * 0.75,
             behavior: "smooth",
         });
@@ -548,9 +558,9 @@ const TvDetails = () => {
                 {/* Episodes Section */}
                 <section id="episodes" className="episodes-section">
                     <div className="episodes-header">
-                        <div className="episodes-title-group">
-                            <h2 className="details-section-title">Episodes</h2>
-                            
+                        <h2 className="details-section-title">Episodes</h2>
+                        
+                        <div className="episodes-controls-row">
                             {seasonsList.length > 0 && (
                                 <div className="custom-season-dropdown" ref={seasonRef}>
                                     <button 
@@ -580,26 +590,26 @@ const TvDetails = () => {
                                     )}
                                 </div>
                             )}
-                        </div>
 
-                        {/* Episodes navigation arrows (Visible on mobile view only) */}
-                        <div className="episodes-nav-arrows">
-                            <button 
-                                type="button" 
-                                className="nav-arrow-btn" 
-                                onClick={() => scrollEpisodes("left")}
-                                aria-label="Scroll episodes left"
-                            >
-                                <ChevronLeft size={16} />
-                            </button>
-                            <button 
-                                type="button" 
-                                className="nav-arrow-btn" 
-                                onClick={() => scrollEpisodes("right")}
-                                aria-label="Scroll episodes right"
-                            >
-                                <ChevronRight size={16} />
-                            </button>
+                            {/* Episodes navigation arrows (Visible on mobile view only) */}
+                            <div className="episodes-nav-arrows">
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollEpisodes("left")}
+                                    aria-label="Scroll episodes left"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollEpisodes("right")}
+                                    aria-label="Scroll episodes right"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -727,8 +737,28 @@ const TvDetails = () => {
 
                 {similarTv.length > 0 && (
                     <section className="similar-section">
-                        <h2 id="similar" className="details-section-title">Similar TV Shows</h2>
-                        <div className="similar-grid">
+                        <div className="section-header-with-arrows">
+                            <h2 id="similar" className="details-section-title">Similar TV Shows</h2>
+                            <div className="similar-nav-arrows">
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollSimilar("left")}
+                                    aria-label="Scroll similar shows left"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollSimilar("right")}
+                                    aria-label="Scroll similar shows right"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="similar-grid" ref={similarSliderRef}>
                             {similarTv.map((similar) => (
                                 <SimilarCard 
                                     key={similar.id} 

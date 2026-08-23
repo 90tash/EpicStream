@@ -160,11 +160,21 @@ const MovieDetails = () => {
     const [colLeftArrow, setColLeftArrow] = useState(false);
     const [colRightArrow, setColRightArrow] = useState(false);
     const castSliderRef = useRef(null);
+    const similarSliderRef = useRef(null);
 
     const scrollCast = (direction) => {
         if (!castSliderRef.current) return;
         const { scrollLeft, clientWidth } = castSliderRef.current;
         castSliderRef.current.scrollTo({
+            left: direction === "left" ? scrollLeft - clientWidth * 0.75 : scrollLeft + clientWidth * 0.75,
+            behavior: "smooth",
+        });
+    };
+
+    const scrollSimilar = (direction) => {
+        if (!similarSliderRef.current) return;
+        const { scrollLeft, clientWidth } = similarSliderRef.current;
+        similarSliderRef.current.scrollTo({
             left: direction === "left" ? scrollLeft - clientWidth * 0.75 : scrollLeft + clientWidth * 0.75,
             behavior: "smooth",
         });
@@ -585,8 +595,28 @@ const MovieDetails = () => {
 
                 {similarMovies.length > 0 && (
                     <section className="similar-section">
-                        <h2 id="similar" className="details-section-title">Similar Movies</h2>
-                        <div className="similar-grid">
+                        <div className="section-header-with-arrows">
+                            <h2 id="similar" className="details-section-title">Similar Movies</h2>
+                            <div className="similar-nav-arrows">
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollSimilar("left")}
+                                    aria-label="Scroll similar movies left"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollSimilar("right")}
+                                    aria-label="Scroll similar movies right"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="similar-grid" ref={similarSliderRef}>
                             {similarMovies.map((similar) => (
                                 <SimilarCard 
                                     key={similar.id} 
