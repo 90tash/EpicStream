@@ -137,7 +137,12 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
                 <div className="card-mobile-info-container">
                     <div className="card-mobile-title">{getTitle(item)}</div>
                     <div className="card-mobile-meta">
-                        {typeof item.vote_average === 'number' && item.vote_average > 0 && <span><span className="rating-mono">{item.vote_average.toFixed(1)}</span> • </span>}
+                        {typeof item.vote_average === 'number' && item.vote_average > 0 && (
+                            <span className="mobile-rating-wrapper">
+                                <Star size={10} fill="currentColor" className="mobile-rating-star" />
+                                <span className="rating-mono">{item.vote_average.toFixed(1)}</span> • 
+                            </span>
+                        )}
                         {((item.release_date || item.first_air_date || "").slice(0, 4)) && (
                             <span>{(item.release_date || item.first_air_date || "").slice(0, 4)} • </span>
                         )}
@@ -404,7 +409,13 @@ const TvDetails = () => {
         fetchEpisodes();
     }, [id, selectedSeason]);
 
-    if (!tv) return null;
+    if (!tv) {
+        return (
+            <div className="loading-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#040506' }}>
+                <div className="loader" style={{ width: '40px', height: '40px', border: '3px solid rgba(255, 255, 255, 0.1)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'rotate 1s linear infinite' }} />
+            </div>
+        );
+    }
 
     const title = getTitle(tv);
     const releaseYear = (tv.first_air_date || tv.release_date || "").slice(0, 4);

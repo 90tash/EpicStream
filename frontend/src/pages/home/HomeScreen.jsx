@@ -294,7 +294,12 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemI
                 <div className="card-mobile-info-container">
                     <div className="card-mobile-title">{getTitle(item)}</div>
                     <div className="card-mobile-meta">
-                        {rating && parseFloat(rating) > 0 && <span><span className="rating-mono">{rating}</span> • </span>}
+                        {rating && parseFloat(rating) > 0 && (
+                            <span className="mobile-rating-wrapper">
+                                <Star size={10} fill="currentColor" className="mobile-rating-star" />
+                                <span className="rating-mono">{rating}</span> • 
+                            </span>
+                        )}
                         {((item.release_date || item.first_air_date || "").slice(0, 4)) && (
                             <span>{(item.release_date || item.first_air_date || "").slice(0, 4)} • </span>
                         )}
