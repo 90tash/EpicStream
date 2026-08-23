@@ -892,7 +892,11 @@
     padding: 0;
     cursor: pointer;
     backdrop-filter: blur(12px);
-    transition: all 0.2s ease;
+    transition: all 0.2s ease, transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.back-btn:active {
+    transform: scale(0.92);
 }
 
 .back-btn svg {
