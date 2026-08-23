@@ -159,6 +159,26 @@ const TvDetails = () => {
     }, [showListDropdown]);
 
     const seasonRef = useRef(null);
+    const castSliderRef = useRef(null);
+    const episodeSliderRef = useRef(null);
+
+    const scrollCast = (direction) => {
+        if (!castSliderRef.current) return;
+        const { scrollLeft, clientWidth } = castSliderRef.current;
+        castSliderRef.current.scrollTo({
+            left: direction === "left" ? scrollLeft - clientWidth * 0.75 : scrollLeft + clientWidth * 0.75,
+            behavior: "smooth",
+        });
+    };
+
+    const scrollEpisodes = (direction) => {
+        if (!episodeSliderRef.current) return;
+        const { scrollLeft, clientWidth } = episodeSliderRef.current;
+        episodeSliderRef.current.scrollTo({
+            left: direction === "left" ? scrollLeft - clientWidth * 0.75 : scrollLeft + clientWidth * 0.75,
+            behavior: "smooth",
+        });
+    };
 
     // Episodes & Seasons State
     const [selectedSeason, setSelectedSeason] = useState(null);
@@ -561,9 +581,29 @@ const TvDetails = () => {
                                 </div>
                             )}
                         </div>
+
+                        {/* Episodes navigation arrows (Visible on mobile view only) */}
+                        <div className="episodes-nav-arrows">
+                            <button 
+                                type="button" 
+                                className="nav-arrow-btn" 
+                                onClick={() => scrollEpisodes("left")}
+                                aria-label="Scroll episodes left"
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+                            <button 
+                                type="button" 
+                                className="nav-arrow-btn" 
+                                onClick={() => scrollEpisodes("right")}
+                                aria-label="Scroll episodes right"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="episode-list">
+                    <div className="episode-list" ref={episodeSliderRef}>
                         {isLoadingEpisodes ? (
                             <p style={{ width: '100%', textAlign: 'center', color: 'var(--muted)', padding: '40px 0', flexShrink: 0 }}>Loading episodes...</p>
                         ) : episodes.length > 0 ? (
@@ -639,24 +679,48 @@ const TvDetails = () => {
 
                 {cast.length > 0 && (
                     <>
-                        <h2 className="details-section-title">Cast</h2>
-                        <div className="cast-grid">
-                            {cast.map((person) => (
-                                <div 
-                                    key={person.id} 
-                                    className="cast-card" 
-                                    onClick={() => navigate(`/person/${person.id}`, { state: { person } })}
+                        <div className="section-header-with-arrows">
+                            <h2 className="details-section-title">Cast</h2>
+                            <div className="slider-nav-arrows">
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollCast("left")}
+                                    aria-label="Scroll cast left"
                                 >
-                                    <img
-                                        src={imageUrl(person.profile_path, "w500", "/avatar1.png")}
-                                        alt={person.name}
-                                    />
-                                    <div className="cast-info">
-                                        <span className="cast-name">{person.name}</span>
-                                        <span className="cast-character">{person.character}</span>
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollCast("right")}
+                                    aria-label="Scroll cast right"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="cast-slider-wrapper">
+                            <div className="cast-slider" ref={castSliderRef}>
+                                {cast.map((person) => (
+                                    <div 
+                                        key={person.id} 
+                                        className="cast-card" 
+                                        onClick={() => navigate(`/person/${person.id}`, { state: { person } })}
+                                    >
+                                        <div className="cast-img-wrapper">
+                                            <img
+                                                src={imageUrl(person.profile_path, "w185", "/avatar1.png")}
+                                                alt={person.name}
+                                            />
+                                        </div>
+                                        <div className="cast-info">
+                                            <span className="cast-name">{person.name}</span>
+                                            <span className="cast-character">{person.character}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </>
                 )}

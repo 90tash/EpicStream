@@ -503,6 +503,10 @@
     gap: 24px;
 }
 
+.episodes-nav-arrows {
+    display: none;
+}
+
 .episodes-title-group .details-section-title {
     margin: 0;
 }
@@ -930,81 +934,147 @@
 
 
 /* ==========================================================================
-   CAST GRID
+   CAST SLIDER (Horizontal Scroll + Circular Cards)
    ========================================================================== */
-.cast-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+.section-header-with-arrows {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 48px 4% 20px;
+}
+
+.section-header-with-arrows .details-section-title {
+    margin: 0;
+}
+
+.slider-nav-arrows {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-arrow-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease, transform 100ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.nav-arrow-btn:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-arrow-btn:active {
+    transform: scale(0.9);
+}
+
+.nav-arrow-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.cast-slider-wrapper {
+    position: relative;
     padding: 0 4% 48px;
+    width: 100%;
+}
+
+.cast-slider {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
+.cast-slider::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome/Safari */
 }
 
 .cast-card {
     display: flex;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
     gap: 12px;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
+    flex: 0 0 110px; /* Fixed width per cast member in slider */
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
+    background: transparent;
+    border: none;
+    padding: 0;
 }
 
 .cast-card:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
 }
 
-.cast-card:hover .cast-name {
-    color: var(--accent);
-}
-
-.cast-card img {
-    width: 48px;
-    height: 48px;
+.cast-img-wrapper {
+    width: 100px; /* Enlarged circle width as requested */
+    height: 100px;
     border-radius: 50%;
-    object-fit: cover;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: border-color 0.25s ease;
     flex-shrink: 0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1), border-color 0.3s ease;
 }
 
-.cast-card:hover img {
-    transform: scale(1.06);
-    border-color: rgba(255, 255, 255, 0.4);
+.cast-card:hover .cast-img-wrapper {
+    border-color: #ffffff;
+}
+
+.cast-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.cast-card:hover .cast-img-wrapper img {
+    transform: scale(1.12);
 }
 
 .cast-info {
     display: flex;
     flex-direction: column;
-    gap: 1px;
-    min-width: 0;
+    align-items: center;
+    gap: 3px;
+    width: 100%;
 }
 
 .cast-name {
-    font-size: 14px;
+    font-family: var(--app-font) !important;
+    font-size: 13px;
     font-weight: 600;
     color: #fff;
+    width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: color 0.2s ease;
+    text-align: center;
 }
 
 .cast-character {
-    font-family: var(--app-font) !important;
-    font-size: 13px;
+    font-family: var(--mono-font) !important;
+    font-size: 11px;
     font-weight: 500;
-    color: #64748b;
+    color: var(--text-muted);
+    width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-align: center;
 }
 
 .similar-section {
@@ -1207,7 +1277,8 @@
     }
 
     .details-hero-director {
-        justify-content: center;
+        align-items: center;
+        text-align: center;
     }
 
     .synopsis-container {
@@ -1250,10 +1321,28 @@
 }
 
 @media (max-width: 640px) {
-    .cast-grid { grid-template-columns: 1fr; gap: 12px; }
-    .cast-card { padding: 10px; }
-    .cast-card img { width: 44px; height: 44px; }
-    .cast-name { font-size: 14px; }
+    .section-header-with-arrows {
+        margin: 24px 16px 12px;
+    }
+    .cast-slider-wrapper {
+        padding: 0 16px 24px;
+    }
+    .cast-slider {
+        gap: 16px;
+    }
+    .cast-card {
+        flex: 0 0 90px;
+    }
+    .cast-img-wrapper {
+        width: 80px;
+        height: 80px;
+    }
+    .cast-name {
+        font-size: 12px;
+    }
+    .cast-character {
+        font-size: 10px;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1320,11 +1409,26 @@
         margin-left: 0;
     }
     .episodes-header {
-        flex-direction: column;
-        align-items: flex-start;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
         gap: 16px;
         padding-left: 0;
         padding-right: 16px;
+    }
+    .episodes-title-group {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .episodes-nav-arrows {
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
     .episode-list {
         max-height: none;

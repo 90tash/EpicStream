@@ -159,6 +159,16 @@ const MovieDetails = () => {
     const colSliderRef = useRef(null);
     const [colLeftArrow, setColLeftArrow] = useState(false);
     const [colRightArrow, setColRightArrow] = useState(false);
+    const castSliderRef = useRef(null);
+
+    const scrollCast = (direction) => {
+        if (!castSliderRef.current) return;
+        const { scrollLeft, clientWidth } = castSliderRef.current;
+        castSliderRef.current.scrollTo({
+            left: direction === "left" ? scrollLeft - clientWidth * 0.75 : scrollLeft + clientWidth * 0.75,
+            behavior: "smooth",
+        });
+    };
 
     const updateColArrows = () => {
         if (!colSliderRef.current) return;
@@ -527,24 +537,48 @@ const MovieDetails = () => {
             <main>
                 {cast.length > 0 && (
                     <>
-                        <h2 className="details-section-title">Cast</h2>
-                        <div className="cast-grid">
-                            {cast.map((person) => (
-                                <div 
-                                    key={person.id} 
-                                    className="cast-card" 
-                                    onClick={() => navigate(`/person/${person.id}`, { state: { person } })}
+                        <div className="section-header-with-arrows">
+                            <h2 className="details-section-title">Cast</h2>
+                            <div className="slider-nav-arrows">
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollCast("left")}
+                                    aria-label="Scroll cast left"
                                 >
-                                    <img
-                                        src={imageUrl(person.profile_path, "w500", "/avatar1.png")}
-                                        alt={person.name}
-                                    />
-                                    <div className="cast-info">
-                                        <span className="cast-name">{person.name}</span>
-                                        <span className="cast-character">{person.character}</span>
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="nav-arrow-btn" 
+                                    onClick={() => scrollCast("right")}
+                                    aria-label="Scroll cast right"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="cast-slider-wrapper">
+                            <div className="cast-slider" ref={castSliderRef}>
+                                {cast.map((person) => (
+                                    <div 
+                                        key={person.id} 
+                                        className="cast-card" 
+                                        onClick={() => navigate(`/person/${person.id}`, { state: { person } })}
+                                    >
+                                        <div className="cast-img-wrapper">
+                                            <img
+                                                src={imageUrl(person.profile_path, "w185", "/avatar1.png")}
+                                                alt={person.name}
+                                            />
+                                        </div>
+                                        <div className="cast-info">
+                                            <span className="cast-name">{person.name}</span>
+                                            <span className="cast-character">{person.character}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </>
                 )}
