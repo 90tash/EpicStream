@@ -215,6 +215,7 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemI
     const navigate = useNavigate();
     const [isWatched, setIsWatched] = useState(() => getHistory().some(h => h.id === item.id));
     const [isMobileActive, setIsMobileActive] = useState(false);
+    const cardRef = useRef(null);
 
     const handlePlay = (e) => {
         e.stopPropagation();
@@ -244,8 +245,7 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemI
     useEffect(() => {
         if (!isMobileActive) return;
         const handleOutsideClick = (e) => {
-            // If clicking inside the card, let the card handle it
-            if (e.target.closest('.browse-card')) return;
+            if (cardRef.current && cardRef.current.contains(e.target)) return;
             setIsMobileActive(false);
         };
         document.addEventListener("click", handleOutsideClick);
@@ -269,6 +269,7 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemI
     return (
         <button
             type="button"
+            ref={cardRef}
             className={`browse-card ${row.topTen ? "top-ten-card" : ""} ${isCardActive ? "mobile-active" : ""}`}
             key={`${row.title}-${item.id}-${type}`}
             onClick={handleCardClick}

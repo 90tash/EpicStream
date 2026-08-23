@@ -36,6 +36,7 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
     const [isWatched, setIsWatched] = useState(() => getHistory().some(h => h.id === item.id));
     const isListOpen = activeListItemId === item.id;
     const [isMobileActive, setIsMobileActive] = useState(false);
+    const cardRef = useRef(null);
 
     useEffect(() => {
         const fetchTitledBanner = async () => {
@@ -84,7 +85,7 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
     useEffect(() => {
         if (!isMobileActive) return;
         const handleOutsideClick = (e) => {
-            if (e.target.closest('.similar-card')) return;
+            if (cardRef.current && cardRef.current.contains(e.target)) return;
             setIsMobileActive(false);
         };
         document.addEventListener("click", handleOutsideClick);
@@ -108,6 +109,7 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
 
     return (
         <div 
+            ref={cardRef}
             className={`similar-card ${isCardActive ? "mobile-active" : ""}`} 
             onClick={handleCardClick}
         >
