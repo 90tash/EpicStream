@@ -2218,13 +2218,18 @@
     
     /* Adjust actions bar for mobile view to sit under the shifted title */
     .similar-card .card-hover-actions {
-        bottom: 6px;
-        left: 6%;
-        width: 88%;
-        height: 34px;
+        bottom: 10px;
+        left: 8%;
+        width: 84%;
+        height: 30px;
         transform: translateY(10px);
         opacity: 0;
         transition: transform 0.3s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.3s ease;
+    }
+    
+    .similar-card .card-hover-actions .card-action-btn svg {
+        width: 14px;
+        height: 14px;
     }
     
     .similar-card.mobile-active .card-hover-actions {
