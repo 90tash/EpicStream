@@ -54,38 +54,20 @@
 }
 
 .people-name {
-    font-size: clamp(32px, 4vw, 52px);
-    font-weight: 800;
+    font-size: clamp(28px, 3.8vw, 44px);
+    font-weight: 650;
     margin: 0;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.02em;
     color: #fff;
-    line-height: 1.1;
+    line-height: 1.15;
     word-break: break-word;
 }
 
-.people-dept-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.people-dept-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 12px;
-    background: rgba(255, 38, 51, 0.12);
-    color: var(--accent);
-    border: 1px solid rgba(255, 38, 51, 0.25);
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-}
-
 .people-info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px 24px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px 28px;
     margin-top: 4px;
 }
 
@@ -97,10 +79,10 @@
 
 .info-label {
     font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-weight: 600;
     color: #64748b;
+    text-transform: capitalize;
+    letter-spacing: normal;
 }
 
 .info-value {
@@ -114,6 +96,7 @@
 .info-age {
     color: #94a3b8;
     font-size: 13px;
+    display: inline;
 }
 
 /* ==========================================================================
@@ -364,23 +347,27 @@
     }
 
     .people-name {
-        font-size: clamp(20px, 5vw, 28px);
-        line-height: 1.15;
-    }
-
-    .people-dept-badge {
-        font-size: 11px;
-        padding: 2px 8px;
+        font-size: clamp(19px, 4.8vw, 25px);
+        font-weight: 650;
+        line-height: 1.2;
     }
 
     .people-info-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 6px 12px;
-        margin-top: 2px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 14px;
+        margin-top: 4px;
+        width: 100%;
+    }
+
+    .people-info-item {
+        flex: 1;
+        min-width: 0;
     }
 
     .info-label {
-        font-size: 10px;
+        font-size: 11px;
     }
 
     .info-value {
@@ -389,8 +376,8 @@
     }
 
     .info-age {
-        display: block;
         font-size: 11px;
+        display: inline;
     }
 
     .biography {
@@ -447,8 +434,7 @@
 
 @media (max-width: 480px) {
     .people-info-grid {
-        grid-template-columns: 1fr;
-        gap: 6px;
+        gap: 10px;
     }
 
     .credits-grid {

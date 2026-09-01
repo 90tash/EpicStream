@@ -127,12 +127,6 @@ const PeopleDetails = () => {
 
           <div className="people-info-header">
             <h1 className="people-name">{details.name}</h1>
-            
-            {details.known_for_department && (
-              <div className="people-dept-wrapper">
-                <span className="people-dept-badge">{details.known_for_department}</span>
-              </div>
-            )}
 
             {(details.birthday || details.place_of_birth) && (
               <div className="people-info-grid">
@@ -142,7 +136,7 @@ const PeopleDetails = () => {
                     <span className="info-value">
                       {birthYear}
                       {age !== null && (
-                        <span className="info-age"> ({age} years old)</span>
+                        <span className="info-age"> ({age} yrs)</span>
                       )}
                     </span>
                   </div>
