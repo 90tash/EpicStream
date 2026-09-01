@@ -38,9 +38,9 @@
     inset: 0;
     background:
         /* Left side shadow for text readability */
-        linear-gradient(90deg, rgba(5, 6, 7, 0.9) 0%, rgba(5, 6, 7, 0.6) 20%, transparent 50%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 20%, transparent 50%),
         /* Bottom fade to black */
-        linear-gradient(180deg, transparent 0%, transparent 30%, rgba(5, 6, 7, 0.3) 60%, #050607 100%);
+        linear-gradient(180deg, transparent 0%, transparent 30%, rgba(0, 0, 0, 0.3) 60%, #000000 100%);
     z-index: 1;
 }
 
@@ -895,19 +895,6 @@
         min-height: 520px;
         height: 85vh; /* Taller on mobile for better portrait impact */
         flex-direction: column;
-        justify-content: flex-end;
-        align-items: center;
-        padding-bottom: 40px;
-    }
-
-    .browse-hero-shade {
-        background:
-            linear-gradient(180deg, rgba(5, 6, 7, 0.4) 0%, rgba(5, 6, 7, 0.6) 40%, #050607 95%);
-    }
-
-    .browse-hero-content {
-        width: 100%;
-        margin-left: 0;
         margin-right: 0;
         padding: 0 24px;
         box-sizing: border-box;

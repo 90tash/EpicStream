@@ -139,7 +139,7 @@ export const ACTIVE_PROVIDER = "zxc"; // Option 1: Titan — zxcstream.xyz (Defa
 // export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
 
 export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIVE_PROVIDER, progress = 0, nxshaSettings = {}, anilistId = null) => {
-    const color = "ff2633"; // Project accent color
+    const color = "ffffff"; // Project accent color
     const commonParams = `overlay=true&color=${color}`;
     
     switch (provider) {
@@ -152,7 +152,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
                 url = `${baseUrl}/embed/tv/${id}/${season}/${episode}`;
             }
             const params = [
-                "accent=ff2633",
+                "accent=ffffff",
                 "cast=hide",
                 "sub=English",
                 "autoPlay=true"
@@ -227,7 +227,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://viduki.net/2/tv/${id}/${season}/${episode}?color=${color}`;
             
         case "vidup": {
-            const params = ["autoPlay=true", "theme=ff2633"];
+            const params = ["autoPlay=true", "theme=ffffff"];
             if (progress > 0) {
                 params.push(`startAt=${Math.round(progress)}`);
             }
@@ -239,7 +239,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
         }
 
         case "vidcore": {
-            const params = ["autoPlay=true", "theme=ff2633"];
+            const params = ["autoPlay=true", "theme=ffffff"];
             if (progress > 0) {
                 params.push(`startAt=${Math.round(progress)}`);
             }
@@ -263,7 +263,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
         }
             
         case "mapple": {
-            const theme = "ff2633"; // Project accent color
+            const theme = "ffffff"; // Project accent color
             if (type === "movie") {
                 return `https://mapple.uk/watch/movie/${id}?autoPlay=true&theme=${theme}&title=true&poster=true`;
             }
@@ -271,7 +271,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
         }
             
         case "vidfast": {
-            const theme = "ff2633"; // Project accent color
+            const theme = "ffffff"; // Project accent color
             if (type === "movie") {
                 return `https://vidfast.vc/movie/${id}?autoPlay=true&theme=${theme}`;
             }
@@ -279,7 +279,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
         }
             
         case "zxc": {
-            const themeColor = "ff2633"; // Project accent color
+            const themeColor = "ffffff"; // Project accent color
             const params = `color=${themeColor}&autoplay=true`;
             if (type === "movie") {
                 return `https://zxcstream.xyz/player/movie/${id}?${params}`;
@@ -288,7 +288,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
         }
             
         case "vidlove": {
-            const themeColor = "ff2633"; // Project accent color
+            const themeColor = "ffffff"; // Project accent color
             const params = `primarycolor=${themeColor}&iconcolor=ffffff&autoplay=true&poster=true&chromecast=true&setting=true&pip=true&servericon=true`;
             if (type === "movie") {
                 return `https://player.vidlove.cc/embed/movie/${id}?${params}`;
@@ -309,8 +309,8 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
         }
             
         case "cinezo": {
-            const primaryColor = "ff2633"; // Vibrant red accent
-            const secondaryColor = "c90713"; // Dark red
+            const primaryColor = "ffffff"; // Crisp white accent
+            const secondaryColor = "8a8e98"; // Muted grey
             const common = `primarycolor=${primaryColor}&secondarycolor=${secondaryColor}&iconcolor=ffffff&autoplay=true&poster=true&chromecast=true&servericon=true&setting=true&pip=true`;
             if (type === "movie") {
                 return `https://player.cinezo.live/embed/movie/${id}?${common}`;
@@ -320,9 +320,9 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
 
             
         case "vidlink": {
-            const primaryColor = "ff2633"; // Vibrant red
-            const secondaryColor = "c90713"; // Dark red
-            const iconColor = "f6f7fb"; // Light grey icon color matching app text
+            const primaryColor = "ffffff"; // White accent
+            const secondaryColor = "8a8e98"; // Muted grey
+            const iconColor = "ffffff"; // White icon color matching app
             const params = `primaryColor=${primaryColor}&secondaryColor=${secondaryColor}&iconColor=${iconColor}&nextbutton=true&autoplay=true`;
             
             if (type === "movie") {
@@ -332,7 +332,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
         }
             
         case "vidking": {
-            const themeColor = "ff2633";
+            const themeColor = "ffffff";
             const common = `color=${themeColor}&autoPlay=true`;
             const progressParam = progress > 0 ? `&progress=${progress}` : "";
             
@@ -353,7 +353,7 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
 export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
     switch (ACTIVE_PROVIDER) {
         case "zxc": {
-            const params = `color=ff2633&autoplay=true`;
+            const params = `color=ffffff&autoplay=true`;
             return type === "movie"
                 ? `https://zxcstream.xyz/player/movie/${animeId}?${params}`
                 : `https://zxcstream.xyz/player/tv/${animeId}/1/${episode}?${params}`;

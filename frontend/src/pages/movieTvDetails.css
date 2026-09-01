@@ -17,7 +17,7 @@
     /* Removed align-items: center to anchor content to the top padding */
     padding-top: clamp(280px, 35vh, 450px); /* This fixed padding now acts as the anchor */
     padding-bottom: 80px; 
-    background: #050607;
+    background: #000000;
 }
 
 .details-hero-image-wrapper {
@@ -74,7 +74,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, rgba(5, 6, 7, 0) 0px, rgba(5, 6, 7, 0) 30vh, rgba(5, 6, 7, 0.3) 48vh, rgba(5, 6, 7, 0.8) 65vh, #050607 78vh, #050607 100%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 30vh, rgba(0, 0, 0, 0.3) 48vh, rgba(0, 0, 0, 0.8) 65vh, #000000 78vh, #000000 100%);
     z-index: 1;
     pointer-events: none;
     opacity: 1; /* Keep fully opaque to guarantee the bottom of the image is masked instantly on load */
@@ -852,7 +852,6 @@
     font-size: 11.5px;
     font-weight: 500;
     color: var(--text-muted);
-    font-family: var(--mono-font) !important;
 }
 
 .episode-meta-row .dot {
@@ -860,10 +859,21 @@
     background-color: var(--text-dim);
 }
 
-.episode-runtime {
+.episode-meta-row .episode-runtime,
+.episode-meta-row .episode-air-date {
     font-size: 11.5px;
     font-weight: 500;
+    font-family: var(--app-font);
     color: var(--text-muted);
+    line-height: 1;
+    letter-spacing: 0.01em;
+    opacity: 1;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    height: auto;
+    margin: 0;
     flex-shrink: 0;
 }
 
@@ -993,12 +1003,13 @@
 
 .cast-slider {
     display: flex;
-    gap: 20px;
+    gap: 14px;
     overflow-x: auto;
     scroll-behavior: smooth;
     scrollbar-width: none; /* Hide scrollbar for Firefox */
     -webkit-overflow-scrolling: touch;
     width: 100%;
+    scroll-snap-type: x mandatory;
 }
 
 .cast-slider::-webkit-scrollbar {
@@ -1010,14 +1021,17 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 12px;
-    flex: 0 0 110px; /* Fixed width per cast member in slider */
-    width: 110px;
-    max-width: 110px;
+    gap: 10px;
+    /* Exactly 9 items across desktop width with 8 gaps of 14px */
+    flex: 0 0 calc((100% - (8 * 14px)) / 9);
+    width: calc((100% - (8 * 14px)) / 9);
+    max-width: calc((100% - (8 * 14px)) / 9);
+    scroll-snap-align: start;
     cursor: pointer;
     background: transparent;
     border: none;
     padding: 0;
+    min-width: 0;
 }
 
 .cast-card:hover {
@@ -1027,8 +1041,8 @@
 }
 
 .cast-img-wrapper {
-    width: 100px; /* Enlarged circle width as requested */
-    height: 100px;
+    width: clamp(68px, 7.2vw, 92px);
+    height: clamp(68px, 7.2vw, 92px);
     border-radius: 50%;
     overflow: hidden;
     border: 2px solid rgba(255, 255, 255, 0.1);
@@ -1327,9 +1341,9 @@
         height: 100%; /* Matches image wrapper on mobile to ensure perfect blend */
         background: 
             /* Fixed vh transition stops so the fade is locked relative to the screen */
-            linear-gradient(180deg, rgba(5, 6, 7, 0) 0px, rgba(5, 6, 7, 0) 40vh, #050607 72vh, #050607 100%),
+            linear-gradient(180deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 40vh, #000000 72vh, #000000 100%),
             /* Slightly denser overall dark tint */
-            linear-gradient(0deg, rgba(5, 6, 7, 0.23), rgba(5, 6, 7, 0.23));
+            linear-gradient(0deg, rgba(0, 0, 0, 0.23), rgba(0, 0, 0, 0.23));
     }
 }
 
@@ -1341,19 +1355,23 @@
         padding: 0 16px 24px;
     }
     .cast-slider {
-        gap: 16px;
+        gap: 10px;
+        scroll-snap-type: x mandatory;
     }
     .cast-card {
-        flex: 0 0 90px;
-        width: 90px;
-        max-width: 90px;
+        /* Exactly 3 items across mobile screen with 2 gaps of 10px */
+        flex: 0 0 calc((100% - 20px) / 3);
+        width: calc((100% - 20px) / 3);
+        max-width: calc((100% - 20px) / 3);
+        scroll-snap-align: start;
+        gap: 8px;
     }
     .cast-img-wrapper {
-        width: 80px;
-        height: 80px;
+        width: clamp(64px, 20vw, 84px);
+        height: clamp(64px, 20vw, 84px);
     }
     .cast-name {
-        font-size: 12px;
+        font-size: 11.5px;
     }
     .cast-character {
         font-size: 10px;
@@ -1525,14 +1543,32 @@
         line-height: 1.3;
         flex: none;
     }
-    .episode-runtime {
+    .episode-meta-row {
+        display: flex;
+        align-items: center;
+        margin-top: 2px;
+        margin-bottom: 4px;
+    }
+    .episode-meta-row .episode-runtime,
+    .episode-meta-row .episode-air-date {
         font-size: 11px;
-        color: #64748b;
+        font-weight: 500;
+        font-family: var(--app-font);
+        color: #94a3b8;
+        line-height: 1;
+        letter-spacing: 0.01em;
+        opacity: 1;
+        display: inline-flex;
+        align-items: center;
+        vertical-align: middle;
         white-space: nowrap;
-        display: block;
-        height: 16px;
-        line-height: 16px;
+        height: auto;
         margin: 0;
+    }
+    .episode-meta-row .dot {
+        margin: 0 6px;
+        background-color: #64748b;
+        opacity: 0.8;
     }
     .episode-overview {
         font-size: 12px;
@@ -2259,6 +2295,228 @@
         opacity: 1;
         transform: translateY(0);
         pointer-events: auto;
+    }
+}
+
+/* ==========================================================================
+   WATCH TRAILER SECTION & CARDS
+   ========================================================================== */
+.details-trailer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.details-trailer-heading {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.details-trailer-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
+}
+
+.trailer-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    text-decoration: none;
+    color: inherit;
+    min-width: 200px;
+    max-width: 280px;
+    flex: 1 1 200px;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.trailer-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.18);
+    transform: translateY(-2px);
+}
+
+.trailer-card:active {
+    transform: scale(0.98);
+}
+
+.trailer-card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.trailer-provider-icon-box {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 0, 0, 0.08);
+    border: 1px solid rgba(255, 0, 0, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.trailer-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.trailer-provider-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #f1f5f9;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.trailer-card-availability {
+    font-size: 11px;
+    color: #22c55e;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.trailer-card-arrow {
+    color: #64748b;
+    flex-shrink: 0;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.trailer-card:hover .trailer-card-arrow {
+    color: #ffffff;
+    transform: translate(2px, -2px);
+}
+
+/* ==========================================================================
+   TRAILER MODAL & VIDEO PLAYER
+   ========================================================================== */
+.trailer-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: trailerFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes trailerFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.trailer-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.95);
+    animation: trailerScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes trailerScaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.trailer-modal-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+}
+
+.trailer-modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.08);
+}
+
+.trailer-modal-close-btn:active {
+    transform: scale(0.92);
+}
+
+.trailer-video-responsive {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    background: #000000;
+}
+
+.trailer-video-responsive iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+@media (max-width: 768px) {
+    .trailer-modal-overlay {
+        padding: 12px;
+    }
+    .trailer-card {
+        min-width: 100%;
+        max-width: 100%;
+    }
+    .trailer-modal-close-btn {
+        top: 10px;
+        right: 10px;
+        width: 32px;
+        height: 32px;
     }
 }
 

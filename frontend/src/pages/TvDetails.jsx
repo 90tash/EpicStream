@@ -1,6 +1,4 @@
-import { useLocation, useParams, useNavigate, Link } from "react-router-dom";
-import { useEffect, useState, useRef, Fragment } from "react";
-import { ChevronLeft, ChevronRight, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark, Heart, Play, Eye, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark, Heart, Play, Eye, Info, ArrowUpRight } from "lucide-react";
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
 import ListModal from "../components/ListModal";
@@ -216,6 +214,25 @@ const TvDetails = () => {
     const [logoFetched, setLogoFetched] = useState(false);
     const [showPlayWarning, setShowPlayWarning] = useState(false);
     const [listModalItem, setListModalItem] = useState(null);
+    const [trailers, setTrailers] = useState([]);
+    const [selectedTrailer, setSelectedTrailer] = useState(null);
+
+    useEffect(() => {
+        if (selectedTrailer) {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = "hidden";
+            const handleKeyDown = (e) => {
+                if (e.key === "Escape") {
+                    setSelectedTrailer(null);
+                }
+            };
+            window.addEventListener("keydown", handleKeyDown);
+            return () => {
+                document.body.style.overflow = originalOverflow;
+                window.removeEventListener("keydown", handleKeyDown);
+            };
+        }
+    }, [selectedTrailer]);
 
     const { toggleItem, isItemInList } = useWatchlistStore();
     const { customLists, toggleItemInList, getListsForItem, createList } = useCustomListsStore();
@@ -270,7 +287,7 @@ const TvDetails = () => {
         if (!castSliderRef.current) return;
         const { scrollLeft, clientWidth } = castSliderRef.current;
         castSliderRef.current.scrollTo({
-            left: direction === "left" ? scrollLeft - clientWidth * 0.75 : scrollLeft + clientWidth * 0.75,
+            left: direction === "left" ? scrollLeft - clientWidth : scrollLeft + clientWidth,
             behavior: "smooth",
         });
     };
@@ -375,10 +392,13 @@ const TvDetails = () => {
                     setSelectedSeason(firstSeason.season_number);
                 }
 
-                // Fetch other secondary data (aggregate credits across all seasons, recommendations)
-                const [castData, recsData] = await Promise.all([
-                    tmdbFetch(`/tv/${id}/aggregate_credits`).catch(() => tmdbFetch(`/tv/${id}/credits`)),
-                    tmdbGetRecommendations("tv", id)
+                // Fetch other secondary data (aggregate credits across all seasons, recommendations, videos)
+                const [castData, recsData, videosData] = await Promise.all([
+                    tmdbFetch(`/tv/${id}/aggregate_credits`)
+                        .catch(() => tmdbFetch(`/tv/${id}/credits`))
+                        .catch(() => ({ cast: [], crew: [] })),
+                    tmdbGetRecommendations("tv", id).catch(() => []),
+                    tmdbFetch(`/tv/${id}/videos`).catch(() => ({ results: [] }))
                 ]);
                 
                 const rawCast = castData?.cast || [];
@@ -386,9 +406,21 @@ const TvDetails = () => {
                     ...person,
                     character: person.character || (person.roles && person.roles.length > 0 ? person.roles.map(r => r.character).filter(Boolean).join(" / ") : "")
                 }));
-                setCast(normalizedCast.slice(0, 15));
-                const prioritizedRecs = prioritizeSimilarContent(fullTvData, recsData);
-                setSimilarTv(prioritizedRecs.slice(0, 10));
+                setCast(normalizedCast.slice(0, 36));
+                const prioritizedRecs = prioritizeSimilarContent(fullTvData, recsData || []);
+                setSimilarTv((prioritizedRecs || []).slice(0, 10));
+
+                const ytTrailers = (videosData?.results || []).filter(
+                    v => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser")
+                );
+                ytTrailers.sort((a, b) => {
+                    if (a.official && !b.official) return -1;
+                    if (!a.official && b.official) return 1;
+                    if (a.type === "Trailer" && b.type !== "Trailer") return -1;
+                    if (a.type !== "Trailer" && b.type === "Trailer") return 1;
+                    return 0;
+                });
+                setTrailers(ytTrailers.slice(0, 4));
             } catch (error) {
                 console.error("Error fetching TV data:", error);
                 setLogoFetched(true);
@@ -417,7 +449,7 @@ const TvDetails = () => {
 
     if (!tv) {
         return (
-            <div className="loading-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#040506' }}>
+            <div className="loading-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000000' }}>
                 <div className="loader" style={{ width: '40px', height: '40px', border: '3px solid rgba(255, 255, 255, 0.1)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'rotate 1s linear infinite' }} />
             </div>
         );
@@ -628,6 +660,38 @@ const TvDetails = () => {
                                             {showFullOverview ? "Read Less" : "Read More"}
                                         </button>
                                     )}
+                                </div>
+                            )}
+
+                            {trailers.length > 0 && (
+                                <div className="details-trailer-section">
+                                    <h3 className="details-trailer-heading">Watch Trailer</h3>
+                                    <div className="details-trailer-cards">
+                                        {trailers.map((trailer) => (
+                                            <div 
+                                                key={trailer.id || trailer.key}
+                                                className="trailer-card"
+                                                onClick={() => setSelectedTrailer(trailer)}
+                                                role="button"
+                                                tabIndex={0}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedTrailer(trailer); }}
+                                                aria-label={`Watch ${trailer.name || 'trailer'} on YouTube`}
+                                            >
+                                                <div className="trailer-card-left">
+                                                    <div className="trailer-provider-icon-box">
+                                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="#FF0000">
+                                                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                                        </svg>
+                                                    </div>
+                                                    <div className="trailer-card-info">
+                                                        <span className="trailer-provider-name">YouTube</span>
+                                                        <span className="trailer-card-availability">Free</span>
+                                                    </div>
+                                                </div>
+                                                <ArrowUpRight size={17} className="trailer-card-arrow" />
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -999,6 +1063,35 @@ const TvDetails = () => {
                     anchorRect={listModalItem.rect}
                     onClose={() => setListModalItem(null)} 
                 />
+            )}
+
+            {selectedTrailer && (
+                <div 
+                    className="trailer-modal-overlay" 
+                    onClick={() => setSelectedTrailer(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Trailer Video Modal"
+                >
+                    <div className="trailer-modal-content" onClick={(e) => e.stopPropagation()}>
+                        <button 
+                            type="button" 
+                            className="trailer-modal-close-btn" 
+                            onClick={() => setSelectedTrailer(null)}
+                            aria-label="Close trailer modal"
+                        >
+                            <X size={18} />
+                        </button>
+                        <div className="trailer-video-responsive">
+                            <iframe
+                                src={`https://www.youtube-nocookie.com/embed/${selectedTrailer.key}?autoplay=1&rel=0`}
+                                title={selectedTrailer.name || "Trailer"}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

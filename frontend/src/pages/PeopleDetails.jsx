@@ -232,6 +232,11 @@ const PeopleDetails = () => {
                 </div>
               ))}
           </div>
+
+          <div className="filmography-end-separator">
+            <div className="filmography-end-line" />
+            <span className="filmography-end-text">End of Filmography</span>
+          </div>
         </section>
       </main>
     </div>
