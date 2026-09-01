@@ -1,3 +1,5 @@
+import { useLocation, useParams, useNavigate, Link } from "react-router-dom";
+import { useEffect, useState, useRef, Fragment } from "react";
 import { ChevronLeft, ChevronRight, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark, Heart, Play, Eye, Info, ArrowUpRight } from "lucide-react";
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
@@ -411,16 +413,22 @@ const TvDetails = () => {
                 setSimilarTv((prioritizedRecs || []).slice(0, 10));
 
                 const ytTrailers = (videosData?.results || []).filter(
-                    v => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser")
+                    v => v.site === "YouTube" && v.key && (v.type === "Trailer" || v.type === "Teaser")
                 );
                 ytTrailers.sort((a, b) => {
-                    if (a.official && !b.official) return -1;
-                    if (!a.official && b.official) return 1;
-                    if (a.type === "Trailer" && b.type !== "Trailer") return -1;
-                    if (a.type !== "Trailer" && b.type === "Trailer") return 1;
-                    return 0;
+                    const aIsTrailer = a.type === "Trailer" ? 1 : 0;
+                    const bIsTrailer = b.type === "Trailer" ? 1 : 0;
+                    if (aIsTrailer !== bIsTrailer) return bIsTrailer - aIsTrailer;
+
+                    const aOfficial = a.official ? 1 : 0;
+                    const bOfficial = b.official ? 1 : 0;
+                    if (aOfficial !== bOfficial) return bOfficial - aOfficial;
+
+                    const dateA = new Date(a.published_at || 0).getTime();
+                    const dateB = new Date(b.published_at || 0).getTime();
+                    return dateB - dateA;
                 });
-                setTrailers(ytTrailers.slice(0, 4));
+                setTrailers(ytTrailers.slice(0, 1));
             } catch (error) {
                 console.error("Error fetching TV data:", error);
                 setLogoFetched(true);
@@ -662,9 +670,8 @@ const TvDetails = () => {
                                     )}
                                 </div>
                             )}
-
                             {trailers.length > 0 && (
-                                <div className="details-trailer-section">
+                                <div className="details-trailer-section trailer-desktop-placement">
                                     <h3 className="details-trailer-heading">Watch Trailer</h3>
                                     <div className="details-trailer-cards">
                                         {trailers.map((trailer) => (
@@ -679,8 +686,9 @@ const TvDetails = () => {
                                             >
                                                 <div className="trailer-card-left">
                                                     <div className="trailer-provider-icon-box">
-                                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="#FF0000">
-                                                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                                        <svg viewBox="0 0 24 24" width="22" height="22">
+                                                            <path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/>
+                                                            <polygon fill="#FFFFFF" points="9.545,8.432 9.545,15.568 15.818,12"/>
                                                         </svg>
                                                     </div>
                                                     <div className="trailer-card-info">
@@ -729,6 +737,39 @@ const TvDetails = () => {
                             <span className="side-bar-value">{tv.number_of_episodes || "N/A"}</span>
                         </div>
                     </div>
+
+                    {trailers.length > 0 && (
+                        <div className="details-trailer-section trailer-mobile-placement">
+                            <h3 className="details-trailer-heading">Watch Trailer</h3>
+                            <div className="details-trailer-cards">
+                                {trailers.map((trailer) => (
+                                    <div 
+                                        key={trailer.id || trailer.key}
+                                        className="trailer-card"
+                                        onClick={() => setSelectedTrailer(trailer)}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedTrailer(trailer); }}
+                                        aria-label={`Watch ${trailer.name || 'trailer'} on YouTube`}
+                                    >
+                                        <div className="trailer-card-left">
+                                            <div className="trailer-provider-icon-box">
+                                                <svg viewBox="0 0 24 24" width="22" height="22">
+                                                    <path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/>
+                                                    <polygon fill="#FFFFFF" points="9.545,8.432 9.545,15.568 15.818,12"/>
+                                                </svg>
+                                            </div>
+                                            <div className="trailer-card-info">
+                                                <span className="trailer-provider-name">YouTube</span>
+                                                <span className="trailer-card-availability">Free</span>
+                                            </div>
+                                        </div>
+                                        <ArrowUpRight size={17} className="trailer-card-arrow" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -1073,22 +1114,26 @@ const TvDetails = () => {
                     aria-modal="true"
                     aria-label="Trailer Video Modal"
                 >
-                    <div className="trailer-modal-content" onClick={(e) => e.stopPropagation()}>
-                        <button 
-                            type="button" 
-                            className="trailer-modal-close-btn" 
-                            onClick={() => setSelectedTrailer(null)}
-                            aria-label="Close trailer modal"
-                        >
-                            <X size={18} />
-                        </button>
-                        <div className="trailer-video-responsive">
-                            <iframe
-                                src={`https://www.youtube-nocookie.com/embed/${selectedTrailer.key}?autoplay=1&rel=0`}
-                                title={selectedTrailer.name || "Trailer"}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            />
+                    <div className="trailer-modal-container" onClick={(e) => e.stopPropagation()}>
+                        <div className="trailer-modal-header">
+                            <button 
+                                type="button" 
+                                className="trailer-modal-close-btn" 
+                                onClick={() => setSelectedTrailer(null)}
+                                aria-label="Close trailer modal"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="trailer-modal-content">
+                            <div className="trailer-video-responsive">
+                                <iframe
+                                    src={`https://www.youtube-nocookie.com/embed/${selectedTrailer.key}?autoplay=1&rel=0`}
+                                    title={selectedTrailer.name || "Trailer"}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
