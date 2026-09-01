@@ -104,36 +104,10 @@ const PeopleDetails = () => {
     navigate(`/${type}/${movie.id}`, { state: { movie } });
   };
 
-  const renderMetadata = (isMobile) => {
-    const parts = [];
-    if (details.known_for_department) {
-      parts.push(details.known_for_department);
-    }
-    if (details.birthday) {
-      const birthYear = new Date(details.birthday).getFullYear();
-      const age = new Date().getFullYear() - birthYear;
-      parts.push(`${birthYear} (${age} years old)`);
-    }
-    if (details.place_of_birth) {
-      parts.push(details.place_of_birth);
-    }
-    
-    if (parts.length === 0) return null;
-
-    return (
-      <div className={`people-metadata ${isMobile ? 'mobile' : 'desktop'}`}>
-        {parts.map((part, index) => (
-          <span key={index} className="metadata-item">
-            {part}
-            {index < parts.length - 1 && <span className="bullet"> • </span>}
-          </span>
-        ))}
-      </div>
-    );
-  };
-
-  if (isLoading) return <div className="people-details-page"><p style={{textAlign:'center', padding:'100px'}}>Loading...</p></div>;
-  if (!details) return null;
+  const birthYear = details.birthday ? new Date(details.birthday).getFullYear() : null;
+  const currentYear = new Date().getFullYear();
+  const deathYear = details.deathday ? new Date(details.deathday).getFullYear() : null;
+  const age = birthYear ? (deathYear ? deathYear - birthYear : currentYear - birthYear) : null;
 
   return (
     <div className="people-details-page">
@@ -142,43 +116,70 @@ const PeopleDetails = () => {
       </button>
       
       <main className="people-container">
-        <div className="people-top-section">
-          <aside className="people-sidebar">
+        <div className="people-profile-section">
+          <div className="people-profile-photo-wrapper">
             <img
               src={imageUrl(details.profile_path, "h632", "/avatar1.png")}
               alt={details.name}
+              className="people-profile-img"
             />
-            <h1 className="people-name-mobile">{details.name}</h1>
-            {renderMetadata(true)}
-          </aside>
+          </div>
 
-          <section className="people-main">
-            <h1 className="people-name-desktop">{details.name}</h1>
-            {renderMetadata(false)}
+          <div className="people-info-header">
+            <h1 className="people-name">{details.name}</h1>
             
-            <div className="biography">
-              {details.biography ? (
-                <div className="biography-container">
-                  <p className="people-biography-text">
-                    {showFullBiography || details.biography.length <= 400
-                      ? details.biography
-                      : `${details.biography.slice(0, 400)}...`}
-                  </p>
-                  {details.biography.length > 400 && (
-                    <button 
-                      type="button"
-                      className="read-more-btn"
-                      onClick={() => setShowFullBiography(!showFullBiography)}
-                    >
-                      {showFullBiography ? "Read Less" : "Read More"}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <p className="people-biography-text">We don't have a biography for {details.name}.</p>
-              )}
-            </div>
-          </section>
+            {details.known_for_department && (
+              <div className="people-dept-wrapper">
+                <span className="people-dept-badge">{details.known_for_department}</span>
+              </div>
+            )}
+
+            {(details.birthday || details.place_of_birth) && (
+              <div className="people-info-grid">
+                {details.birthday && (
+                  <div className="people-info-item">
+                    <span className="info-label">Born</span>
+                    <span className="info-value">
+                      {birthYear}
+                      {age !== null && (
+                        <span className="info-age"> ({age} years old)</span>
+                      )}
+                    </span>
+                  </div>
+                )}
+                {details.place_of_birth && (
+                  <div className="people-info-item">
+                    <span className="info-label">Birthplace</span>
+                    <span className="info-value">{details.place_of_birth}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="biography">
+            <h2 className="biography-title">Biography</h2>
+            {details.biography ? (
+              <div className="biography-container">
+                <p className="people-biography-text">
+                  {showFullBiography || details.biography.length <= 400
+                    ? details.biography
+                    : `${details.biography.slice(0, 400)}...`}
+                </p>
+                {details.biography.length > 400 && (
+                  <button 
+                    type="button"
+                    className="read-more-btn"
+                    onClick={() => setShowFullBiography(!showFullBiography)}
+                  >
+                    {showFullBiography ? "Read Less" : "Read More"}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <p className="people-biography-text">We don't have a biography for {details.name}.</p>
+            )}
+          </div>
         </div>
 
         <section className="known-for">
@@ -216,6 +217,7 @@ const PeopleDetails = () => {
                     <img
                       src={imageUrl(credit.poster_path, "w342")}
                       alt={getTitle(credit)}
+                      loading="lazy"
                     />
                   </div>
                   <p className="credit-title">{getTitle(credit)}</p>

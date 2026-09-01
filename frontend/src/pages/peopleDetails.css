@@ -6,7 +6,6 @@
     position: relative;
 }
 
-
 .people-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -16,74 +15,127 @@
     gap: 48px;
 }
 
-.people-top-section {
-    display: flex;
-    gap: 48px;
+/* ==========================================================================
+   PROFILE SECTION (Desktop & Mobile Grid)
+   ========================================================================== */
+.people-profile-section {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: auto 1fr;
+    column-gap: 48px;
+    row-gap: 28px;
+    align-items: start;
     width: 100%;
 }
 
-.people-sidebar {
-    flex: 0 0 300px;
+.people-profile-photo-wrapper {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 100%;
 }
 
-.people-sidebar img {
+.people-profile-img {
     width: 100%;
     aspect-ratio: 1 / 1;
     object-fit: cover;
     border-radius: 50%;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     border: 4px solid var(--accent);
+    display: block;
 }
 
-.people-metadata {
+.people-info-header {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.people-name {
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.025em;
+    color: #fff;
+    line-height: 1.1;
+    word-break: break-word;
+}
+
+.people-dept-wrapper {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     gap: 8px;
-    font-size: 15px;
-    color: #94a3b8;
-    margin-bottom: 32px;
 }
 
-.people-metadata.desktop {
+.people-dept-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    background: rgba(255, 38, 51, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(255, 38, 51, 0.25);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.people-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px 24px;
+    margin-top: 4px;
+}
+
+.people-info-item {
     display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.people-metadata.mobile {
-    display: none;
+.info-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
 }
 
-.people-metadata .bullet {
-    color: rgba(255, 255, 255, 0.15);
-    font-weight: bold;
-    margin: 0 4px;
+.info-value {
+    font-size: 14px;
+    color: #e2e8f0;
+    font-weight: 500;
+    line-height: 1.35;
+    word-break: break-word;
 }
 
-.people-main {
-    flex: 1;
+.info-age {
+    color: #94a3b8;
+    font-size: 13px;
 }
 
-.people-main h1 {
-    font-size: clamp(32px, 4vw, 56px);
-    font-weight: 800;
-    margin-bottom: 8px;
-    letter-spacing: -0.02em;
-}
-
+/* ==========================================================================
+   BIOGRAPHY SECTION
+   ========================================================================== */
 .biography {
-    margin-top: 24px;
-    margin-bottom: 48px;
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 0;
+    width: 100%;
 }
 
-.biography h2 {
-    font-size: 24px;
+.biography-title {
+    font-size: 22px;
     font-weight: 750;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
+    color: #fff;
     display: flex;
     align-items: center;
     gap: 10px;
 }
+
 .biography-container {
     width: 100%;
     max-width: 100%;
@@ -92,11 +144,10 @@
 
 .people-biography-text {
     font-size: 15px;
-    line-height: 1.6;
+    line-height: 1.65;
     color: #cbd5e1;
     margin: 0;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .read-more-btn {
@@ -118,116 +169,14 @@
     text-decoration: underline;
 }
 
+/* ==========================================================================
+   FILMOGRAPHY SECTION
+   ========================================================================== */
+.known-for {
+    width: 100%;
+}
+
 .known-for h2 {
-    font-size: 24px;
-    font-weight: 750;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-
-.credits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 24px;
-}
-
-.credit-item {
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    text-align: left;
-}
-
-/* Matching Home UI Internal Zoom Effect */
-.card-img-wrapper {
-    width: 100%;
-    aspect-ratio: 2 / 3;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #111;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: box-shadow 0.3s ease;
-}
-
-.credit-item:hover .card-img-wrapper {
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
-}
-
-.credit-item img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1);
-}
-
-.credit-item:hover img {
-    transform: scale(1.06);
-}
-
-.credit-title {
-    margin-top: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #f1f5f9;
-    line-height: 1.25;
-    padding: 0 4px;
-    transition: color 0.2s ease;
-    
-    /* 1-line truncation */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.credit-item:hover .credit-title {
-    color: var(--accent);
-}
-
-.credit-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #64748b;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 0 4px;
-    margin-top: 4px;
-}
-
-.credit-meta .rating {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    color: var(--accent);
-}
-
-.credit-meta .rating svg {
-    margin-bottom: 0.5px;
-}
-
-.credit-meta .bullet {
-    color: rgba(255, 255, 255, 0.15);
-    font-weight: bold;
-}
-
-/* Filmography Section styling */
-.filmography-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-
-.filmography-header h2 {
     font-size: 24px;
     font-weight: 750;
     margin: 0;
@@ -236,6 +185,14 @@
     gap: 10px;
 }
 
+.filmography-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
 
 .media-toggle-container {
     position: relative;
@@ -284,85 +241,216 @@
     transform: translateX(100%);
 }
 
-.people-name-mobile {
-    display: none;
+.credits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 24px;
+    width: 100%;
 }
 
-.people-name-desktop {
+.credit-item {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+
+.card-img-wrapper {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.3s ease;
+}
+
+.credit-item:hover .card-img-wrapper {
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+}
+
+.credit-item img {
+    width: 100%;
+    height: 100%;
     display: block;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1);
 }
 
+.credit-item:hover img {
+    transform: scale(1.06);
+}
+
+.credit-title {
+    margin-top: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    line-height: 1.25;
+    padding: 0 4px;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.credit-item:hover .credit-title {
+    color: var(--accent);
+}
+
+.credit-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 0 4px;
+    margin-top: 4px;
+}
+
+.credit-meta .rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--accent);
+}
+
+.credit-meta .rating svg {
+    margin-bottom: 0.5px;
+}
+
+.credit-meta .bullet {
+    color: rgba(255, 255, 255, 0.15);
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS
+   ========================================================================== */
 @media (max-width: 900px) {
     .people-container {
+        padding: 20px 16px 40px;
         gap: 32px;
     }
-    .people-top-section {
-        flex-direction: column;
-        gap: 32px;
-        width: 100%;
-    }
-    .people-sidebar {
-        flex: none;
-        width: 100%;
-        max-width: 300px;
-        margin: 0 auto;
-        text-align: center;
-    }
-    .people-name-mobile {
-        display: block;
-        font-size: clamp(28px, 5vw, 36px);
-        font-weight: 800;
-        margin-top: 16px;
-        margin-bottom: 8px;
-        text-align: center;
-        letter-spacing: -0.02em;
-    }
-    .people-name-desktop {
-        display: none;
-    }
-    .people-metadata.desktop {
-        display: none;
-    }
-    .people-metadata.mobile {
-        display: flex;
-        justify-content: center;
-        margin-top: 0;
-        margin-bottom: 4px;
-    }
-    .biography {
-        margin-top: 0;
-    }
-    .biography h2 {
-        justify-content: center;
-    }
-    .filmography-header {
-        justify-content: center;
-        text-align: center;
-    }
-    .filmography-header h2 {
-        justify-content: center;
-    }
-    .filmography-header h2::before {
-        display: none;
-    }
-    .people-biography-text {
-        text-align: center;
-    }
-    .biography-container {
-        display: flex;
-        flex-direction: column;
+
+    .people-profile-section {
+        display: grid;
+        grid-template-columns: clamp(96px, 28vw, 130px) 1fr;
+        grid-template-rows: auto auto;
+        column-gap: 16px;
+        row-gap: 20px;
         align-items: center;
-        text-align: center;
     }
-    .read-more-btn {
-        align-self: center;
+
+    .people-profile-photo-wrapper {
+        grid-column: 1;
+        grid-row: 1;
+        width: 100%;
     }
-    .credit-item {
+
+    .people-profile-img {
+        border-width: 3px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .people-info-header {
+        grid-column: 2;
+        grid-row: 1;
+        gap: 6px;
+    }
+
+    .people-name {
+        font-size: clamp(20px, 5vw, 28px);
+        line-height: 1.15;
+    }
+
+    .people-dept-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+    }
+
+    .people-info-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 12px;
+        margin-top: 2px;
+    }
+
+    .info-label {
+        font-size: 10px;
+    }
+
+    .info-value {
+        font-size: 12px;
+        line-height: 1.3;
+    }
+
+    .info-age {
+        display: block;
+        font-size: 11px;
+    }
+
+    .biography {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+        margin-top: 0;
+    }
+
+    .biography-title {
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+
+    .people-biography-text {
+        font-size: 14px;
+        line-height: 1.6;
         text-align: left;
+    }
+
+    .biography-container {
+        text-align: left;
+    }
+
+    .read-more-btn {
+        margin-top: 6px;
+    }
+
+    .known-for h2 {
+        font-size: 20px;
+    }
+
+    .filmography-header {
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        gap: 12px;
+    }
+
+    .media-toggle-container {
+        width: 190px;
+        height: 34px;
+    }
+
+    .media-toggle-btn {
+        font-size: 12px;
+    }
+
+    .credits-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 14px;
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
+    .people-info-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
     .credits-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
