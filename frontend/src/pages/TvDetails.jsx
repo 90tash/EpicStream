@@ -375,13 +375,18 @@ const TvDetails = () => {
                     setSelectedSeason(firstSeason.season_number);
                 }
 
-                // Fetch other secondary data (credits, recommendations)
+                // Fetch other secondary data (aggregate credits across all seasons, recommendations)
                 const [castData, recsData] = await Promise.all([
-                    tmdbFetch(`/tv/${id}/credits`),
+                    tmdbFetch(`/tv/${id}/aggregate_credits`).catch(() => tmdbFetch(`/tv/${id}/credits`)),
                     tmdbGetRecommendations("tv", id)
                 ]);
                 
-                setCast(castData.cast.slice(0, 10));
+                const rawCast = castData?.cast || [];
+                const normalizedCast = rawCast.map(person => ({
+                    ...person,
+                    character: person.character || (person.roles && person.roles.length > 0 ? person.roles.map(r => r.character).filter(Boolean).join(" / ") : "")
+                }));
+                setCast(normalizedCast.slice(0, 15));
                 const prioritizedRecs = prioritizeSimilarContent(fullTvData, recsData);
                 setSimilarTv(prioritizedRecs.slice(0, 10));
             } catch (error) {
