@@ -35,7 +35,7 @@ const formatDate = (dateStr) => {
 const getProviderLabel = (provider) => {
     const labels = {
         zxc: "Titan(Fast/HD)",
-        videasy: "Nova(Fast/HD)",
+        vidy: "Nova(Fast/HD)",
         modiplay: "Ashoka(Indian-Server)",
         vsembed: "Rocky(Fast-Server)",
         vidzee: "Neo(Multi/HD)",
@@ -64,10 +64,10 @@ const AdsIcon = () => (
 
 const WATCH_PROVIDERS = [
     { id: "zxc", name: "Titan(Fast/HD)", rec: true },
-    { id: "vidlove", name: "Atlas(HD-Server)" },
-    { id: "videasy", name: "Nova(Fast/HD)", rec: true },
+    { id: "vidlove", name: "Atlas(HD-Server)", rec: true },
+    { id: "vidy", name: "Nova(Fast/HD)", rec: true },
     { id: "modiplay", name: "Ashoka(Indian-Server)", rec: true },
-    { id: "vsembed", name: "Rocky(Fast-Server)", rec: true },
+    { id: "vsembed", name: "Rocky(Fast-Server)" },
     { id: "peachify", name: "Peach(HD/Multi)" },
     { id: "vidnest", name: "Optimus(Multi-Server)", rec: true },
     { id: "vidup", name: "Ninja(HD-Server)" },
@@ -468,8 +468,7 @@ const WatchPage = () => {
 
         const handleMessage = (event) => {
             const trustedOrigins = [
-                "https://player.videasy.to",
-                "https://player.videasy.net",
+                "https://vidy.st",
                 "https://vidlink.pro",
                 "https://vidfast.pro",
                 "https://vidfast.in",

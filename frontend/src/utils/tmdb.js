@@ -196,11 +196,17 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return url;
         }
 
-        case "videasy":
-            if (type === "movie") {
-                return `https://player.videasy.to/movie/${id}?${commonParams}`;
+        case "vidy": {
+            const params = ["color=ffffff"];
+            if (progress > 0) {
+                params.push(`progress=${Math.round(progress)}`);
             }
-            return `https://player.videasy.to/tv/${id}/${season}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false&${commonParams}`;
+            if (type === "tv") {
+                params.push("nextEpisode=false", "autoplayNextEpisode=false", "episodeSelector=false");
+                return `https://vidy.st/tv/${id}/${season}/${episode}?${params.join("&")}`;
+            }
+            return `https://vidy.st/movie/${id}?${params.join("&")}`;
+        }
             
         case "modiplay":
             if (type === "movie") {
@@ -342,11 +348,17 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://www.vidking.net/embed/tv/${id}/${season}/${episode}?${common}&nextEpisode=true&episodeSelector=true${progressParam}`;
         }
             
-        default:
-            if (type === "movie") {
-                return `https://player.videasy.to/movie/${id}?${commonParams}`;
+        default: {
+            const params = ["color=ffffff"];
+            if (progress > 0) {
+                params.push(`progress=${Math.round(progress)}`);
             }
-            return `https://player.videasy.to/tv/${id}/${season}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false&${commonParams}`;
+            if (type === "tv") {
+                params.push("nextEpisode=false", "autoplayNextEpisode=false", "episodeSelector=false");
+                return `https://vidy.st/tv/${id}/${season}/${episode}?${params.join("&")}`;
+            }
+            return `https://vidy.st/movie/${id}?${params.join("&")}`;
+        }
     }
 };
 
@@ -359,10 +371,10 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
                 : `https://zxcstream.xyz/player/tv/${animeId}/1/${episode}?${params}`;
         }
 
-        case "videasy":
+        case "vidy":
             return type === "movie"
-                ? `https://player.videasy.to/anime/${animeId}`
-                : `https://player.videasy.to/anime/${animeId}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false`;
+                ? `https://vidy.st/anime/${animeId}?color=ffffff`
+                : `https://vidy.st/anime/${animeId}/${episode}?color=ffffff&nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false`;
                 
         case "vidsrc_to":
             return type === "movie"
@@ -381,8 +393,8 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
                 
         default:
             return type === "movie"
-                ? `https://player.videasy.to/anime/${animeId}`
-                : `https://player.videasy.to/anime/${animeId}/${episode}?nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false`;
+                ? `https://vidy.st/anime/${animeId}?color=ffffff`
+                : `https://vidy.st/anime/${animeId}/${episode}?color=ffffff&nextEpisode=false&autoplayNextEpisode=false&episodeSelector=false`;
     }
 };
 
