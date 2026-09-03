@@ -314,14 +314,15 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://vsembed.ru/embed/movie/${id}?${params.join("&")}`;
         }
             
-        case "cinezo": {
-            const primaryColor = "ffffff"; // Crisp white accent
-            const secondaryColor = "8a8e98"; // Muted grey
-            const common = `primarycolor=${primaryColor}&secondarycolor=${secondaryColor}&iconcolor=ffffff&autoplay=true&poster=true&chromecast=true&servericon=true&setting=true&pip=true`;
-            if (type === "movie") {
-                return `https://player.cinezo.live/embed/movie/${id}?${common}`;
+        case "vidbolt": {
+            const params = ["theme=ffffff", "autoPlay=true"];
+            if (progress > 0) {
+                params.push(`startAt=${Math.round(progress)}`);
             }
-            return `https://player.cinezo.live/embed/tv/${id}/${season}/${episode}?${common}`;
+            if (type === "movie") {
+                return `https://vidbolt.xyz/movie/${id}?${params.join("&")}`;
+            }
+            return `https://vidbolt.xyz/tv/${id}/${season}/${episode}?${params.join("&")}`;
         }
 
             
@@ -390,6 +391,11 @@ export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
             return type === "movie"
                 ? `https://vidnest.fun/anime/${animeId}`
                 : `https://vidnest.fun/anime/${animeId}/${episode}/sub`;
+                
+        case "vidbolt":
+            return type === "movie"
+                ? `https://vidbolt.xyz/anime/${animeId}?theme=ffffff&autoPlay=true`
+                : `https://vidbolt.xyz/anime/${animeId}/${episode}?theme=ffffff&autoPlay=true`;
                 
         default:
             return type === "movie"

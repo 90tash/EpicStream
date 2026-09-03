@@ -47,7 +47,7 @@ const getProviderLabel = (provider) => {
         vidcore: "Dexter(Multi-HD)",
         nxsha: "Vayu(Best-Server)",
         vidlove: "Atlas(HD-Server)",
-        cinezo: "Eclipse(Multi-Server)",
+        vidbolt: "Eclipse(Multi-Server)",
         mapple: "Rogue(4k)",
         peachify: "Peach(HD/Multi)",
         vidfast: "Ghost(Fast/HD)",
@@ -67,7 +67,7 @@ const WATCH_PROVIDERS = [
     { id: "vidlove", name: "Atlas(HD-Server)", rec: true },
     { id: "vidy", name: "Nova(Fast/HD)", rec: true },
     { id: "modiplay", name: "Ashoka(Indian-Server)", rec: true },
-    { id: "vsembed", name: "Rocky(Fast-Server)" },
+    { id: "vidbolt", name: "Eclipse(Multi-Server)" },
     { id: "peachify", name: "Peach(HD/Multi)" },
     { id: "vidnest", name: "Optimus(Multi-Server)", rec: true },
     { id: "vidup", name: "Ninja(HD-Server)" },
@@ -76,7 +76,7 @@ const WATCH_PROVIDERS = [
     { id: "vidfast", name: "Ghost(Fast/HD)", rec: true },
     { id: "nxsha", name: "Vayu(Best-Server)", rec: true, ads: true },
     { id: "vidlink", name: "Vortex(Single-Server)" },
-    { id: "cinezo", name: "Eclipse(Multi-Server)" },
+    { id: "vsembed", name: "Rocky(Fast-Server)" },
     { id: "mapple", name: "Rogue(4k)" },
     { id: "vidzee", name: "Neo(Multi/HD)" },
     { id: "vidcore", name: "Dexter(Multi-HD)" }
@@ -484,7 +484,7 @@ const WatchPage = () => {
                 "https://mapple.uk",
                 "https://player.vidlove.cc",
                 "https://vidlove.cc",
-                "https://player.cinezo.live",
+                "https://vidbolt.xyz",
                 "https://nxsha.space",
                 "https://peachify.top",
                 "https://vidnest.fun",
@@ -645,11 +645,10 @@ const WatchPage = () => {
                     };
                 }
 
-                if (!playerState && event.origin === "https://player.cinezo.live" && data?.type === "WATCH_PROGRESS") {
-                    const progressData = data.data || {};
-                    const time = progressData.currentTime !== undefined ? progressData.currentTime : 0;
-                    const duration = progressData.duration || 0;
-                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+                if (!playerState && event.origin === "https://vidbolt.xyz" && (data?.type === "timeupdate" || data?.type === "ended")) {
+                    const time = data.time !== undefined ? data.time : 0;
+                    const duration = data.duration || 0;
+                    const percentage = duration > 0 ? Math.round((time / duration) * 100) : (data.type === "ended" ? 100 : 0);
 
                     playerState = {
                         currentTime: time,
