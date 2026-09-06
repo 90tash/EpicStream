@@ -28,16 +28,19 @@ const PeopleDetails = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
+
+    if (state?.person && String(state.person.id) === String(id)) {
+      setDetails(state.person);
+    }
+
     const fetchAllData = async () => {
-      const personId = details?.id || id;
-      if (!personId) return;
+      if (!id) return;
 
       try {
         setIsLoading(true);
         const [detailsData, creditsData] = await Promise.all([
-          tmdbFetch(`/person/${personId}`),
-          tmdbFetch(`/person/${personId}/combined_credits`)
+          tmdbFetch(`/person/${id}`),
+          tmdbFetch(`/person/${id}/combined_credits`)
         ]);
 
         setDetails(detailsData);
@@ -97,12 +100,28 @@ const PeopleDetails = () => {
     };
 
     fetchAllData();
-  }, [id, details?.id]);
+  }, [id]);
 
   const handleCreditClick = (movie) => {
     const type = movie.media_type || (movie.first_air_date ? "tv" : "movie");
     navigate(`/${type}/${movie.id}`, { state: { movie } });
   };
+
+  if (isLoading && !details) {
+    return (
+      <div className="loading-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000000' }}>
+        <div className="loader" style={{ width: '40px', height: '40px', border: '3px solid rgba(255, 255, 255, 0.1)', borderRadius: '50%', borderTopColor: 'var(--accent)', animation: 'rotate 1s linear infinite' }} />
+      </div>
+    );
+  }
+
+  if (!details) {
+    return (
+      <div className="loading-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000000' }}>
+        <p style={{ color: '#fff' }}>Person not found</p>
+      </div>
+    );
+  }
 
   const birthYear = details.birthday ? new Date(details.birthday).getFullYear() : null;
   const currentYear = new Date().getFullYear();

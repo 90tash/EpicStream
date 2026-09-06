@@ -644,7 +644,7 @@ const TvDetails = () => {
                                          {tv.created_by.map((c, idx) => (
                                              <Fragment key={c.id}>
                                                  {idx > 0 && ", "}
-                                                 <Link to={`/person/${c.id}`} className="person-link">
+                                                 <Link to={`/person/${c.id}`} state={{ person: c }} className="person-link">
                                                      {c.name}
                                                  </Link>
                                              </Fragment>

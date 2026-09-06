@@ -427,7 +427,7 @@ const MovieDetails = () => {
                 setTrailers(ytTrailers.slice(0, 1));
 
                 const directorObj = castData?.crew?.find(member => member.job === "Director");
-                setDirector(directorObj ? { name: directorObj.name, id: directorObj.id } : null);
+                setDirector(directorObj || null);
             } catch (error) {
                 console.error("Error fetching movie details:", error);
                 setLogoFetched(true);
@@ -637,7 +637,7 @@ const MovieDetails = () => {
                                 <span className="director-label">Director:</span>
                                 <span className="director-value">
                                     {director ? (
-                                        <Link to={`/person/${director.id}`} className="person-link">
+                                        <Link to={`/person/${director.id}`} state={{ person: director }} className="person-link">
                                             {director.name}
                                         </Link>
                                     ) : "N/A"}
