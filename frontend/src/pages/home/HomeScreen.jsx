@@ -113,7 +113,7 @@ const getRelativeTime = (timestamp) => {
 
 const HistoryCard = ({ item, openWatch, openDetails, onRemove, isEditing }) => {
     const type = item.type || getMediaType(item);
-    const progress = item.percentage || 0;
+    const progress = Number(item.percentage) || 0;
     const timeAgo = getRelativeTime(item.timestamp);
     const bottomInfo = type === "tv" ? `S${item.season}:E${item.episode}` : (item.timeStr || "");
 
@@ -195,7 +195,7 @@ const HistoryCard = ({ item, openWatch, openDetails, onRemove, isEditing }) => {
             <div className="history-card-info" onClick={() => openWatch(item)}>
                 <div className="history-info-top">
                     <span className="history-title">{item.title}</span>
-                    <span className="history-percentage">{progress}%</span>
+                    <span className="history-percentage">{progress > 0 ? `${progress}%` : "Just Started"}</span>
                 </div>
                 <div className="history-info-bottom">
                     <span className="history-time-ago">{timeAgo}</span>

@@ -466,6 +466,7 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    gap: 8px;
 }
 
 .history-title {
@@ -475,13 +476,16 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 75%;
+    min-width: 0;
+    flex: 1;
 }
 
 .history-percentage {
     font-size: 13px;
     font-weight: 700;
     color: var(--accent);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .history-time-ago,
