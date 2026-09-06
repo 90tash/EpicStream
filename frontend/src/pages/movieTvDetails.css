@@ -2333,6 +2333,7 @@
         box-sizing: border-box;
     }
 
+    .trailer-mobile-placement .details-section-title,
     .trailer-mobile-placement .details-trailer-heading {
         font-size: 18px;
         font-weight: 700;
@@ -2341,6 +2342,7 @@
         margin: 0;
         text-align: left;
         align-self: flex-start;
+        text-transform: none;
     }
 
     .trailer-mobile-placement .details-trailer-cards {
@@ -2360,13 +2362,17 @@
     }
 }
 
+.details-trailer-section .details-section-title,
 .details-trailer-heading {
-    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-size: clamp(20px, 2vw, 26px);
     font-weight: 700;
     color: #ffffff;
     letter-spacing: -0.01em;
     margin: 0;
-    text-transform: capitalize;
+    text-transform: none;
 }
 
 .details-trailer-cards {

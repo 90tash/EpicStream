@@ -672,7 +672,7 @@ const TvDetails = () => {
                             )}
                             {trailers.length > 0 && (
                                 <div className="details-trailer-section trailer-desktop-placement">
-                                    <h3 className="details-trailer-heading">Watch Trailer</h3>
+                                    <h2 className="details-section-title details-trailer-heading">Watch Trailer</h2>
                                     <div className="details-trailer-cards">
                                         {trailers.map((trailer) => (
                                             <div 
@@ -740,7 +740,7 @@ const TvDetails = () => {
 
                     {trailers.length > 0 && (
                         <div className="details-trailer-section trailer-mobile-placement">
-                            <h3 className="details-trailer-heading">Watch Trailer</h3>
+                            <h2 className="details-section-title details-trailer-heading">Watch Trailer</h2>
                             <div className="details-trailer-cards">
                                 {trailers.map((trailer) => (
                                     <div 
