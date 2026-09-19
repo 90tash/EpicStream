@@ -181,14 +181,6 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             return `https://vidstuck.xyz/embed/movie/${id}?${params.join("&")}`;
         }
 
-        case "avatar":
-        case "reelsdownload": {
-            const apiKey = "k_885c7f4e1997d1d9c4e42aff";
-            if (type === "movie") {
-                return `https://embed.reelsdownload.online/player/${id}?key=${apiKey}`;
-            }
-            return `https://embed.reelsdownload.online/player/${id}/${season}/${episode}?key=${apiKey}`;
-        }
 
         case "vidrift":
         case "rift": {
