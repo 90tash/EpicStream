@@ -143,6 +143,83 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
     const commonParams = `overlay=true&color=${color}`;
     
     switch (provider) {
+        case "zen": {
+            if (type === "movie") {
+                return `https://playapi.co/movie/${id}`;
+            }
+            return `https://playapi.co/tv/${id}/${season}/${episode}`;
+        }
+
+        case "chillflix":
+        case "chill": {
+            const params = ["autoplay=true", "watchparty=false"];
+            if (progress > 0) {
+                params.push(`startAt=${Math.round(progress)}`);
+            }
+            const query = params.length > 0 ? `?${params.join("&")}` : "";
+            if (type === "movie") {
+                return `https://www.chillflix.lol/embed/movie/${id}${query}`;
+            }
+            return `https://www.chillflix.lol/embed/tv/${id}/${season}/${episode}${query}`;
+        }
+
+        case "vidstuck":
+        case "star": {
+            const params = [
+                "color=ffffff",
+                "branding=EpicStream",
+                "overlay=true",
+                "subtitle=english"
+            ];
+            if (progress > 0) {
+                params.push(`progress=${Math.round(progress)}`);
+            }
+            if (type === "tv") {
+                params.push("nextEpisode=true", "autoplayNextEpisode=true");
+                return `https://vidstuck.xyz/embed/tv/${id}/${season}/${episode}?${params.join("&")}`;
+            }
+            return `https://vidstuck.xyz/embed/movie/${id}?${params.join("&")}`;
+        }
+
+        case "avatar":
+        case "reelsdownload": {
+            const apiKey = "k_885c7f4e1997d1d9c4e42aff";
+            if (type === "movie") {
+                return `https://embed.reelsdownload.online/player/${id}?key=${apiKey}`;
+            }
+            return `https://embed.reelsdownload.online/player/${id}/${season}/${episode}?key=${apiKey}`;
+        }
+
+        case "vidrift":
+        case "rift": {
+            const params = ["brand=EpicStream", "brandColor=ffffff"];
+            const query = params.length > 0 ? `?${params.join("&")}` : "";
+            if (type === "movie") {
+                return `https://embed.vidrift.in/embed/movie/${id}${query}`;
+            }
+            return `https://embed.vidrift.in/embed/tv/${id}/${season}/${episode}${query}`;
+        }
+
+        case "cinemaos":
+        case "ninja": {
+            const params = ["theme=ffffff", "autoPlay=true"];
+            if (progress > 0) {
+                params.push(`startTime=${Math.round(progress)}`);
+            }
+            if (type === "tv") {
+                params.push("nextButton=true", "autoNext=true");
+                return `https://cinemaos.tech/player/${id}/${season}/${episode}?${params.join("&")}`;
+            }
+            return `https://cinemaos.tech/player/${id}?${params.join("&")}`;
+        }
+
+        case "bingr": {
+            if (type === "movie") {
+                return `https://bingr.one/watch/movie/${id}`;
+            }
+            return `https://bingr.one/watch/tv/${id}/${season}/${episode}`;
+        }
+
         case "peachify": {
             const baseUrl = "https://peachify.top";
             let url = "";

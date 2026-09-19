@@ -35,19 +35,28 @@ const formatDate = (dateStr) => {
 const getProviderLabel = (provider) => {
     const labels = {
         zxc: "Titan(Fast/HD)",
+        zen: "Zen(Fast-Server)",
+        chillflix: "Chill(Best - Server)",
+        chill: "Chill(Best - Server)",
         vidy: "Nova(Fast/HD)",
+        bingr: "Bingr(Hot/Best)",
+        vidstuck: "Star(Multi/Best)",
+        star: "Star(Multi/Best)",
         modiplay: "Ashoka(Indian-Server)",
         vsembed: "Rocky(Fast-Server)",
         vidzee: "Neo(Multi/HD)",
         vidnest: "Optimus(Multi-Server)",
-        vidup: "Ninja(HD-Server)",
         vidlink: "Vortex(Single-Server)",
         viduki_multi: "Goku(Multi-Server)",
-        viduki_indian: "Goku(Indian-Server)",
-        vidcore: "Dexter(Multi-HD)",
         nxsha: "Vayu(Best-Server)",
         vidlove: "Atlas(HD-Server)",
         vidbolt: "Eclipse(Multi-Server)",
+        vidrift: "Rift(Best-Server)",
+        rift: "Rift(Best-Server)",
+        cinemaos: "Ninja(Fast/HD)",
+        ninja: "Ninja(Fast/HD)",
+        avatar: "Avatar(Fast/Hd)",
+        reelsdownload: "Avatar(Fast/Hd)",
         mapple: "Rogue(4k)",
         peachify: "Peach(HD/Multi)",
         vidfast: "Ghost(Fast/HD)",
@@ -64,22 +73,26 @@ const AdsIcon = () => (
 
 const WATCH_PROVIDERS = [
     { id: "zxc", name: "Titan(Fast/HD)", rec: true },
+    { id: "chillflix", name: "Chill(Best - Server)", rec: true },
     { id: "vidlove", name: "Atlas(HD-Server)", rec: true },
     { id: "vidy", name: "Nova(Fast/HD)", rec: true },
+    { id: "bingr", name: "Bingr(Hot/Best)", rec: true },
+    { id: "vidstuck", name: "Star(Multi/Best)", rec: true },
     { id: "modiplay", name: "Ashoka(Indian-Server)", rec: true },
+    { id: "vidrift", name: "Rift(Best-Server)", rec: true },
+    { id: "cinemaos", name: "Ninja(Fast/HD)", rec: true },
     { id: "vidbolt", name: "Eclipse(Multi-Server)" },
+    { id: "avatar", name: "Avatar(Fast/Hd)", rec: true },
     { id: "peachify", name: "Peach(HD/Multi)" },
     { id: "vidnest", name: "Optimus(Multi-Server)", rec: true },
-    { id: "vidup", name: "Ninja(HD-Server)" },
+    { id: "zen", name: "Zen(Fast-Server)", rec: true },
     { id: "viduki_multi", name: "Goku(Multi-Server)", rec: true },
-    { id: "viduki_indian", name: "Goku(Indian-Server)" },
     { id: "vidfast", name: "Ghost(Fast/HD)", rec: true },
     { id: "nxsha", name: "Vayu(Best-Server)", rec: true, ads: true },
     { id: "vidlink", name: "Vortex(Single-Server)" },
     { id: "vsembed", name: "Rocky(Fast-Server)" },
     { id: "mapple", name: "Rogue(4k)" },
-    { id: "vidzee", name: "Neo(Multi/HD)" },
-    { id: "vidcore", name: "Dexter(Multi-HD)" }
+    { id: "vidzee", name: "Neo(Multi/HD)" }
 ];
 
 const WatchPage = () => {
@@ -114,6 +127,7 @@ const WatchPage = () => {
     const marqueeTimeoutRef = useRef(null);
     const initialSeasonRef = useRef(season);
     const initialEpisodeRef = useRef(episode);
+    const iframeRef = useRef(null);
     const [watchedEpisodes, setWatchedEpisodes] = useState({});
 
     // Fetch watched episodes for this TV show
@@ -494,6 +508,15 @@ const WatchPage = () => {
                 "https://vidcore.net",
                 "https://vidup.to",
                 "https://rozgarlelo.modiplay.xyz",
+                "https://playapi.co",
+                "https://www.chillflix.lol",
+                "https://chillflix.lol",
+                "https://vidstuck.xyz",
+                "https://www.vidstuck.xyz",
+                "https://embed.reelsdownload.online",
+                "https://embed.vidrift.in",
+                "https://cinemaos.tech",
+                "https://bingr.one",
             ];
 
             if (!trustedOrigins.includes(event.origin)) return;
@@ -502,19 +525,58 @@ const WatchPage = () => {
                 let data = event.data;
                 if (typeof data === "string") data = JSON.parse(data);
 
+                if (event.origin === "https://embed.vidrift.in") {
+                    if (data?.type === "vidrift:nextup-play") {
+                        if (mediaType === "tv") {
+                            const nextEp = data.episode !== undefined ? data.episode + 1 : episode + 1;
+                            const nextSeason = data.season || season;
+                            navigateToEpisode(nextEp, nextSeason);
+                        }
+                        return;
+                    }
+
+                    if (data?.type === "vidrift:progress" || data?.type === "vidrift:ended") {
+                        const time = data.currentTime !== undefined ? data.currentTime : 0;
+                        const duration = data.duration || 0;
+                        let percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+                        if (data.type === "vidrift:ended") percentage = 100;
+
+                        playerState = {
+                            currentTime: time,
+                            time: time,
+                            duration: duration,
+                            percentage: percentage,
+                            season: data.season ? Number(data.season) : undefined,
+                            episode: data.episode ? Number(data.episode) : undefined,
+                        };
+                    }
+                }
+
                 if (event.origin === "https://www.viduki.net" || event.origin === "https://viduki.net") {
                     if (data?.type === "viduki:all-servers-failed") {
-                        if (selectedProvider === "viduki_multi") {
-                            setSelectedProvider("viduki_indian");
-                            toast.error("Goku(Multi-Server) failed. Auto-switching to Goku(Indian-Server)!");
-                        }
+                        toast.error("Goku(Multi-Server) failed. Please switch to another server!");
                         return;
                     }
                 }
 
                 let playerState = data?.type === "PLAYER_EVENT" ? data.data : null;
 
-                if (playerState && (event.origin === "https://vidcore.net" || event.origin === "https://vidup.to")) {
+                if (!playerState && (event.origin === "https://vidstuck.xyz" || event.origin === "https://www.vidstuck.xyz")) {
+                    const time = data?.timestamp !== undefined ? data.timestamp : (data?.currentTime !== undefined ? data.currentTime : 0);
+                    const duration = data?.duration || 0;
+                    const percentage = data?.progress !== undefined ? data.progress : (duration > 0 ? Math.round((time / duration) * 100) : 0);
+
+                    playerState = {
+                        currentTime: time,
+                        time: time,
+                        duration: duration,
+                        percentage: percentage,
+                        season: data?.season ? Number(data.season) : undefined,
+                        episode: data?.episode ? Number(data.episode) : undefined,
+                    };
+                }
+
+                if (playerState && (event.origin === "https://vidcore.net" || event.origin === "https://vidup.to" || event.origin === "https://bingr.one")) {
                     if (mediaType === "tv") {
                         if (playerState.season === undefined) playerState.season = season;
                         if (playerState.episode === undefined) playerState.episode = episode;
@@ -537,7 +599,22 @@ const WatchPage = () => {
                     };
                 }
 
-                if (!playerState && event.origin === "https://player.vidzee.wtf" && data?.type === "MEDIA_DATA") {
+                if (event.origin === "https://cinemaos.tech" && data?.type === "MEDIA_DATA") {
+                    try {
+                        localStorage.setItem("cinemaosProgress", JSON.stringify(data.data));
+                    } catch (e) {
+                        console.error("Failed to save cinemaosProgress", e);
+                    }
+                }
+
+                if (!playerState && (event.origin === "https://player.vidzee.wtf" || event.origin === "https://www.chillflix.lol" || event.origin === "https://chillflix.lol") && data?.type === "MEDIA_DATA") {
+                    if (event.origin.includes("chillflix")) {
+                        try {
+                            localStorage.setItem("chillflixProgress", JSON.stringify(data.data));
+                        } catch (e) {
+                            console.error("Failed to save chillflixProgress", e);
+                        }
+                    }
                     const vidzeeData = data.data || {};
                     const currentMedia = vidzeeData[id] || vidzeeData;
                     if (currentMedia) {
@@ -1149,15 +1226,52 @@ const WatchPage = () => {
                             </div>
                         )}
                         <iframe
+                            ref={iframeRef}
                             key={playerUrl}
                             src={playerUrl}
                             className="watch-player-iframe"
                             scrolling="no"
                             frameBorder="0"
                             allowFullScreen
-                            allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen *; accelerometer; gyroscope"
+                            allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen *; accelerometer; gyroscope; clipboard-write"
                             title="EpicStream Video Player"
-                            onLoad={() => setIsFrameLoading(false)}
+                            onLoad={() => {
+                                setIsFrameLoading(false);
+                                if (selectedProvider === "vidrift" || selectedProvider === "rift") {
+                                    try {
+                                        const historyItem = getHistory().find(h => h.id === Number(id));
+                                        const savedTime = historyItem?.currentTime || 0;
+                                        if (savedTime > 0) {
+                                            iframeRef.current?.contentWindow?.postMessage(
+                                                { type: "vidrift:resume", currentTime: Math.round(savedTime) },
+                                                "https://embed.vidrift.in"
+                                            );
+                                        }
+                                        if (mediaType === "tv") {
+                                            iframeRef.current?.contentWindow?.postMessage(
+                                                { type: "vidrift:nextup-info", next: { season, episode: episode + 1 } },
+                                                "https://embed.vidrift.in"
+                                            );
+                                        }
+                                    } catch (e) {
+                                        console.error("Failed to post message to vidrift", e);
+                                    }
+                                }
+                                if (selectedProvider === "bingr") {
+                                    try {
+                                        const historyItem = getHistory().find(h => h.id === Number(id));
+                                        const savedTime = historyItem?.currentTime || 0;
+                                        if (savedTime > 0) {
+                                            iframeRef.current?.contentWindow?.postMessage(
+                                                { command: "seek", time: Math.round(savedTime) },
+                                                "*"
+                                            );
+                                        }
+                                    } catch (e) {
+                                        console.error("Failed to post message to bingr", e);
+                                    }
+                                }
+                            }}
                         />
                     </>
                 )}
