@@ -4,6 +4,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { loadEnv } from 'vite'
 import { handleTmdbRequest } from './api/tmdbProxy.js'
+import { handleOmdbRequest } from './api/omdbProxy.js'
+import { handleMdbListRequest } from './api/mdblistProxy.js'
 import dns from 'node:dns'
 
 dns.setDefaultResultOrder('ipv4first')
@@ -91,11 +93,69 @@ const anilistDevMiddleware = () => ({
   },
 })
 
+const omdbDevMiddleware = (apiKey) => ({
+  name: 'omdb-dev-middleware',
+  configureServer(server) {
+    server.middlewares.use(async (request, response, next) => {
+      const requestUrl = new URL(request.url || '', 'http://localhost');
+
+      if (requestUrl.pathname !== '/api/omdb') {
+        next();
+        return;
+      }
+
+      try {
+        const result = await handleOmdbRequest(requestUrl, apiKey);
+        response.statusCode = result.status;
+        response.setHeader('Content-Type', 'application/json');
+        response.end(JSON.stringify(result.body));
+      } catch (error) {
+        console.error('OMDb dev proxy request failed:', error);
+        response.statusCode = 502;
+        response.setHeader('Content-Type', 'application/json');
+        response.end(JSON.stringify({ Response: 'False', Error: 'Unable to reach OMDb.' }));
+      }
+    });
+  },
+})
+
+const mdblistDevMiddleware = (apiKey) => ({
+  name: 'mdblist-dev-middleware',
+  configureServer(server) {
+    server.middlewares.use(async (request, response, next) => {
+      const requestUrl = new URL(request.url || '', 'http://localhost');
+
+      if (requestUrl.pathname !== '/api/mdblist') {
+        next();
+        return;
+      }
+
+      try {
+        const result = await handleMdbListRequest(requestUrl, apiKey);
+        response.statusCode = result.status;
+        response.setHeader('Content-Type', 'application/json');
+        response.end(JSON.stringify(result.body));
+      } catch (error) {
+        console.error('MDBList dev proxy request failed:', error);
+        response.statusCode = 502;
+        response.setHeader('Content-Type', 'application/json');
+        response.end(JSON.stringify({ response: false, error: 'Unable to reach MDBList.' }));
+      }
+    });
+  },
+})
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    plugins: [react(), tmdbDevMiddleware(env.TMDB_API_KEY), anilistDevMiddleware()],
+    plugins: [
+      react(),
+      tmdbDevMiddleware(env.TMDB_API_KEY),
+      anilistDevMiddleware(),
+      omdbDevMiddleware(env.OMDB_API_KEY),
+      mdblistDevMiddleware(env.MDBLIST_API_KEY)
+    ],
   };
 })

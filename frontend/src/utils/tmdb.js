@@ -553,3 +553,28 @@ export const prioritizeSimilarContent = (currentShow, recommendationsList) => {
     const sorted = [...scoredList].sort((a, b) => b.score - a.score);
     return sorted.map(entry => entry.item);
 };
+
+const MAJOR_STUDIO_PATTERNS = [
+    /\bwarner\s*bros\b/i, /\bwb\b/i, /\buniversal\s*(pictures|studios|animation)?\b/i,
+    /\bparamount\b/i, /\bcolumbia\s*pictures\b/i, /\bsony\s*pictures\b/i, /\bwalt\s*disney\b/i,
+    /\bdisney\b/i, /\bmarvel\s*(studios|entertainment)?\b/i, /\bdc\s*(studios|films|entertainment)?\b/i,
+    /\blucasfilm\b/i, /\b(20th|twentieth)\s*century\b/i, /\bpixar\b/i, /\bmetro-goldwyn-mayer\b/i,
+    /\bmgm\b/i, /\bunited\s*artists\b/i, /\blionsgate\b/i, /\bdreamworks\b/i, /\bnew\s*line\s*cinema\b/i,
+    /\bfocus\s*features\b/i, /\bsearchlight\b/i, /\btristar\b/i, /\bmiramax\b/i, /\bstudiocanal\b/i,
+    /\ba24\b/i, /\bblumhouse\b/i, /\batomic\s*monster\b/i, /\blegendary\b/i, /\bbad\s*robot\b/i,
+    /\bsyncopy\b/i, /\bplan\s*b\s*entertainment\b/i, /\bmonkeypaw\b/i, /\bamblin\b/i,
+    /\bvillage\s*roadshow\b/i, /\bworking\s*title\b/i, /\bneon\b/i, /\bannapurna\b/i,
+    /\billumination\b/i, /\bskydance\b/i, /\bapple\s*(original\s*films|studios)\b/i,
+    /\bnetflix\b/i, /\bamazon\s*(studios|mgm)\b/i, /\bregency\s*enterprises\b/i,
+    /\bscott\s*free\b/i, /\bjerry\s*bruckheimer\b/i, /\bplatinum\s*dunes\b/i,
+    /\bchernin\b/i, /\bparticipant\b/i, /\bstx\b/i, /\bsummit\s*entertainment\b/i,
+    /\btoho\b/i, /\bghibli\b/i, /\bmubi\b/i, /\bfilm4\b/i, /\bbbc\s*film\b/i,
+    /\bcanal\+\b/i, /\beuropacorp\b/i, /\bagbo\b/i, /\blaika\b/i, /\bgaumont\b/i,
+    /\bpath[eé]\b/i, /\bcj\s*entertainment\b/i, /\bshowbox\b/i, /\byash\s*raj\s*films\b/i,
+    /\bdharma\s*productions\b/i, /\bred\s*chillies\b/i, /\btoei\b/i, /\bshochiku\b/i, /\bkadokawa\b/i
+];
+
+export const isMajorStudio = (name) => {
+    if (!name) return false;
+    return MAJOR_STUDIO_PATTERNS.some(pattern => pattern.test(name));
+};

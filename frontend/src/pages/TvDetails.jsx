@@ -8,6 +8,9 @@ import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, t
 import { addToHistory, getWatchedEpisodes, removeEpisodeWatched, getHistory, removeFromHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
+import { getOmdbDetails } from "../utils/omdb";
+import { getMdbListDetails } from "../utils/mdblist";
+import MediaInsightsModal from "../components/MediaInsightsModal";
 
 
 const formatDate = (dateStr) => {
@@ -218,6 +221,8 @@ const TvDetails = () => {
     const [listModalItem, setListModalItem] = useState(null);
     const [trailers, setTrailers] = useState([]);
     const [selectedTrailer, setSelectedTrailer] = useState(null);
+    const [omdbData, setOmdbData] = useState(null);
+    const [mdbListData, setMdbListData] = useState(null);
 
     useEffect(() => {
         if (selectedTrailer) {
@@ -240,10 +245,37 @@ const TvDetails = () => {
     const { customLists, toggleItemInList, getListsForItem, createList } = useCustomListsStore();
     const [showListDropdown, setShowListDropdown] = useState(false);
     const [isCreatingInline, setIsCreatingInline] = useState(false);
+    const [showInsightsModal, setShowInsightsModal] = useState(false);
     const [newListNameInline, setNewListNameInline] = useState("");
     const dropdownRef = useRef(null);
     const inlineInputRefDesktop = useRef(null);
     const inlineInputRefMobile = useRef(null);
+
+    const [isWatched, setIsWatched] = useState(() => {
+        const history = getHistory();
+        const currentId = tv?.id || (id ? Number(id) : null);
+        return history.some(h => h.id === currentId || (tv?.id && h.id === tv.id));
+    });
+
+    useEffect(() => {
+        const history = getHistory();
+        const currentId = tv?.id || (id ? Number(id) : null);
+        setIsWatched(history.some(h => h.id === currentId || (tv?.id && h.id === tv.id)));
+    }, [id, tv?.id]);
+
+    const handleToggleWatched = () => {
+        const targetItem = tv;
+        const targetId = targetItem?.id || Number(id);
+        if (isWatched) {
+            removeFromHistory(targetId);
+            setIsWatched(false);
+            toast.success("Removed from watched");
+        } else {
+            addToHistory(targetItem || { id: targetId }, "tv", selectedSeason || 1, 1);
+            setIsWatched(true);
+            toast.success("Marked as watched");
+        }
+    };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -370,6 +402,8 @@ const TvDetails = () => {
         setLogoError(false);
         setShowFullOverview(false);
         setLogoFetched(false);
+        setOmdbData(null);
+        setMdbListData(null);
 
         const fetchAllData = async () => {
             try {
@@ -378,6 +412,28 @@ const TvDetails = () => {
                     tmdbFetch(`/tv/${id}`),
                     tmdbGetImages("tv", id)
                 ]);
+
+                // Fetch TV external IDs for IMDb ID, then fetch OMDb & MDBList details
+                tmdbFetch(`/tv/${id}/external_ids`).then(ext => {
+                    const yearStr = (fullTvData.first_air_date || "").slice(0, 4);
+                    getOmdbDetails({
+                        imdbId: ext?.imdb_id,
+                        title: fullTvData.name,
+                        year: yearStr,
+                        type: "series"
+                    }).then(data => {
+                        if (data) setOmdbData(data);
+                    }).catch(() => {});
+
+                    getMdbListDetails({
+                        imdbId: ext?.imdb_id,
+                        title: fullTvData.name,
+                        year: yearStr,
+                        type: "show"
+                    }).then(data => {
+                        if (data) setMdbListData(data);
+                    }).catch(() => {});
+                }).catch(() => {});
 
                 // Find the best title logo (English first, then untagged/null, then any)
                 const logos = images.logos || [];
@@ -469,6 +525,9 @@ const TvDetails = () => {
     const activeLists = getListsForItem(tv.id);
     const inAnyList = activeLists.length > 0;
     const inList = isItemInList(tv.id);
+    const distributorLogos = (tv.networks || [])
+        .filter(network => Boolean(network.logo_path))
+        .slice(0, 4);
 
     const handleCreateListInline = (e) => {
         if (e) e.preventDefault();
@@ -507,8 +566,14 @@ const TvDetails = () => {
                 <div className="details-hero-image-wrapper">
                     <img
                         className="details-hero-image"
-                        src={imageUrl(tv.backdrop_path || tv.poster_path, "original")}
+                        src={imageUrl(tv.backdrop_path || tv.poster_path, "original", omdbData?.poster || mdbListData?.poster || "/hero.png")}
                         alt={title}
+                        onError={(e) => {
+                            const fallback = omdbData?.poster || mdbListData?.poster;
+                            if (fallback && e.currentTarget.src !== fallback) {
+                                e.currentTarget.src = fallback;
+                            }
+                        }}
                     />
                 </div>
                 <div className="details-hero-shade" />
@@ -543,6 +608,15 @@ const TvDetails = () => {
                                     <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
                                 </svg>
                                 <span>Play</span>
+                            </button>
+
+                            <button 
+                                className={`details-action-btn watched-btn ${isWatched ? 'active' : ''}`}
+                                onClick={handleToggleWatched}
+                                title={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                                aria-label={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                            >
+                                <Eye size={20} color={isWatched ? "#4cd964" : "currentColor"} />
                             </button>
 
                             <div className="add-to-list-wrapper" ref={dropdownRef}>
@@ -628,13 +702,22 @@ const TvDetails = () => {
                         </div>
                         <div className="details-hero-meta">
                             {rating && (
-                                <span className="rating">
+                                <span className="rating" title="TMDB Rating">
                                     <Star size={15} fill="currentColor" />
                                     {rating}
                                 </span>
                             )}
                             <span>TV Show</span>
                             <span className="maturity">{tv.adult ? "18+" : "12+"}</span>
+                            <button 
+                                type="button" 
+                                className="details-overview-info-btn"
+                                onClick={() => setShowInsightsModal(true)}
+                                title="Insights"
+                                aria-label="Open Insights"
+                            >
+                                <Info size={14} strokeWidth={2.2} />
+                            </button>
                         </div>
                         <div className="director-synopsis-group">
                              {tv.created_by?.length > 0 && (
@@ -705,37 +788,57 @@ const TvDetails = () => {
                         </div>
                     </div>
 
-                    <div className="details-hero-side-bar tv-sidebar">
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Status</span>
-                            <span className="side-bar-value">{tv.status || "N/A"}</span>
-                        </div>
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Language</span>
-                            <span className="side-bar-value">{(tv.original_language || "EN").toUpperCase()}</span>
-                        </div>
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Genres</span>
-                            <span className="side-bar-value">{tv.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
-                        </div>
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">First Aired</span>
-                            <span className="side-bar-value">{formatDate(tv.first_air_date)}</span>
-                        </div>
-                        {tv.last_air_date && (
+                    <div className="details-hero-side-wrapper tv-sidebar-wrapper">
+                        <div className="details-hero-side-bar tv-sidebar">
                             <div className="side-bar-item">
-                                <span className="side-bar-label">Last Aired</span>
-                                <span className="side-bar-value">{formatDate(tv.last_air_date)}</span>
+                                <span className="side-bar-label">Status</span>
+                                <span className="side-bar-value">{tv.status || "N/A"}</span>
+                            </div>
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Language</span>
+                                <span className="side-bar-value">{(tv.original_language || "EN").toUpperCase()}</span>
+                            </div>
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Genres</span>
+                                <span className="side-bar-value">{tv.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
+                            </div>
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">First Aired</span>
+                                <span className="side-bar-value">{formatDate(tv.first_air_date)}</span>
+                            </div>
+                            {tv.last_air_date && (
+                                <div className="side-bar-item">
+                                    <span className="side-bar-label">Last Aired</span>
+                                    <span className="side-bar-value">{formatDate(tv.last_air_date)}</span>
+                                </div>
+                            )}
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Seasons</span>
+                                <span className="side-bar-value">{tv.number_of_seasons || "N/A"}</span>
+                            </div>
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Episodes</span>
+                                <span className="side-bar-value">{tv.number_of_episodes || "N/A"}</span>
+                            </div>
+                        </div>
+
+                        {distributorLogos.length > 0 && (
+                            <div className="distributor-logos-container">
+                                {distributorLogos.map((company) => (
+                                    <img
+                                        key={company.id}
+                                        src={imageUrl(company.logo_path, "w300")}
+                                        alt={company.name}
+                                        title={company.name}
+                                        className="distributor-logo"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = "none";
+                                        }}
+                                    />
+                                ))}
                             </div>
                         )}
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Seasons</span>
-                            <span className="side-bar-value">{tv.number_of_seasons || "N/A"}</span>
-                        </div>
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Episodes</span>
-                            <span className="side-bar-value">{tv.number_of_episodes || "N/A"}</span>
-                        </div>
                     </div>
 
                     {trailers.length > 0 && (
@@ -1138,6 +1241,15 @@ const TvDetails = () => {
                     </div>
                 </div>
             )}
+
+            <MediaInsightsModal 
+                isOpen={showInsightsModal} 
+                onClose={() => setShowInsightsModal(false)} 
+                type="tv" 
+                media={tv} 
+                omdbData={omdbData} 
+                mdbListData={mdbListData} 
+            />
         </div>
     );
 };

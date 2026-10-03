@@ -4,10 +4,13 @@ import { ChevronLeft, ChevronRight, Star, X, LayoutGrid, Plus, Check, Bookmark, 
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
 import ListModal from "../components/ListModal";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel, isMajorStudio } from "../utils/tmdb";
 import { addToHistory, getHistory, removeFromHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
+import { getOmdbDetails } from "../utils/omdb";
+import { getMdbListDetails } from "../utils/mdblist";
+import MediaInsightsModal from "../components/MediaInsightsModal";
 
 const formatRuntime = (runtime) => {
     if (!runtime) return "N/A";
@@ -207,6 +210,8 @@ const MovieDetails = () => {
     const [listModalItem, setListModalItem] = useState(null);
     const [trailers, setTrailers] = useState([]);
     const [selectedTrailer, setSelectedTrailer] = useState(null);
+    const [omdbData, setOmdbData] = useState(null);
+    const [mdbListData, setMdbListData] = useState(null);
 
     useEffect(() => {
         if (selectedTrailer) {
@@ -229,10 +234,37 @@ const MovieDetails = () => {
     const { customLists, toggleItemInList, getListsForItem, createList } = useCustomListsStore();
     const [showListDropdown, setShowListDropdown] = useState(false);
     const [isCreatingInline, setIsCreatingInline] = useState(false);
+    const [showInsightsModal, setShowInsightsModal] = useState(false);
     const [newListNameInline, setNewListNameInline] = useState("");
     const dropdownRef = useRef(null);
     const inlineInputRefDesktop = useRef(null);
     const inlineInputRefMobile = useRef(null);
+
+    const [isWatched, setIsWatched] = useState(() => {
+        const history = getHistory();
+        const currentId = movie?.id || (id ? Number(id) : null);
+        return history.some(h => h.id === currentId || (movie?.id && h.id === movie.id));
+    });
+
+    useEffect(() => {
+        const history = getHistory();
+        const currentId = movie?.id || (id ? Number(id) : null);
+        setIsWatched(history.some(h => h.id === currentId || (movie?.id && h.id === movie.id)));
+    }, [id, movie?.id]);
+
+    const handleToggleWatched = () => {
+        const targetItem = movie;
+        const targetId = targetItem?.id || Number(id);
+        if (isWatched) {
+            removeFromHistory(targetId);
+            setIsWatched(false);
+            toast.success("Removed from watched");
+        } else {
+            addToHistory(targetItem || { id: targetId }, "movie");
+            setIsWatched(true);
+            toast.success("Marked as watched");
+        }
+    };
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -353,6 +385,8 @@ const MovieDetails = () => {
         setLogoError(false);
         setShowFullOverview(false);
         setLogoFetched(false);
+        setOmdbData(null);
+        setMdbListData(null);
 
         const fetchAllData = async () => {
             try {
@@ -362,6 +396,28 @@ const MovieDetails = () => {
                     tmdbGetImages("movie", id),
                     tmdbFetch(`/movie/${id}/release_dates`)
                 ]);
+
+                // Fetch OMDb & MDBList ratings and fallback posters concurrently
+                if (fullData.imdb_id || fullData.title) {
+                    const yearStr = (fullData.release_date || "").slice(0, 4);
+                    getOmdbDetails({
+                        imdbId: fullData.imdb_id,
+                        title: fullData.title,
+                        year: yearStr,
+                        type: "movie"
+                    }).then(data => {
+                        if (data) setOmdbData(data);
+                    }).catch(() => {});
+
+                    getMdbListDetails({
+                        imdbId: fullData.imdb_id,
+                        title: fullData.title,
+                        year: yearStr,
+                        type: "movie"
+                    }).then(data => {
+                        if (data) setMdbListData(data);
+                    }).catch(() => {});
+                }
 
                 // Check if the movie has had a digital release
                 const today = new Date();
@@ -454,6 +510,9 @@ const MovieDetails = () => {
     const activeLists = getListsForItem(movie.id);
     const inAnyList = activeLists.length > 0;
     const inList = isItemInList(movie.id);
+    const distributorLogos = (movie.production_companies || [])
+        .filter(company => Boolean(company.logo_path) && isMajorStudio(company.name))
+        .slice(0, 4);
 
     const handleCreateListInline = (e) => {
         if (e) e.preventDefault();
@@ -499,8 +558,14 @@ const MovieDetails = () => {
                 <div className="details-hero-image-wrapper">
                     <img
                         className="details-hero-image"
-                        src={imageUrl(movie.backdrop_path || movie.poster_path, "original")}
+                        src={imageUrl(movie.backdrop_path || movie.poster_path, "original", omdbData?.poster || mdbListData?.poster || "/hero.png")}
                         alt={title}
+                        onError={(e) => {
+                            const fallback = omdbData?.poster || mdbListData?.poster;
+                            if (fallback && e.currentTarget.src !== fallback) {
+                                e.currentTarget.src = fallback;
+                            }
+                        }}
                     />
                 </div>
                 <div className="details-hero-shade" />
@@ -538,6 +603,14 @@ const MovieDetails = () => {
                                     <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
                                 </svg>
                                 <span>Play</span>
+                            </button>
+                            <button 
+                                className={`details-action-btn watched-btn ${isWatched ? 'active' : ''}`}
+                                onClick={handleToggleWatched}
+                                title={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                                aria-label={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                            >
+                                <Eye size={20} color={isWatched ? "#4cd964" : "currentColor"} />
                             </button>
                             <div className="add-to-list-wrapper" ref={dropdownRef}>
                                 <button 
@@ -624,13 +697,22 @@ const MovieDetails = () => {
                         </div>
                         <div className="details-hero-meta">
                             {rating && (
-                                <span className="rating">
+                                <span className="rating" title="TMDB Rating">
                                     <Star size={15} fill="currentColor" />
                                     {rating}
                                 </span>
                             )}
                             <span>Movie</span>
                             <span className="maturity">{movie.adult ? "18+" : "12+"}</span>
+                            <button 
+                                type="button" 
+                                className="details-overview-info-btn"
+                                onClick={() => setShowInsightsModal(true)}
+                                title="Insights"
+                                aria-label="Open Insights"
+                            >
+                                <Info size={14} strokeWidth={2.2} />
+                            </button>
                         </div>
                         <div className="director-synopsis-group">
                             <div className="details-hero-director">
@@ -697,27 +779,47 @@ const MovieDetails = () => {
                         </div>
                     </div>
 
-                    <div className="details-hero-side-bar">
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Status</span>
-                            <span className="side-bar-value">{movie.status || "N/A"}</span>
+                    <div className="details-hero-side-wrapper">
+                        <div className="details-hero-side-bar">
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Status</span>
+                                <span className="side-bar-value">{movie.status || "N/A"}</span>
+                            </div>
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Language</span>
+                                <span className="side-bar-value">{(movie.original_language || "EN").slice(0, 2).toUpperCase()}</span>
+                            </div>
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Genres</span>
+                                <span className="side-bar-value">{movie.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
+                            </div>
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Runtime</span>
+                                <span className="side-bar-value">{formatRuntime(movie.runtime)}</span>
+                            </div>
+                            <div className="side-bar-item">
+                                <span className="side-bar-label">Release Date</span>
+                                <span className="side-bar-value">{formatDate(movie.release_date)}</span>
+                            </div>
                         </div>
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Language</span>
-                            <span className="side-bar-value">{(movie.original_language || "EN").slice(0, 2).toUpperCase()}</span>
-                        </div>
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Genres</span>
-                            <span className="side-bar-value">{movie.genres?.map(g => g.name).join(" • ") || "N/A"}</span>
-                        </div>
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Runtime</span>
-                            <span className="side-bar-value">{formatRuntime(movie.runtime)}</span>
-                        </div>
-                        <div className="side-bar-item">
-                            <span className="side-bar-label">Release Date</span>
-                            <span className="side-bar-value">{formatDate(movie.release_date)}</span>
-                        </div>
+
+                        {distributorLogos.length > 0 && (
+                            <div className="distributor-logos-container">
+                                {distributorLogos.map((company) => (
+                                    <img
+                                        key={company.id}
+                                        src={imageUrl(company.logo_path, "w300")}
+                                        alt={company.name}
+                                        title={company.name}
+                                        className="distributor-logo"
+                                        loading="lazy"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = "none";
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {trailers.length > 0 && (
@@ -1100,6 +1202,15 @@ const MovieDetails = () => {
                     </div>
                 </div>
             )}
+
+            <MediaInsightsModal 
+                isOpen={showInsightsModal} 
+                onClose={() => setShowInsightsModal(false)} 
+                type="movie" 
+                media={movie} 
+                omdbData={omdbData} 
+                mdbListData={mdbListData} 
+            />
         </div>
     );
 };

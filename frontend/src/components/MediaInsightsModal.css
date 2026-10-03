@@ -1,0 +1,560 @@
+/* ==========================================================================
+   Media Insights Modal - Seamless Cinematic Theme
+   Uses site primary and secondary text variables, no boxes/dividers/leaves
+   ========================================================================== */
+
+.insights-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.insights-modal-container {
+    width: min(800px, 94vw);
+    max-height: 85vh;
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    animation: scaleIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.96) translateY(8px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Header */
+.insights-modal-header {
+    padding: 28px 32px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.insights-modal-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+    font-family: var(--app-font);
+}
+
+.insights-count-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: var(--mono-font) !important;
+}
+
+.insights-close-btn {
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 6px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid transparent;
+}
+
+.insights-close-btn:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.insights-close-btn:active {
+    transform: scale(0.94);
+}
+
+/* Content Area */
+.insights-modal-content {
+    padding: 8px 32px 32px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+.insights-modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+.insights-modal-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+.insights-modal-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+}
+.insights-modal-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+/* Section */
+.insights-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Metrics Row (Clean column layout without boxes or vertical dividers)
+   -------------------------------------------------------------------------- */
+.insights-metrics-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    gap: clamp(20px, 3.5vw, 44px);
+}
+
+.metric-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+    min-width: 0;
+    cursor: pointer;
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 22px;
+}
+
+.metric-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-family: var(--mono-font) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.provider-lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.provider-logo-svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+.provider-name {
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    font-family: var(--mono-font) !important;
+    white-space: nowrap;
+    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metric-value {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+}
+
+.metric-score {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    line-height: 1.1;
+    font-family: var(--app-font);
+    white-space: nowrap;
+    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metric-score.finance-score {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    font-family: var(--app-font);
+}
+
+.metric-subscore {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-family: var(--mono-font) !important;
+    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.metric-na {
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-dim);
+    font-family: var(--app-font);
+}
+
+/* --- Rating Column Hover Animations --- */
+
+/* 1. IMDb */
+.imdb-badge {
+    fill: #ffffff;
+    transition: fill 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.imdb-text {
+    fill: #000000;
+}
+.metric-column.imdb-col:hover .imdb-badge {
+    fill: #F5C518;
+}
+.metric-column.imdb-col:hover .metric-score {
+    color: #F5C518;
+}
+.metric-column.imdb-col:hover .metric-label {
+    color: #F5C518;
+}
+.metric-column.imdb-col:hover .metric-subscore {
+    color: rgba(245, 197, 24, 0.75);
+}
+
+/* 2. Rotten Tomatoes */
+.rt-body, .rt-splat {
+    fill: #ffffff;
+    transition: fill 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rt-stem {
+    fill: #000000;
+    transition: fill 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.metric-column.rt-col:hover .rt-body {
+    fill: #FA320A;
+}
+.metric-column.rt-col:hover .rt-stem {
+    fill: #00912D;
+}
+.metric-column.rt-col:hover .rt-splat {
+    fill: #0AC855;
+}
+.metric-column.rt-col:hover .metric-score {
+    color: #FA320A;
+}
+.metric-column.rt-col:hover .metric-label {
+    color: #FA320A;
+}
+.metric-column.rt-col.is-rotten:hover .metric-score {
+    color: #0AC855;
+}
+.metric-column.rt-col.is-rotten:hover .metric-label {
+    color: #0AC855;
+}
+
+/* 3. Letterboxd */
+.lb-dot {
+    fill: #ffffff;
+    transition: fill 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lb-overlap {
+    fill: #000000;
+    transition: fill 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.metric-column.lb-col:hover .lb-dot-left {
+    fill: #FF8000;
+}
+.metric-column.lb-col:hover .lb-dot-center {
+    fill: #00E054;
+}
+.metric-column.lb-col:hover .lb-dot-right {
+    fill: #40BCF4;
+}
+.metric-column.lb-col:hover .lb-overlap {
+    fill: #0b0d10;
+}
+.metric-column.lb-col:hover .metric-score {
+    color: #00E054;
+}
+.metric-column.lb-col:hover .metric-label {
+    color: #00E054;
+}
+.metric-column.lb-col:hover .metric-subscore {
+    color: rgba(0, 224, 84, 0.75);
+}
+
+/* 4. Metacritic */
+.mc-ring {
+    fill: #000000;
+    stroke: #ffffff;
+    stroke-width: 5.5px;
+    transition: stroke 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mc-m {
+    fill: #ffffff;
+}
+.metric-column.mc-col:hover .mc-ring {
+    stroke: #FFCC33;
+}
+.metric-column.mc-col:hover .metric-score {
+    color: #FFCC33;
+}
+.metric-column.mc-col:hover .metric-label {
+    color: #FFCC33;
+}
+.metric-column.mc-col:hover .metric-subscore {
+    color: rgba(255, 204, 51, 0.75);
+}
+
+.text-network {
+    font-size: 15px !important;
+    font-weight: 600;
+    color: var(--text);
+    font-family: var(--app-font);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Awards & Nominations: Clean Typography Showcase (No Leaves)
+   -------------------------------------------------------------------------- */
+.awards-section-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+.awards-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.awards-heading-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-family: var(--app-font);
+    letter-spacing: 0.01em;
+}
+
+.awards-heading-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: var(--app-font);
+}
+
+/* 2. Awards Showcase Container */
+.awards-showcase-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(32px, 8vw, 80px);
+    padding: 10px 0 4px;
+    width: 100%;
+}
+
+/* Typographic Award Badge */
+.award-badge-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    padding: 0 8px;
+    flex-shrink: 0;
+}
+
+.award-badge-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    max-width: 220px;
+    min-width: 140px;
+    gap: 3px;
+}
+
+.award-status {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: var(--mono-font) !important;
+}
+
+.award-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text);
+    line-height: 1.3;
+    font-family: var(--app-font);
+}
+
+.award-subtitle {
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-family: var(--mono-font) !important;
+}
+
+.award-year {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.03em;
+    font-family: var(--app-font);
+    margin-top: 2px;
+}
+
+/* Full text summary without box */
+.awards-text-summary {
+    background: transparent;
+    border: none;
+    padding: 4px 0 0;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    line-height: 1.45;
+    font-family: var(--mono-font) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive (matches Collection Modal mobile experience)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .insights-modal-container {
+        width: min(800px, 94vw);
+        max-height: 85vh;
+        margin: auto;
+    }
+    
+    .insights-metrics-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .insights-modal-overlay {
+        padding: 12px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .insights-modal-container {
+        border-radius: 14px;
+        max-height: 85vh;
+        width: 94vw;
+        margin: auto;
+    }
+    
+    .insights-modal-header {
+        padding: 18px 20px 8px;
+    }
+
+    .insights-modal-title {
+        font-size: 18px;
+    }
+
+    .insights-count-badge {
+        font-size: 10px;
+    }
+
+    .insights-modal-content {
+        padding: 0 20px 20px;
+        gap: 16px;
+    }
+
+    .insights-section-title {
+        font-size: 10px;
+        margin-bottom: 8px;
+    }
+
+    .insights-metrics-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px 14px;
+    }
+
+    .metric-column {
+        gap: 6px;
+    }
+
+    .metric-score {
+        font-size: 20px;
+    }
+
+    .metric-score.finance-score {
+        font-size: 17px;
+    }
+
+    .metric-subscore {
+        font-size: 12px;
+    }
+
+    .awards-showcase-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        gap: 12px;
+    }
+
+    .award-badge-card {
+        min-width: 0;
+    }
+
+    .award-total {
+        font-size: 26px;
+    }
+
+    .award-cat {
+        font-size: 10.5px;
+    }
+
+    .awards-text-summary {
+        font-size: 11px;
+    }
+}

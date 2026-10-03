@@ -1,4 +1,4 @@
-﻿# 📋 EpicStream Feature Backlog & Roadmap
+# 📋 EpicStream Feature Backlog & Roadmap
 
 This document serves as a bucketed backlog for planned features, optimizations, and enhancement ideas to implement in future releases.
 
@@ -43,3 +43,26 @@ This document serves as a bucketed backlog for planned features, optimizations, 
 - **Description:** Quick keyboard shortcuts for playback speed, jump-to-next episode button directly in video player overlay.
 
 ---
+
+## 🔌 Metadata & API Providers (Backup & Failover)
+
+### 1. TheTVDB (TVDB v4) Integration as Backup Provider
+- **Status:** Backlog / Deferred
+- **API Key:** `b4d8e69f-6295-4c15-9b8c-390df5812061`
+- **Authentication Requirement:** TheTVDB v4 API endpoint (`https://api4.thetvdb.com/v4/login`) requires user developer keys to authenticate with both `apikey` and a subscriber/project `pin`:
+  ```json
+  {
+    "apikey": "b4d8e69f-6295-4c15-9b8c-390df5812061",
+    "pin": "<SUBSCRIBER_OR_PROJECT_PIN>"
+  }
+  ```
+- **How to retrieve PIN:**
+  1. Log into your account at [TheTVDB.com](https://thetvdb.com/).
+  2. Click the user menu in the top-right corner and select **Dashboard**.
+  3. Go to **API Keys** or **Subscription**.
+  4. Your unique **PIN** (or Subscriber PIN / Project PIN) is displayed next to or under the API key.
+- **Intended Use Case:**
+  - Additional fallback for TV show episode lists, air dates, series artwork, and episode images when TMDB or MDBList is missing specific regional metadata or high-res assets.
+
+---
+

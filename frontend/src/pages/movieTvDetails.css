@@ -275,13 +275,13 @@
     color: var(--accent);
 }
 
-.details-hero-meta span {
+.details-hero-meta > span {
     display: inline-flex;
     align-items: center;
     gap: 8px;
 }
 
-.details-hero-meta span:not(:last-child)::after {
+.details-hero-meta > span:not(:last-child)::after {
     content: "";
     width: 3px;
     height: 3px;
@@ -290,8 +290,99 @@
     background: #475569;
 }
 
-.details-hero-side-bar {
+.details-hero-meta > span:has(+ .details-overview-info-btn)::after {
+    display: none;
+}
+
+.details-overview-info-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin-left: 2px;
+    border-radius: 50%;
+    line-height: 1;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.details-overview-info-btn:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.details-overview-info-btn:active {
+    transform: scale(0.92);
+}
+
+.omdb-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px !important;
+}
+
+.omdb-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.imdb-pill {
+    background: #f5c518;
+    color: #000;
+}
+
+.rt-pill {
+    background: transparent;
+    padding: 0;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.mc-pill {
+    background: #66cc33;
+    color: #000;
+}
+
+.lb-pill {
+    background: #00e054;
+    color: #000;
+}
+
+.trakt-pill {
+    background: #ed1c24;
+    color: #fff;
+}
+
+.omdb-score {
+    font-weight: 600;
+    color: #e2e8f0;
+    font-size: 13.5px;
+}
+
+.details-hero-side-wrapper {
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    width: 300px;
+    max-width: 90%;
+}
+
+.details-hero-side-bar {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -301,9 +392,34 @@
     border-radius: 16px;
     backdrop-filter: blur(20px); /* Slightly stronger blur for premium glassmorphism */
     -webkit-backdrop-filter: blur(20px);
-    width: 300px; /* Expanded from 280px */
-    max-width: 90%;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.distributor-logos-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 4px 8px;
+}
+
+.distributor-logo {
+    max-height: 28px;
+    max-width: 115px;
+    object-fit: contain;
+    filter: brightness(0) invert(0.82);
+    opacity: 0.75;
+    transition: opacity 0.2s ease, filter 0.2s ease, transform 0.2s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.distributor-logo:hover {
+    opacity: 1;
+    filter: brightness(0) invert(1);
+    transform: translateY(-1px);
 }
 
 .side-bar-item {
@@ -396,6 +512,17 @@
 
 .details-action-btn.active {
     color: var(--accent);
+}
+
+.details-action-btn.watched-btn.active {
+    color: #4cd964;
+    border-color: rgba(76, 217, 100, 0.35);
+}
+
+.details-action-btn.watched-btn.active:hover {
+    color: #4cd964;
+    border-color: rgba(76, 217, 100, 0.5);
+    background: rgba(76, 217, 100, 0.1);
 }
 
 .details-action-group {
@@ -1229,13 +1356,13 @@
     .details-hero-text {
         max-width: calc(100% - 340px);
     }
-    .details-hero-side-bar {
+    .details-hero-side-wrapper {
         position: absolute;
         right: 0;
         top: 130px;
         z-index: 10;
     }
-    .details-hero-side-bar.tv-sidebar {
+    .details-hero-side-wrapper.tv-sidebar-wrapper {
         top: 70px;
     }
     .episode-list {
@@ -1275,12 +1402,19 @@
         padding: 0 20px;
         gap: 20px;
     }
+    .details-hero-side-wrapper {
+        position: static;
+        margin-top: 0;
+        width: 90%;
+        max-width: 420px;
+        align-self: center;
+    }
     .details-hero-side-bar {
         position: static;
         margin-top: 0;
         border-radius: 16px;
-        width: 90%;
-        max-width: 420px; /* Expanded from 320px to look more fit on mobile */
+        width: 100%;
+        max-width: 100%;
         align-self: center;
         padding: 22px 26px; /* Expanded padding */
         gap: 12px;
