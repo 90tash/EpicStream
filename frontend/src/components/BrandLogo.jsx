@@ -4,14 +4,11 @@ import "./brandLogo.css";
 const BrandLogo = ({ compact = false }) => {
     return (
         <span className={`brand-logo ${compact ? "compact" : ""}`} aria-label="EpicStream">
-            <span className="brand-mark">
-                <img 
-                    src="/favicon.png" 
-                    alt="EpicStream Logo" 
-                    className="logo-image"
-                />
-            </span>
-            <span className="brand-name">EpicStream</span>
+            <img 
+                src="/epicstream-logo.png" 
+                alt="EpicStream" 
+                className="brand-logo-img"
+            />
         </span>
     );
 };
