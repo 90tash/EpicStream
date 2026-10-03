@@ -257,13 +257,24 @@ const MediaInsightsModal = ({ isOpen, onClose, type = "movie", media = {}, omdbD
 
     // --- Ratings ---
     const imdbScore = omdbData?.imdbRating || mdbListData?.imdb || null;
-    const rtCritic = omdbData?.rottenTomatoes || (mdbListData?.tomatoes ? `${mdbListData.tomatoes}%` : null);
-    const isRotten = rtCritic ? parseInt(String(rtCritic).replace(/[^0-9]/g, ""), 10) < 60 : false;
+
+    // Normalize Rotten Tomatoes to always have exactly one "%"
+    const rawRt = omdbData?.rottenTomatoes || mdbListData?.tomatoes || null;
+    let rtCritic = null;
+    let isRotten = false;
+    if (rawRt) {
+        const rtNum = parseInt(String(rawRt).replace(/[^0-9]/g, ""), 10);
+        if (!isNaN(rtNum) && rtNum > 0) {
+            rtCritic = `${rtNum}%`;
+            isRotten = rtNum < 60;
+        }
+    }
 
     const rawLb = mdbListData?.letterboxd;
     const lbScore = rawLb ? (typeof rawLb === "number" ? rawLb.toFixed(1) : rawLb) : null;
 
     const metascore = omdbData?.metacritic || mdbListData?.metacritic || null;
+    const hasAnyRating = Boolean(imdbScore || rtCritic || (isMovie && lbScore) || metascore);
 
     // --- Financials (Movies) ---
     const budgetRaw = parseNumber(media?.budget || mdbListData?.budget);
@@ -293,7 +304,7 @@ const MediaInsightsModal = ({ isOpen, onClose, type = "movie", media = {}, omdbD
             <div className="insights-modal-container" onClick={(e) => e.stopPropagation()}>
                 {/* Modal Header */}
                 <div className="insights-modal-header">
-                    <div>
+                    <div className="insights-header-titles">
                         <h2 className="insights-modal-title">
                             {media?.title || media?.name || (isMovie ? "Movie Insights" : "Show Insights")}
                         </h2>
@@ -313,78 +324,72 @@ const MediaInsightsModal = ({ isOpen, onClose, type = "movie", media = {}, omdbD
 
                 <div className="insights-modal-content">
                     {/* SECTION 1: RATINGS SITES */}
-                    <div className="insights-section">
-                        <div className="insights-metrics-row ratings-metrics-row">
-                            {/* 1. IMDb */}
-                            <div className="metric-column imdb-col">
-                                <div className="metric-header">
-                                    <ImdbLogo />
-                                    <span className="metric-label">IMDb</span>
-                                </div>
-                                <div className="metric-value">
-                                    {imdbScore ? (
-                                        <>
+                    {hasAnyRating ? (
+                        <div className="insights-section">
+                            <div className="insights-metrics-row ratings-metrics-row">
+                                {/* 1. IMDb */}
+                                {imdbScore && (
+                                    <div className="metric-column imdb-col">
+                                        <div className="metric-header">
+                                            <ImdbLogo />
+                                            <span className="metric-label">IMDb</span>
+                                        </div>
+                                        <div className="metric-value">
                                             <span className="metric-score">{imdbScore}</span>
                                             <span className="metric-subscore">/10</span>
-                                        </>
-                                    ) : (
-                                        <span className="metric-na">—</span>
-                                    )}
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
-                            {/* 2. Rotten Tomatoes */}
-                            <div className={`metric-column rt-col ${isRotten ? "is-rotten" : ""}`}>
-                                <div className="metric-header">
-                                    <RottenTomatoesLogo score={rtCritic} />
-                                    <span className="metric-label">Rotten Tomatoes</span>
-                                </div>
-                                <div className="metric-value">
-                                    {rtCritic ? (
-                                        <span className="metric-score">{rtCritic}</span>
-                                    ) : (
-                                        <span className="metric-na">—</span>
-                                    )}
-                                </div>
-                            </div>
+                                {/* 2. Rotten Tomatoes */}
+                                {rtCritic && (
+                                    <div className={`metric-column rt-col ${isRotten ? "is-rotten" : ""}`}>
+                                        <div className="metric-header">
+                                            <RottenTomatoesLogo score={rtCritic} />
+                                            <span className="metric-label">Rotten Tomatoes</span>
+                                        </div>
+                                        <div className="metric-value">
+                                            <span className="metric-score">{rtCritic}</span>
+                                        </div>
+                                    </div>
+                                )}
 
-                            {/* 3. Letterboxd */}
-                            <div className="metric-column lb-col">
-                                <div className="metric-header">
-                                    <LetterboxdLogo />
-                                    <span className="metric-label">Letterboxd</span>
-                                </div>
-                                <div className="metric-value">
-                                    {lbScore ? (
-                                        <>
+                                {/* 3. Letterboxd (Movies only) */}
+                                {isMovie && lbScore && (
+                                    <div className="metric-column lb-col">
+                                        <div className="metric-header">
+                                            <LetterboxdLogo />
+                                            <span className="metric-label">Letterboxd</span>
+                                        </div>
+                                        <div className="metric-value">
                                             <span className="metric-score">{lbScore}</span>
                                             <span className="metric-subscore">/5</span>
-                                        </>
-                                    ) : (
-                                        <span className="metric-na">—</span>
-                                    )}
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
-                            {/* 4. Metacritic */}
-                            <div className="metric-column mc-col">
-                                <div className="metric-header">
-                                    <MetacriticLogo />
-                                    <span className="metric-label">Metacritic</span>
-                                </div>
-                                <div className="metric-value">
-                                    {metascore ? (
-                                        <>
+                                {/* 4. Metacritic */}
+                                {metascore && (
+                                    <div className="metric-column mc-col">
+                                        <div className="metric-header">
+                                            <MetacriticLogo />
+                                            <span className="metric-label">Metacritic</span>
+                                        </div>
+                                        <div className="metric-value">
                                             <span className="metric-score">{metascore}</span>
                                             <span className="metric-subscore">/100</span>
-                                        </>
-                                    ) : (
-                                        <span className="metric-na">—</span>
-                                    )}
-                                </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="insights-section">
+                            <div className="no-ratings-placeholder">
+                                <span>Ratings not yet available</span>
+                            </div>
+                        </div>
+                    )}
 
                     {/* SECTION 2: BOX OFFICE (Movies) OR SERIES METRICS (TV) */}
                     {isMovie && hasFinancialData && (

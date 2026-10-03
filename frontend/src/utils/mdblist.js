@@ -73,32 +73,32 @@ export const getMdbListDetails = async ({ imdbId, title, year, type = "movie" } 
 
         if (Array.isArray(item.ratings)) {
             const lb = item.ratings.find(r => r.source === "letterboxd");
-            if (lb && lb.value !== null && lb.value !== undefined) {
+            if (lb && lb.value !== null && lb.value !== undefined && Number(lb.value) > 0) {
                 letterboxd = typeof lb.value === "number" ? lb.value.toFixed(1) : String(lb.value);
             }
 
             const tr = item.ratings.find(r => r.source === "trakt");
-            if (tr && tr.value !== null && tr.value !== undefined) {
+            if (tr && tr.value !== null && tr.value !== undefined && Number(tr.value) > 0) {
                 trakt = `${tr.value}%`;
             }
 
             const im = item.ratings.find(r => r.source === "imdb");
-            if (im && im.value !== null && im.value !== undefined) {
+            if (im && im.value !== null && im.value !== undefined && Number(im.value) > 0) {
                 imdb = typeof im.value === "number" ? im.value.toFixed(1) : String(im.value);
             }
 
             const rt = item.ratings.find(r => r.source === "tomatoes");
-            if (rt && rt.value !== null && rt.value !== undefined) {
+            if (rt && rt.value !== null && rt.value !== undefined && Number(rt.value) > 0) {
                 tomatoes = `${rt.value}%`;
             }
 
             const rta = item.ratings.find(r => r.source === "tomatoesaudience");
-            if (rta && rta.value !== null && rta.value !== undefined) {
+            if (rta && rta.value !== null && rta.value !== undefined && Number(rta.value) > 0) {
                 tomatoesAudience = `${rta.value}%`;
             }
 
             const mc = item.ratings.find(r => r.source === "metacritic");
-            if (mc && mc.value !== null && mc.value !== undefined) {
+            if (mc && mc.value !== null && mc.value !== undefined && Number(mc.value) > 0) {
                 metacritic = String(mc.value);
             }
         }

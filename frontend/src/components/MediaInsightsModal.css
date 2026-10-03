@@ -49,13 +49,19 @@
     align-items: flex-start;
 }
 
+.insights-header-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
 .insights-modal-title {
     font-size: 22px;
     font-weight: 800;
     letter-spacing: -0.01em;
     color: var(--text);
-    margin: 0 0 4px 0;
-    line-height: 1.2;
+    margin: 0;
+    line-height: 1.1;
     font-family: var(--app-font);
 }
 
@@ -66,6 +72,8 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-family: var(--mono-font) !important;
+    line-height: 1.1;
+    margin: 0;
 }
 
 .insights-close-btn {
@@ -127,22 +135,31 @@
 .insights-metrics-row {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
+    justify-content: flex-start;
     background: transparent;
     border: none;
     border-radius: 0;
     padding: 0;
-    gap: clamp(20px, 3.5vw, 44px);
+    gap: clamp(24px, 4vw, 56px);
 }
 
 .metric-column {
-    flex: 1;
+    flex: 0 1 170px;
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding: 0;
-    min-width: 0;
+    min-width: 100px;
     cursor: pointer;
+}
+
+.no-ratings-placeholder {
+    padding: 10px 0 4px;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-family: var(--mono-font) !important;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .metric-header {
@@ -495,12 +512,20 @@
         padding: 18px 20px 8px;
     }
 
+    .insights-header-titles {
+        gap: 1px;
+    }
+
     .insights-modal-title {
         font-size: 18px;
+        line-height: 1.1;
+        margin: 0;
     }
 
     .insights-count-badge {
         font-size: 10px;
+        line-height: 1.1;
+        margin: 0;
     }
 
     .insights-modal-content {
