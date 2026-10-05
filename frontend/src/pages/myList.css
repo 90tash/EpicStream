@@ -206,6 +206,13 @@
     flex-direction: column;
     gap: 6px;
     text-decoration: none;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.my-list-item:active {
+    transform: scale(0.96) !important;
+    transition-duration: 0.1s;
 }
 
 .my-list-item .card-img-wrapper {
@@ -217,11 +224,12 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
 }
 
 .my-list-item:hover .card-img-wrapper {
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .my-list-item img {
@@ -414,6 +422,13 @@
     flex-direction: column;
     gap: 12px;
     text-align: left;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.list-folder-card:active {
+    transform: scale(0.96) !important;
+    transition-duration: 0.1s;
 }
 
 .folder-preview-container {

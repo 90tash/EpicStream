@@ -50,14 +50,15 @@
     position: relative;
     z-index: 2;
     padding-top: 48px;
-    animation: glideReveal 1s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+    animation: glideReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform, opacity;
 }
 
 @keyframes glideReveal {
     from { 
         opacity: 0; 
-        transform: translateX(-60px); /* Glide content from left */
-        filter: blur(8px);
+        transform: translateX(-40px); /* Apple-grade kinetic slide */
+        filter: blur(6px);
     }
     to { 
         opacity: 1; 
@@ -177,7 +178,8 @@
     cursor: pointer;
     color: #000; /* Black text/icon */
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
 }
 
 .browse-actions .browse-play:hover {
@@ -185,25 +187,35 @@
     transform: scale(1.03); /* Slight scale on hover */
 }
 
+.browse-actions .browse-play:active {
+    transform: scale(0.95) !important;
+    transition-duration: 0.1s;
+}
+
 .browse-action-group {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1); /* Outer border only */
+    background: rgba(15, 17, 21, 0.65);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
     border-radius: 9999px; /* Rounded pill shape */
     height: 54px; /* Same height as Play button */
     box-sizing: border-box;
     overflow: hidden; /* Clips children to curved border */
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    box-shadow: 
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+        0 15px 35px rgba(0, 0, 0, 0.4);
     padding: 0; /* Remove internal padding to allow full edge-to-edge hover */
-    transition: all 0.2s ease;
+    transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative; /* For absolutely positioned divider */
 }
 
 .browse-action-group:hover {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.24);
+    box-shadow: 
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.25),
+        0 15px 40px rgba(0, 0, 0, 0.5);
 }
 
 .browse-actions .browse-action-group .browse-group-btn {
@@ -242,8 +254,17 @@
     background: rgba(255, 255, 255, 0.1); /* Subtle hover background */
 }
 
+.browse-actions .browse-action-group .browse-group-btn:active {
+    background: rgba(255, 255, 255, 0.16);
+}
+
 .browse-actions .browse-action-group .browse-group-btn svg {
-    transition: color 200ms ease;
+    transition: color 200ms ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.browse-actions .browse-action-group .browse-group-btn:active svg {
+    transform: scale(0.88);
+    transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .browse-actions .browse-action-group .browse-group-btn:hover svg {
@@ -630,6 +651,8 @@
     padding: 0 clamp(22px, 4vw, 84px) 12px 0;
     scrollbar-width: none;
     scroll-behavior: smooth;
+    mask-image: linear-gradient(to right, black 0%, black calc(100% - clamp(24px, 4vw, 70px)), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - clamp(24px, 4vw, 70px)), transparent 100%);
 }
 
 .browse-slider::-webkit-scrollbar {
@@ -680,6 +703,13 @@
     gap: 4px; /* Tighter vertical gap */
     text-align: left;
     overflow: visible;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.browse-card:active {
+    transform: scale(0.96) !important;
+    transition-duration: 0.1s;
 }
 
 /* Internal Zoom Effect */
@@ -693,11 +723,12 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
 }
 
 .browse-card:hover .card-img-wrapper {
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .browse-card img {

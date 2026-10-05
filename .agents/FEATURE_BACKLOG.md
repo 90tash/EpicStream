@@ -41,6 +41,7 @@ This document serves as a bucketed backlog for planned features, optimizations, 
 
 ### 2. Video Player Enhancements
 - **Description:** Quick keyboard shortcuts for playback speed, jump-to-next episode button directly in video player overlay.
+- **Screen Wake Lock Testing & Implementation:** Allow `screen-wake-lock` in iframe and conditionally acquire top-level Wake Lock for servers that fail sleep prevention. See [md/server-wake-lock-audit.md](../md/server-wake-lock-audit.md) for full server checklist and implementation template.
 
 ---
 

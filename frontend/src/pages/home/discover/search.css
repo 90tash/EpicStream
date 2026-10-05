@@ -12,11 +12,11 @@
 .search-shade {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
     cursor: pointer;
-    animation: fadeIn 0.4s ease;
+    animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
@@ -78,21 +78,39 @@
 
 .search-category > button,
 .search-close {
-    height: 32px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 34px;
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
     color: #fff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    will-change: transform;
 }
 
 .search-category > button {
+    height: 34px;
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px) saturate(1.8);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    will-change: transform;
     padding: 0 12px;
     font-size: 12px;
     font-weight: 600;
@@ -100,12 +118,18 @@
 
 .search-category > button:hover,
 .search-close:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.35);
     color: var(--accent);
 }
 
+.search-category > button:active,
+.search-close:active {
+    transform: scale(0.92) !important;
+    transition-duration: 0.1s;
+}
+
 .search-category svg {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .search-category svg.open {
@@ -113,7 +137,7 @@
 }
 
 .search-close {
-    width: 32px;
+    width: 34px;
 }
 
 .search-category-menu {
@@ -121,12 +145,13 @@
     top: calc(100% + 8px);
     right: 0;
     width: 190px;
-    padding: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
-    background: rgba(15, 15, 15, 0.95);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    padding: 6px;
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    border-radius: 16px;
+    background: rgba(15, 17, 21, 0.92);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15), 0 20px 40px rgba(0, 0, 0, 0.5);
     z-index: 100;
 }
 
@@ -155,24 +180,25 @@
 }
 
 .search-input-wrap {
-    height: 46px;
+    height: 48px;
     width: 100%;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 0 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-    transition: all 0.3s ease;
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+    background: rgba(15, 17, 21, 0.75);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.14), 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .search-input-wrap:focus-within {
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.25), 0 0 0 4px rgba(255, 255, 255, 0.08), 0 12px 36px rgba(0, 0, 0, 0.5);
 }
 
 .search-input-wrap:focus-within svg {
@@ -200,27 +226,33 @@
     background: transparent;
     color: rgba(255, 255, 255, 0.3);
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: color 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .search-input-wrap button:hover {
     color: #fff;
 }
 
+.search-input-wrap button:active {
+    transform: scale(0.88);
+}
+
 .search-results-panel {
     max-height: 55vh;
     overflow-y: auto;
     padding: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
     border-radius: 18px;
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
+    background: rgba(15, 17, 21, 0.82);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12), 0 20px 50px rgba(0, 0, 0, 0.6);
     display: flex;
     flex-direction: column;
     gap: 2px;
     opacity: 0;
     transform: translateY(10px);
-    transition: all 0.4s ease;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: none;
 }
 
@@ -255,14 +287,21 @@
     gap: 10px;
     padding: 6px 10px;
     border-radius: 10px;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid transparent;
+    cursor: pointer;
+    will-change: transform;
 }
 
 .search-result-row:hover,
 .search-result-row.expanded {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.search-result-row:active {
+    transform: scale(0.98);
+    transition-duration: 0.1s;
 }
 
 .search-result-row img {
@@ -399,7 +438,13 @@
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+    will-change: transform;
+}
+
+.search-expanded-actions button:active {
+    transform: scale(0.94) !important;
+    transition-duration: 0.1s;
 }
 
 .mini-play {

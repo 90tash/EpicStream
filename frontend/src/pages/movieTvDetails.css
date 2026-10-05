@@ -478,7 +478,8 @@
     cursor: pointer;
     color: #000; /* Black text/icon */
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    transition: background 0.2s ease, transform 0.2s ease;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease, box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
 }
 
 .details-actions .details-play:hover {
@@ -486,10 +487,15 @@
     transform: scale(1.03); /* Slight scale on hover */
 }
 
+.details-actions .details-play:active {
+    transform: scale(0.95) !important;
+    transition-duration: 0.1s;
+}
+
 .details-action-btn {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(15, 17, 21, 0.65);
     color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
     border-radius: 9999px; /* Matches action group pill shape */
     width: 54px; /* Matching size */
     height: 54px;
@@ -498,16 +504,22 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15), 0 15px 35px rgba(0, 0, 0, 0.4);
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
 }
 
 .details-action-btn:hover {
     background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.24);
     color: var(--accent);
+}
+
+.details-action-btn:active {
+    transform: scale(0.94) !important;
+    transition-duration: 0.1s;
 }
 
 .details-action-btn.active {
@@ -528,22 +540,27 @@
 .details-action-group {
     display: flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1); /* Outer border only */
+    background: rgba(15, 17, 21, 0.65);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
     border-radius: 9999px; /* Rounded pill shape */
     height: 54px; /* Same height as Play button */
     box-sizing: border-box;
     overflow: hidden; /* Clips children to curved border */
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    box-shadow: 
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+        0 15px 35px rgba(0, 0, 0, 0.4);
     padding: 0; /* Remove internal padding to allow full edge-to-edge hover */
-    transition: all 0.2s ease;
+    transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative; /* For absolutely positioned divider */
 }
 
 .details-action-group:hover {
-    border-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.24);
+    box-shadow: 
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.25),
+        0 15px 40px rgba(0, 0, 0, 0.5);
 }
 
 .details-group-btn {
@@ -579,6 +596,19 @@
 .details-group-btn:hover {
     background: rgba(255, 255, 255, 0.1); /* Subtle hover background */
     color: var(--accent);
+}
+
+.details-group-btn:active {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.details-group-btn svg {
+    transition: color 200ms ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.details-group-btn:active svg {
+    transform: scale(0.88);
+    transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .details-group-btn.add-list-btn.active {
@@ -688,13 +718,13 @@
     top: calc(100% + 8px);
     left: 0;
     width: 220px;
-    padding: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 14px;
-    background: rgba(15, 15, 15, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    padding: 6px;
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    border-radius: 16px;
+    background: rgba(15, 17, 21, 0.92);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15), 0 20px 40px rgba(0, 0, 0, 0.5);
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -716,7 +746,13 @@
     align-items: center;
     justify-content: space-between;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.season-option:active {
+    transform: scale(0.97);
+    transition-duration: 0.1s;
 }
 
 .season-option-text {
@@ -1137,6 +1173,8 @@
     -webkit-overflow-scrolling: touch;
     width: 100%;
     scroll-snap-type: x mandatory;
+    mask-image: linear-gradient(to right, black 0%, black calc(100% - clamp(24px, 4vw, 70px)), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 0%, black calc(100% - clamp(24px, 4vw, 70px)), transparent 100%);
 }
 
 .cast-slider::-webkit-scrollbar {
@@ -1159,6 +1197,13 @@
     border: none;
     padding: 0;
     min-width: 0;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.cast-card:active {
+    transform: scale(0.95) !important;
+    transition-duration: 0.1s;
 }
 
 .cast-card:hover {
@@ -1250,6 +1295,13 @@
     text-align: left;
     overflow: hidden; /* Changed from visible to hidden to prevent overflow */
     min-width: 0; /* Ensures child elements can truncate */
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.similar-card:active {
+    transform: scale(0.96) !important;
+    transition-duration: 0.1s;
 }
 
 .similar-card-img-wrapper {
@@ -1262,6 +1314,12 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.similar-card:hover .similar-card-img-wrapper {
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.18);
 }
 
 .similar-card-shade {
@@ -1746,14 +1804,14 @@
     }
 }
 
-/* --- Collection Modal --- */
+/* --- Collection Modal (Unified with MediaInsightsModal & Filmography Toggle) --- */
 .collection-modal-overlay {
     position: fixed;
     inset: 0;
     z-index: 10000;
-    background: rgba(5, 6, 7, 0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1763,18 +1821,20 @@
 
 .collection-modal {
     width: min(860px, 94vw);
-    max-height: 80vh;
-    background: rgba(11, 13, 16, 0.96);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+    max-height: 85vh;
+    background: rgba(12, 14, 18, 0.88);
+    backdrop-filter: blur(28px) saturate(1.8);
+    -webkit-backdrop-filter: blur(28px) saturate(1.8);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    border-radius: 20px;
+    box-shadow: 
+        inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+        0 30px 80px rgba(0, 0, 0, 0.95);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     position: relative;
-    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes fadeIn {
@@ -1783,56 +1843,69 @@
 }
 
 @keyframes scaleIn {
-    from { transform: scale(0.95) translateY(12px); opacity: 0; }
+    from { transform: scale(0.92) translateY(16px); opacity: 0; }
     to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .collection-modal-header {
-    padding: 24px 28px 12px;
+    padding: 28px 32px 14px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
 }
 
-.collection-modal-header h2 {
+.collection-header-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.collection-modal-title {
     font-size: 22px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: -0.01em;
-    color: #fff;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    margin: 0 0 4px 0;
-    line-height: 1.2;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.1;
+    font-family: var(--app-font);
 }
 
 .collection-count-badge {
     font-size: 11px;
-    font-weight: 800;
-    color: var(--accent);
+    font-weight: 500;
+    color: var(--text-muted);
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    font-family: var(--mono-font) !important;
+    line-height: 1.1;
+    margin: 0;
 }
 
 .collection-close-btn {
     background: transparent;
-    border: 0;
+    border: 1px solid transparent;
     cursor: pointer;
-    color: #9aa3b2;
+    color: var(--text-muted);
     padding: 6px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .collection-close-btn:hover {
     border-color: rgba(255, 255, 255, 0.4);
-    color: var(--accent);
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.collection-close-btn:active {
+    transform: scale(0.94);
 }
 
 .collection-modal-body {
-    padding: 0 28px 28px;
+    padding: 8px 32px 32px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -1857,45 +1930,81 @@
 .collection-sort {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
+    gap: 12px;
+    margin-bottom: 2px;
 }
 
 .sort-label {
-    font-size: 12px;
-    color: #9aa3b2;
-    font-weight: 600;
-    margin-right: 4px;
-}
-
-.sort-btn {
-    height: 28px;
-    padding: 0 12px;
     font-size: 11px;
-    font-weight: 700;
-    border: 1px solid transparent;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-family: var(--mono-font) !important;
+    line-height: 1;
+}
+
+/* Sort toggle slider matching filmography section */
+.collection-sort-toggle {
+    position: relative;
+    display: flex;
+    background: rgba(15, 17, 21, 0.65);
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    padding: 3px;
+    border-radius: 999px;
+    width: 220px;
+    height: 34px;
+    box-sizing: border-box;
+    backdrop-filter: blur(24px) saturate(1.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.8);
+    box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.collection-sort-btn {
+    position: relative;
+    flex: 1;
     background: transparent;
-    color: #9aa3b2;
+    border: 0;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border-radius: 8px;
+    z-index: 2;
+    transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--app-font);
 }
 
-.sort-btn:hover {
-    color: #fff;
+.collection-sort-btn.active {
+    color: #000000;
 }
 
-.sort-btn.active {
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--accent);
+.collection-sort-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    height: calc(100% - 6px);
+    background: var(--accent);
+    border-radius: 999px;
+    z-index: 1;
+    transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+}
+
+.collection-sort-slider.rating {
+    transform: translateX(100%);
 }
 
 .collection-overview-text {
     font-size: 13.5px;
     line-height: 1.6;
-    color: #9aa3b2;
+    color: var(--text-muted);
     margin: 0;
+    font-family: var(--app-font);
 }
 
 /* --- Collection Cards & Slider --- */
@@ -1942,7 +2051,7 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
     position: relative;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .collection-card:hover .col-card-img-wrapper {
@@ -1953,7 +2062,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s ease;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .collection-card:hover img {
@@ -1964,12 +2073,13 @@
     margin-top: 4px;
     font-size: 13px;
     font-weight: 600;
-    color: #f1f5f9;
+    color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     padding: 0 2px;
-    transition: color 0.2s ease;
+    transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: var(--app-font);
 }
 
 .collection-card:hover .col-card-title {
@@ -1980,10 +2090,12 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 12px;
-    color: #64748b;
+    font-size: 11px;
+    color: var(--text-muted);
     font-weight: 500;
     padding: 0 2px;
+    font-family: var(--mono-font) !important;
+    letter-spacing: 0.04em;
 }
 
 .col-rating {
@@ -1996,30 +2108,46 @@
     color: var(--accent);
 }
 
+/* Glass Tactile Arrows matching MediaInsightsModal */
 .col-arrow {
     position: absolute;
     top: 42%;
     transform: translateY(-50%);
-    width: 32px;
-    height: 32px;
-    background: rgba(8, 10, 13, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #fff;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 0.5px solid rgba(255, 255, 255, 0.18);
+    color: var(--text);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     z-index: 10;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: all 0.2s ease;
+    outline: none;
+    padding: 0;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 0.5px 0.5px rgba(255, 255, 255, 0.3);
 }
 
 .col-arrow:hover {
-    border-color: rgba(255, 255, 255, 0.4);
-    color: var(--accent);
-    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.38);
+    transform: translateY(-50%) scale(1.08);
+    color: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), inset 0 0.5px 0.5px rgba(255, 255, 255, 0.45);
+}
+
+.col-arrow:active {
+    transform: translateY(-50%) scale(0.92);
+    background: rgba(255, 255, 255, 0.24);
+    transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .col-arrow.left {
@@ -2033,14 +2161,14 @@
 /* Mobile responsive styling for the Collection Modal */
 @media (max-width: 600px) {
     .collection-modal {
-        border-radius: 14px;
+        border-radius: 16px;
         max-height: 85vh;
         width: 94vw;
     }
     .collection-modal-header {
-        padding: 18px 20px 8px;
+        padding: 20px 20px 8px;
     }
-    .collection-modal-header h2 {
+    .collection-modal-title {
         font-size: 18px;
     }
     .collection-modal-body {
@@ -2052,12 +2180,14 @@
         line-height: 1.5;
     }
     .collection-sort {
-        gap: 4px;
+        gap: 8px;
     }
-    .sort-btn {
-        height: 26px;
-        padding: 0 8px;
-        font-size: 10px;
+    .collection-sort-toggle {
+        width: 190px;
+        height: 32px;
+    }
+    .collection-sort-btn {
+        font-size: 11px;
     }
     .col-arrow {
         display: none !important;

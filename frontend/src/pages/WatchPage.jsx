@@ -1229,7 +1229,7 @@ const WatchPage = () => {
                             scrolling="no"
                             frameBorder="0"
                             allowFullScreen
-                            allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen *; accelerometer; gyroscope; clipboard-write"
+                            allow="autoplay; encrypted-media; picture-in-picture; web-share; fullscreen *; accelerometer; gyroscope; clipboard-write; screen-wake-lock"
                             title="EpicStream Video Player"
                             onLoad={() => {
                                 setIsFrameLoading(false);

@@ -950,11 +950,12 @@ const MovieDetails = () => {
                 <div className="collection-modal-overlay" onClick={() => setShowCollectionModal(false)}>
                     <div className="collection-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="collection-modal-header">
-                            <div>
-                                <h2>{collectionData.name}</h2>
+                            <div className="collection-header-titles">
+                                <h2 className="collection-modal-title">{collectionData.name}</h2>
                                 <span className="collection-count-badge">{collectionData.parts?.length || 0} Movies</span>
                             </div>
                             <button 
+                                type="button"
                                 className="collection-close-btn" 
                                 onClick={() => setShowCollectionModal(false)}
                                 aria-label="Close collection"
@@ -965,20 +966,23 @@ const MovieDetails = () => {
                         <div className="collection-modal-body">
                             <div className="collection-sort">
                                 <span className="sort-label">Sort by:</span>
-                                <button 
-                                    type="button"
-                                    className={`sort-btn ${collectionSortBy === "release" ? "active" : ""}`}
-                                    onClick={() => setCollectionSortBy("release")}
-                                >
-                                    Release Date
-                                </button>
-                                <button 
-                                    type="button"
-                                    className={`sort-btn ${collectionSortBy === "rating" ? "active" : ""}`}
-                                    onClick={() => setCollectionSortBy("rating")}
-                                >
-                                    Rating
-                                </button>
+                                <div className="collection-sort-toggle">
+                                    <div className={`collection-sort-slider ${collectionSortBy === "rating" ? "rating" : "release"}`} />
+                                    <button 
+                                        type="button"
+                                        className={`collection-sort-btn ${collectionSortBy === "release" ? "active" : ""}`}
+                                        onClick={() => setCollectionSortBy("release")}
+                                    >
+                                        Release Date
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        className={`collection-sort-btn ${collectionSortBy === "rating" ? "active" : ""}`}
+                                        onClick={() => setCollectionSortBy("rating")}
+                                    >
+                                        Rating
+                                    </button>
+                                </div>
                             </div>
 
                             {collectionData.overview && (
@@ -993,7 +997,7 @@ const MovieDetails = () => {
                                         onClick={() => scrollCol("left")} 
                                         aria-label="Scroll left"
                                     >
-                                        <ChevronLeft size={22} />
+                                        <ChevronLeft size={16} />
                                     </button>
                                 )}
 
@@ -1048,7 +1052,7 @@ const MovieDetails = () => {
                                         onClick={() => scrollCol("right")} 
                                         aria-label="Scroll right"
                                     >
-                                        <ChevronRight size={22} />
+                                        <ChevronRight size={16} />
                                     </button>
                                 )}
                             </div>

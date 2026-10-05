@@ -68,7 +68,9 @@ export const getOmdbDetails = async ({ imdbId, title, year, type = "movie" } = {
             boxOffice,
             BoxOffice: boxOffice,
             awards,
-            Awards: awards
+            Awards: awards,
+            imdbID: data.imdbID || imdbId || null,
+            Title: data.Title || title || null
         };
 
         omdbCache.set(cacheKey, result);

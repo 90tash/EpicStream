@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { getSpecificCategoryAwards } from "../utils/awardsService";
 import "./MediaInsightsModal.css";
 
 /* Helper to format dollar amounts */
@@ -108,7 +109,7 @@ const MetacriticLogo = () => (
     </div>
 );
 
-/* --- Typographic Recognition Badge (No Leaves) --- */
+/* --- Typographic Recognition Badge (No Leaves, Normal Typographic Styling) --- */
 const AwardBadge = ({ status, award, category, year }) => (
     <div className="award-badge-container">
         <div className="award-badge-inner">
@@ -120,22 +121,18 @@ const AwardBadge = ({ status, award, category, year }) => (
     </div>
 );
 
-/* Helper to parse awards into count and two recognition items */
+/* Helper to parse awards into count and all recognition items in priority order */
 const parseAwardsData = (awardsStr, releaseYear) => {
     if (!awardsStr || awardsStr === "N/A") {
         return {
             count: 0,
             hasAwards: false,
-            medallions: [
-                { status: "HONORABLE MENTION", title: "OFFICIAL SELECTION", subtitle: "FEATURE PRESENTATION", year: releaseYear },
-                { status: "RECOGNITION", title: "CRITIC REVIEWS", subtitle: "AUDIENCE ACCLAIM", year: releaseYear }
-            ]
+            medallions: []
         };
     }
 
     const winMatch = awardsStr.match(/(\d+)\s+win/i);
     const nomMatch = awardsStr.match(/(\d+)\s+nomination/i);
-    const oscarMatch = awardsStr.match(/won\s+(\d+)\s+oscar/i) || awardsStr.match(/nominated\s+for\s+(\d+)\s+oscar/i);
     
     let count = 0;
     if (winMatch) count += parseInt(winMatch[1], 10);
@@ -145,80 +142,310 @@ const parseAwardsData = (awardsStr, releaseYear) => {
         if (allNums) count = allNums.reduce((acc, n) => acc + parseInt(n, 10), 0);
     }
 
-    // Item 1
-    let m1 = null;
+    const medallions = [];
+    const addAward = (awardObj) => {
+        if (!medallions.some(m => m.title === awardObj.title)) {
+            medallions.push(awardObj);
+        }
+    };
+
+    // 1. Academy Awards / Oscars
     if (/oscar/i.test(awardsStr)) {
+        const wonMatch = awardsStr.match(/won\s+(\d+)\s+oscar/i);
+        const nomOscarMatch = awardsStr.match(/nominated\s+for\s+(\d+)\s+oscar/i);
         const isWon = /won\s+\d*\s*oscar/i.test(awardsStr);
-        const countText = oscarMatch ? `${oscarMatch[1]} OSCARS` : "ACADEMY AWARDS";
-        m1 = {
+
+        let subtitle = "ACADEMY AWARDS";
+        if (wonMatch) {
+            const num = parseInt(wonMatch[1], 10);
+            subtitle = num > 1 ? `${num} OSCARS WON` : "1 OSCAR WON";
+        } else if (nomOscarMatch) {
+            const num = parseInt(nomOscarMatch[1], 10);
+            subtitle = num > 1 ? `${num} OSCAR NOMINATIONS` : "1 OSCAR NOMINEE";
+        } else if (isWon) {
+            subtitle = "OSCAR WINNER";
+        } else {
+            subtitle = "OSCAR NOMINEE";
+        }
+
+        addAward({
             status: isWon ? "WINNER" : "NOMINEE",
             title: "ACADEMY AWARDS",
-            subtitle: countText,
+            subtitle,
             year: releaseYear
-        };
-    } else if (/golden globe/i.test(awardsStr)) {
-        const isWon = /won/i.test(awardsStr);
-        m1 = {
+        });
+    }
+
+    // 2. Primetime Emmy Awards
+    if (/emmy/i.test(awardsStr)) {
+        const wonMatch = awardsStr.match(/won\s+(\d+)\s+(?:primetime\s+)?emmy/i);
+        const nomEmmyMatch = awardsStr.match(/nominated\s+for\s+(\d+)\s+(?:primetime\s+)?emmy/i);
+        const isWon = /won\s+\d*\s*(?:primetime\s+)?emmy/i.test(awardsStr);
+
+        let subtitle = "TELEVISION ACADEMY";
+        if (wonMatch) {
+            const num = parseInt(wonMatch[1], 10);
+            subtitle = num > 1 ? `${num} EMMYS WON` : "1 EMMY WON";
+        } else if (nomEmmyMatch) {
+            const num = parseInt(nomEmmyMatch[1], 10);
+            subtitle = num > 1 ? `${num} EMMY NOMINATIONS` : "1 EMMY NOMINEE";
+        } else if (isWon) {
+            subtitle = "EMMY WINNER";
+        } else {
+            subtitle = "EMMY NOMINEE";
+        }
+
+        addAward({
+            status: isWon ? "WINNER" : "NOMINEE",
+            title: "EMMY AWARDS",
+            subtitle,
+            year: releaseYear
+        });
+    }
+
+    // 3. Golden Globe Awards
+    if (/golden\s+globe/i.test(awardsStr)) {
+        const wonMatch = awardsStr.match(/won\s+(\d+)\s+golden\s+globe/i);
+        const nomGgMatch = awardsStr.match(/nominated\s+for\s+(\d+)\s+golden\s+globe/i);
+        const isWon = /won\s+\d*\s*golden\s+globe/i.test(awardsStr);
+
+        let subtitle = "HOLLYWOOD FOREIGN PRESS";
+        if (wonMatch) {
+            const num = parseInt(wonMatch[1], 10);
+            subtitle = num > 1 ? `${num} GLOBES WON` : "1 GLOBE WON";
+        } else if (nomGgMatch) {
+            const num = parseInt(nomGgMatch[1], 10);
+            subtitle = num > 1 ? `${num} GLOBE NOMINATIONS` : "1 GLOBE NOMINEE";
+        } else if (isWon) {
+            subtitle = "GOLDEN GLOBE WINNER";
+        } else {
+            subtitle = "GOLDEN GLOBE NOMINEE";
+        }
+
+        addAward({
             status: isWon ? "WINNER" : "NOMINEE",
             title: "GOLDEN GLOBES",
-            subtitle: "BEST PICTURE - DRAMA",
+            subtitle,
             year: releaseYear
-        };
-    } else if (/bafta/i.test(awardsStr)) {
-        m1 = {
-            status: /won/i.test(awardsStr) ? "WINNER" : "NOMINEE",
+        });
+    }
+
+    // 4. BAFTA Awards
+    if (/bafta/i.test(awardsStr)) {
+        const wonMatch = awardsStr.match(/won\s+(\d+)\s+bafta/i);
+        const nomBaftaMatch = awardsStr.match(/nominated\s+for\s+(\d+)\s+bafta/i);
+        const isWon = /won\s+\d*\s*bafta/i.test(awardsStr);
+
+        let subtitle = "BRITISH ACADEMY";
+        if (wonMatch) {
+            const num = parseInt(wonMatch[1], 10);
+            subtitle = num > 1 ? `${num} BAFTAS WON` : "1 BAFTA WON";
+        } else if (nomBaftaMatch) {
+            const num = parseInt(nomBaftaMatch[1], 10);
+            subtitle = num > 1 ? `${num} BAFTA NOMINATIONS` : "1 BAFTA NOMINEE";
+        } else if (isWon) {
+            subtitle = "BAFTA WINNER";
+        } else {
+            subtitle = "BAFTA NOMINEE";
+        }
+
+        addAward({
+            status: isWon ? "WINNER" : "NOMINEE",
             title: "BAFTA AWARDS",
-            subtitle: "BRITISH ACADEMY",
+            subtitle,
             year: releaseYear
-        };
-    } else if (/emmy/i.test(awardsStr)) {
-        m1 = {
-            status: /won/i.test(awardsStr) ? "WINNER" : "NOMINEE",
-            title: "EMMY AWARDS",
-            subtitle: "TELEVISION ACADEMY",
+        });
+    }
+
+    // 5. Screen Actors Guild (SAG)
+    if (/(?:screen\s+actors\s+guild|sag\s+award)/i.test(awardsStr)) {
+        const isWon = /won\s+\d*\s*(?:screen\s+actors|sag)/i.test(awardsStr);
+        addAward({
+            status: isWon ? "WINNER" : "NOMINEE",
+            title: "SAG AWARDS",
+            subtitle: "ACTORS GUILD",
             year: releaseYear
-        };
-    } else {
-        m1 = {
-            status: winMatch ? "WINNER" : "NOMINEE",
+        });
+    }
+
+    // 6. Critics Choice Awards
+    if (/critics['’]?\s*choice/i.test(awardsStr)) {
+        const isWon = /won\s+\d*\s*critics['’]?\s*choice/i.test(awardsStr);
+        addAward({
+            status: isWon ? "WINNER" : "NOMINEE",
             title: "CRITICS CHOICE",
-            subtitle: "OFFICIAL SELECTION",
+            subtitle: "BROADCAST CRITICS",
             year: releaseYear
-        };
+        });
     }
 
-    // Item 2
-    let m2 = null;
-    if (/golden globe/i.test(awardsStr) && !m1.title.includes("GOLDEN GLOBES")) {
-        m2 = {
-            status: "WINNER",
-            title: "GOLDEN GLOBES",
-            subtitle: "BEST PICTURE - DRAMA",
+    // 7. Major Film Festivals
+    if (/cannes|palme\s+d['’]or/i.test(awardsStr)) {
+        addAward({
+            status: /palme|won/i.test(awardsStr) ? "WINNER" : "SELECTION",
+            title: "CANNES FESTIVAL",
+            subtitle: /palme/i.test(awardsStr) ? "PALME D'OR" : "OFFICIAL SELECTION",
             year: releaseYear
-        };
-    } else if (winMatch || nomMatch) {
-        const parts = [];
-        if (winMatch) parts.push(`${winMatch[1]} WINS`);
-        if (nomMatch) parts.push(`${nomMatch[1]} NOMINATIONS`);
-        m2 = {
-            status: "RECOGNITION",
-            title: parts.join(" & ") || "AWARDS TOTAL",
-            subtitle: "INTERNATIONAL ACCLAIM",
+        });
+    }
+    if (/venice/i.test(awardsStr)) {
+        addAward({
+            status: /won/i.test(awardsStr) ? "WINNER" : "SELECTION",
+            title: "VENICE FESTIVAL",
+            subtitle: "BIENNALE CINEMA",
             year: releaseYear
-        };
-    } else {
-        m2 = {
-            status: "HONORS",
-            title: "OFFICIAL SELECTION",
-            subtitle: "CRITIC ACCLAIM",
+        });
+    }
+    if (/sundance/i.test(awardsStr)) {
+        addAward({
+            status: /won/i.test(awardsStr) ? "WINNER" : "SELECTION",
+            title: "SUNDANCE",
+            subtitle: "FESTIVAL SELECTION",
             year: releaseYear
-        };
+        });
     }
 
-    return { count: count || 1, hasAwards: true, medallions: [m1, m2] };
+    // 8. Grammy Awards
+    if (/grammy/i.test(awardsStr)) {
+        const isWon = /won\s+\d*\s*grammy/i.test(awardsStr);
+        addAward({
+            status: isWon ? "WINNER" : "NOMINEE",
+            title: "GRAMMY AWARDS",
+            subtitle: "RECORDING ACADEMY",
+            year: releaseYear
+        });
+    }
+
+    // 9. Total Wins (e.g. "5 wins")
+    if (winMatch) {
+        const winsCount = parseInt(winMatch[1], 10);
+        if (winsCount > 0) {
+            addAward({
+                status: "HONORS",
+                title: `${winsCount} ${winsCount === 1 ? "WIN" : "WINS"}`,
+                subtitle: "CRITIC & GUILD HONORS",
+                year: releaseYear
+            });
+        }
+    }
+
+    // 10. Total Nominations (e.g. "32 nominations")
+    if (nomMatch) {
+        const nomCount = parseInt(nomMatch[1], 10);
+        if (nomCount > 0) {
+            addAward({
+                status: "RECOGNITION",
+                title: `${nomCount} ${nomCount === 1 ? "NOMINATION" : "NOMINATIONS"}`,
+                subtitle: "INDUSTRY RECOGNITION",
+                year: releaseYear
+            });
+        }
+    }
+
+    // Fallback if no specific categories matched
+    if (medallions.length === 0) {
+        if (count > 0) {
+            medallions.push({
+                status: "HONORS",
+                title: `${count} RECOGNITIONS`,
+                subtitle: "INDUSTRY HONORS",
+                year: releaseYear
+            });
+        } else {
+            medallions.push(
+                { status: "HONORABLE MENTION", title: "OFFICIAL SELECTION", subtitle: "FEATURE PRESENTATION", year: releaseYear },
+                { status: "RECOGNITION", title: "CRITIC REVIEWS", subtitle: "AUDIENCE ACCLAIM", year: releaseYear }
+            );
+        }
+    }
+
+    return {
+        count: count || medallions.length,
+        hasAwards: true,
+        medallions
+    };
+};
+
+/* Helper to score awards by priority: ALL WINS FIRST, THEN NOMINATIONS */
+const getAwardPrestige = (item) => {
+    const status = String(item.status || "").toUpperCase();
+    const title = String(item.title || item.award || "").toLowerCase();
+    const subtitle = String(item.subtitle || item.category || "").toLowerCase();
+    const text = `${title} ${subtitle}`;
+
+    // WINS must be strictly at first then nominations come
+    const isWin = status === "WINNER" || status === "HONORS" || /\bwon\b|\bwins?\b/i.test(title);
+    const winBonus = isWin ? 1000 : 0;
+
+    let rank = 30;
+
+    // 1. Academy Awards / Oscars
+    if (text.includes("academy") || text.includes("oscar")) {
+        if (text.includes("best picture") || text.includes("best film")) rank = 100;
+        else if (text.includes("best director")) rank = 99;
+        else if (text.includes("best actor") || text.includes("best actress")) rank = 98;
+        else if (text.includes("supporting actor") || text.includes("supporting actress")) rank = 97;
+        else if (text.includes("screenplay") || text.includes("writing")) rank = 96;
+        else if (text.includes("cinematography")) rank = 95;
+        else if (text.includes("editing")) rank = 94;
+        else if (text.includes("visual effects")) rank = 93;
+        else if (text.includes("sound") || text.includes("score") || text.includes("music")) rank = 92;
+        else rank = 90;
+    }
+    // 2. Emmys
+    else if (text.includes("emmy")) {
+        if (text.includes("drama series") || text.includes("comedy series")) rank = 89;
+        else if (text.includes("lead actor") || text.includes("lead actress") || text.includes("best actor") || text.includes("best actress")) rank = 88;
+        else if (text.includes("directing") || text.includes("director")) rank = 87;
+        else if (text.includes("writing")) rank = 86;
+        else rank = 80;
+    }
+    // 3. Golden Globes
+    else if (text.includes("golden globe") || text.includes("globe")) {
+        if (text.includes("best picture") || text.includes("best motion picture")) rank = 79;
+        else if (text.includes("best actor") || text.includes("best actress")) rank = 78;
+        else if (text.includes("director")) rank = 77;
+        else if (text.includes("screenplay")) rank = 76;
+        else rank = 70;
+    }
+    // 4. BAFTA
+    else if (text.includes("bafta")) {
+        rank = 65;
+    }
+    // 5. SAG Awards
+    else if (text.includes("sag") || text.includes("actor award") || text.includes("screen actors")) {
+        rank = 60;
+    }
+    // 6. Critics Choice
+    else if (text.includes("critics choice") || text.includes("critics' choice")) {
+        rank = 55;
+    }
+    // 7. Prestigious Festivals (Cannes, Venice, Sundance)
+    else if (text.includes("cannes") || text.includes("palme") || text.includes("venice") || text.includes("sundance")) {
+        rank = 50;
+    }
+    // 8. Guild Awards (Saturn, DGA, WGA, PGA)
+    else if (text.includes("saturn") || text.includes("dga") || text.includes("wga") || text.includes("pga")) {
+        rank = 45;
+    }
+    // 9. Total Wins (e.g. 5 WINS)
+    else if (title.includes("win")) {
+        rank = 20;
+    }
+    // 10. Total Nominations (e.g. 32 NOMINATIONS)
+    else if (title.includes("nomination")) {
+        rank = 10;
+    }
+
+    return winBonus + rank;
 };
 
 const MediaInsightsModal = ({ isOpen, onClose, type = "movie", media = {}, omdbData = null, mdbListData = null }) => {
+    const awardsScrollRef = useRef(null);
+    const [canScrollAwardsLeft, setCanScrollAwardsLeft] = useState(false);
+    const [canScrollAwardsRight, setCanScrollAwardsRight] = useState(false);
+    const [isAwardsScrollable, setIsAwardsScrollable] = useState(false);
+    const [specificAwards, setSpecificAwards] = useState([]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -238,8 +465,6 @@ const MediaInsightsModal = ({ isOpen, onClose, type = "movie", media = {}, omdbD
             window.removeEventListener("keydown", handleKeyDown);
         };
     }, [isOpen, onClose]);
-
-    if (!isOpen) return null;
 
     const isMovie = type === "movie";
 
@@ -298,6 +523,89 @@ const MediaInsightsModal = ({ isOpen, onClose, type = "movie", media = {}, omdbD
         : null;
 
     const awardsParsed = parseAwardsData(awardsText, releaseYear);
+
+    const imdbId = omdbData?.imdbID || media?.imdb_id || mdbListData?.imdb_id || null;
+    const mediaTitle = media?.title || media?.name || omdbData?.Title || null;
+
+    useEffect(() => {
+        if (!isOpen) return;
+        let isMounted = true;
+        getSpecificCategoryAwards({ imdbId, title: mediaTitle, year: releaseYear }).then(results => {
+            if (isMounted && Array.isArray(results) && results.length > 0) {
+                setSpecificAwards(results);
+            }
+        });
+        return () => {
+            isMounted = false;
+        };
+    }, [isOpen, imdbId, mediaTitle, releaseYear]);
+
+    // Combine specific category awards with OMDb summary awards
+    const allMedallions = [];
+
+    // 1. Specific category awards (e.g. Best Picture, Best Actor, Best Director)
+    specificAwards.forEach(s => {
+        allMedallions.push({
+            status: s.status || "WINNER",
+            title: s.award || "HONORS",
+            subtitle: s.category,
+            year: s.year || releaseYear
+        });
+    });
+
+    // 2. Summary medallions from OMDb (e.g. total Oscars, Golden Globes, total wins, total nominations)
+    awardsParsed.medallions.forEach(omdbItem => {
+        const isDuplicate = allMedallions.some(m => 
+            m.title === omdbItem.title && (m.subtitle === omdbItem.subtitle || omdbItem.subtitle.includes(m.subtitle))
+        );
+        if (!isDuplicate) {
+            allMedallions.push(omdbItem);
+        }
+    });
+
+    // Sort by prestige priority descending
+    allMedallions.sort((a, b) => getAwardPrestige(b) - getAwardPrestige(a));
+
+    const hasAwardsShowcase = awardsParsed.hasAwards || allMedallions.length > 0;
+
+    const checkAwardsScroll = () => {
+        const el = awardsScrollRef.current;
+        if (!el) return;
+        const { scrollLeft, scrollWidth, clientWidth } = el;
+        const scrollable = scrollWidth > clientWidth + 2;
+        setIsAwardsScrollable(scrollable);
+        setCanScrollAwardsLeft(scrollLeft > 4);
+        setCanScrollAwardsRight(scrollLeft + clientWidth < scrollWidth - 4);
+    };
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const timer = setTimeout(checkAwardsScroll, 50);
+        window.addEventListener("resize", checkAwardsScroll);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener("resize", checkAwardsScroll);
+        };
+    }, [isOpen, awardsText, allMedallions.length]);
+
+    const handleAwardsScroll = (direction) => {
+        const el = awardsScrollRef.current;
+        if (!el) return;
+        
+        // Dynamically compute card stride (card width + gap) for exact sliding alignment
+        const firstCard = el.querySelector(".award-badge-container");
+        const cardWidth = firstCard ? firstCard.getBoundingClientRect().width : (el.clientWidth - 24) / 2;
+        const stride = Math.round(cardWidth + 24);
+
+        el.scrollBy({
+            left: direction === "left" ? -stride : stride,
+            behavior: "smooth"
+        });
+    };
+
+    const showAwardsArrows = allMedallions.length >= 2;
+
+    if (!isOpen) return null;
 
     return (
         <div className="insights-modal-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Insights Modal">
@@ -481,28 +789,51 @@ const MediaInsightsModal = ({ isOpen, onClose, type = "movie", media = {}, omdbD
                     )}
 
                     {/* SECTION 3: AWARDS & NOMINATIONS */}
-                    {awardsParsed.hasAwards && (
+                    {hasAwardsShowcase && (
                         <div className="insights-section awards-section-wrapper">
                             <div className="awards-header">
                                 <span className="awards-heading-title">Awards & Nominations</span>
-                                {awardsParsed.count > 0 && (
-                                    <span className="awards-heading-count">{awardsParsed.count}</span>
-                                )}
                             </div>
-                            <div className="awards-showcase-container">
-                                <AwardBadge 
-                                    status={awardsParsed.medallions[0].status}
-                                    award={awardsParsed.medallions[0].title}
-                                    category={awardsParsed.medallions[0].subtitle}
-                                    year={awardsParsed.medallions[0].year}
-                                />
+                            <div className="awards-carousel-wrapper">
+                                {showAwardsArrows && (
+                                    <button 
+                                        type="button"
+                                        className="awards-arrow-btn awards-arrow-left"
+                                        onClick={() => handleAwardsScroll("left")}
+                                        disabled={!canScrollAwardsLeft}
+                                        aria-label="Scroll left"
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                )}
 
-                                <AwardBadge 
-                                    status={awardsParsed.medallions[1].status}
-                                    award={awardsParsed.medallions[1].title}
-                                    category={awardsParsed.medallions[1].subtitle}
-                                    year={awardsParsed.medallions[1].year}
-                                />
+                                <div 
+                                    className={`awards-showcase-container ${showAwardsArrows ? "has-scroll" : ""}`}
+                                    ref={awardsScrollRef}
+                                    onScroll={checkAwardsScroll}
+                                >
+                                    {allMedallions.map((item, idx) => (
+                                        <AwardBadge 
+                                            key={`${item.title}-${item.subtitle}-${idx}`}
+                                            status={item.status}
+                                            award={item.title}
+                                            category={item.subtitle}
+                                            year={item.year}
+                                        />
+                                    ))}
+                                </div>
+
+                                {showAwardsArrows && (
+                                    <button 
+                                        type="button"
+                                        className="awards-arrow-btn awards-arrow-right"
+                                        onClick={() => handleAwardsScroll("right")}
+                                        disabled={!canScrollAwardsRight}
+                                        aria-label="Scroll right"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                )}
                             </div>
 
                             {/* Full awards textual note */}
