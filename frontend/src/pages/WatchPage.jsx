@@ -34,6 +34,9 @@ const formatDate = (dateStr) => {
 
 const getProviderLabel = (provider) => {
     const labels = {
+        atlantic: "Aqua(Fast-Server)",
+        aqua: "Aqua(Fast-Server)",
+        vidly: "Vidly(Fast/Multi)",
         zxc: "Titan(Fast/HD)",
         zen: "Zen(Fast-Server)",
         chillflix: "Chill(Best - Server)",
@@ -71,13 +74,15 @@ const AdsIcon = () => (
 
 const WATCH_PROVIDERS = [
     { id: "zxc", name: "Titan(Fast/HD)", rec: true },
-    { id: "chillflix", name: "Chill(Best - Server)", rec: true },
+    { id: "vidly", name: "Vidly(Fast/Multi)", rec: true },
+    { id: "vidrift", name: "Rift(Best-Server)", rec: true },
+    // { id: "chillflix", name: "Chill(Best - Server)", rec: true },
     { id: "vidlove", name: "Atlas(HD-Server)", rec: true },
+    { id: "atlantic", name: "Aqua(Fast-Server)", rec: true },
     { id: "vidy", name: "Nova(Fast/HD)", rec: true },
     { id: "bingr", name: "Bingr(Hot/Best)", rec: true },
     { id: "vidstuck", name: "Star(Multi/Best)", rec: true },
     { id: "modiplay", name: "Ashoka(Indian-Server)", rec: true },
-    { id: "vidrift", name: "Rift(Best-Server)", rec: true },
     { id: "cinemaos", name: "Ninja(Fast/HD)", rec: true },
     { id: "vidbolt", name: "Eclipse(Multi-Server)" },
     { id: "peachify", name: "Peach(HD/Multi)" },
@@ -210,7 +215,7 @@ const WatchPage = () => {
         } catch (e) {
             console.error("Failed to parse history for provider:", e);
         }
-        return "zxc"; // Default to Titan (zxcstream.xyz)
+        return "zxc"; // Default to Titan (zxcstream.cc)
     });
 
 
@@ -479,6 +484,8 @@ const WatchPage = () => {
 
         const handleMessage = (event) => {
             const trustedOrigins = [
+                "https://atlantic.st",
+                "https://vidly.pro",
                 "https://vidy.st",
                 "https://vidlink.pro",
                 "https://vidfast.pro",
@@ -490,6 +497,7 @@ const WatchPage = () => {
                 "https://vidfast.xyz",
                 "https://vidfast.vc",
                 "https://vidfast.bz",
+                "https://zxcstream.cc",
                 "https://zxcstream.xyz",
                 "https://vsembed.ru",
                 "https://mapple.uk",
@@ -556,6 +564,23 @@ const WatchPage = () => {
                 }
 
                 let playerState = data?.type === "PLAYER_EVENT" ? data.data : null;
+
+                if (!playerState && (event.origin === "https://vidly.pro" || data?.type === "VIDLY_PLAYER_EVENT" || data?.type === "SYNC_HISTORY")) {
+                    const vidlyData = data?.data || {};
+                    const time = vidlyData.currentTime !== undefined ? vidlyData.currentTime : (vidlyData.watched !== undefined ? vidlyData.watched : 0);
+                    const duration = vidlyData.duration || 0;
+                    let percentage = duration > 0 ? Math.round((time / duration) * 100) : 0;
+                    if (vidlyData.event === "ended") percentage = 100;
+
+                    playerState = {
+                        currentTime: time,
+                        time: time,
+                        duration: duration,
+                        percentage,
+                        season: vidlyData.season ? Number(vidlyData.season) : (mediaType === "tv" ? season : undefined),
+                        episode: vidlyData.episode ? Number(vidlyData.episode) : (mediaType === "tv" ? episode : undefined),
+                    };
+                }
 
                 if (!playerState && (event.origin === "https://vidstuck.xyz" || event.origin === "https://www.vidstuck.xyz")) {
                     const time = data?.timestamp !== undefined ? data.timestamp : (data?.currentTime !== undefined ? data.currentTime : 0);

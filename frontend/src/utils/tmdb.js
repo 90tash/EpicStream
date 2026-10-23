@@ -133,7 +133,7 @@ export const tmdbGetRecommendations = async (type, id) => {
 // To switch the main embed provider, uncomment your preferred option below 
 // and ensure all others are commented out.
 // =========================================================================
-export const ACTIVE_PROVIDER = "zxc"; // Option 1: Titan — zxcstream.xyz (Default)
+export const ACTIVE_PROVIDER = "zxc"; // Option 1: Titan — zxcstream.cc (Default)
 // export const ACTIVE_PROVIDER = "vidsrc_to"; // Option 2: VidSrc.to
 // export const ACTIVE_PROVIDER = "vidsrc_me"; // Option 3: VidSrc.me (Alternative API format)
 // export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
@@ -143,6 +143,26 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
     const commonParams = `overlay=true&color=${color}`;
     
     switch (provider) {
+        case "atlantic":
+        case "aqua": {
+            if (type === "movie") {
+                return `https://atlantic.st/embed/movie/${id}`;
+            }
+            return `https://atlantic.st/embed/tv/${id}/${season}/${episode}`;
+        }
+
+        case "vidly": {
+            const params = ["color=ffffff", "autoplay=1"];
+            if (progress > 0) {
+                params.push(`t=${Math.round(progress)}`);
+            }
+            if (type === "tv") {
+                params.push("nextEpisode=1");
+                return `https://vidly.pro/tv/${id}/${season}/${episode}?${params.join("&")}`;
+            }
+            return `https://vidly.pro/movie/${id}?${params.join("&")}`;
+        }
+
         case "zen": {
             if (type === "movie") {
                 return `https://playapi.co/movie/${id}`;
@@ -357,9 +377,9 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
             const themeColor = "ffffff"; // Project accent color
             const params = `color=${themeColor}&autoplay=true`;
             if (type === "movie") {
-                return `https://zxcstream.xyz/player/movie/${id}?${params}`;
+                return `https://zxcstream.cc/player/movie/${id}?${params}`;
             }
-            return `https://zxcstream.xyz/player/tv/${id}/${season}/${episode}?${params}`;
+            return `https://zxcstream.cc/player/tv/${id}/${season}/${episode}?${params}`;
         }
             
         case "vidlove": {
@@ -434,11 +454,14 @@ export const getPlayerUrl = (type, id, season = 1, episode = 1, provider = ACTIV
 
 export const getAnimePlayerUrl = (animeId, episode = 1, type = "tv") => {
     switch (ACTIVE_PROVIDER) {
+        case "vidly":
+            return `https://vidly.pro/anime/${animeId}/${episode}/sub?color=ffffff&autoplay=1`;
+
         case "zxc": {
             const params = `color=ffffff&autoplay=true`;
             return type === "movie"
-                ? `https://zxcstream.xyz/player/movie/${animeId}?${params}`
-                : `https://zxcstream.xyz/player/tv/${animeId}/1/${episode}?${params}`;
+                ? `https://zxcstream.cc/player/movie/${animeId}?${params}`
+                : `https://zxcstream.cc/player/tv/${animeId}/1/${episode}?${params}`;
         }
 
         case "vidy":
