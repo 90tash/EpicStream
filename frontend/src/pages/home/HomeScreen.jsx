@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
-import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check, Plus, Bookmark, Heart, Eye } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check, Plus, Bookmark, Heart, Eye, Clock } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ListModal from "../../components/ListModal";
-import { formatMediaType, getMediaType, getRating, getTitle, getYear, getStatusLabel, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
+import { formatMediaType, getMediaType, getRating, getTitle, getYear, getStatusLabel, getReleaseCountdownInfo, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
 import { addToHistory, getHistory, removeFromHistory } from "../../utils/history";
 import { useWatchlistStore } from "../../stores/watchlist";
 import { useCustomListsStore } from "../../stores/customLists";
@@ -465,9 +465,27 @@ const HomeScreen = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [logoError, setLogoError] = useState(false);
     const [showPlayWarning, setShowPlayWarning] = useState(false);
+    const [selectedTrailer, setSelectedTrailer] = useState(null);
     const [listModalItem, setListModalItem] = useState(null);
     const navigate = useNavigate();
     const { toggleItem, isItemInList } = useWatchlistStore();
+
+    useEffect(() => {
+        if (selectedTrailer) {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = "hidden";
+            const handleKeyDown = (e) => {
+                if (e.key === "Escape") {
+                    setSelectedTrailer(null);
+                }
+            };
+            window.addEventListener("keydown", handleKeyDown);
+            return () => {
+                document.body.style.overflow = originalOverflow;
+                window.removeEventListener("keydown", handleKeyDown);
+            };
+        }
+    }, [selectedTrailer]);
 
     // Initialize rows with history if available
     useEffect(() => {
@@ -689,6 +707,40 @@ const HomeScreen = () => {
     const heroType = heroContent ? getMediaType(heroContent) : "movie";
     const heroInList = heroContent ? isItemInList(heroContent.id) : false;
     const heroStatus = getStatusLabel(heroContent);
+    const heroCountdown = heroType === "movie" ? getReleaseCountdownInfo(heroContent?.release_date) : null;
+    const isHeroUpcoming = heroType === "movie" && (heroStatus?.text === "Upcoming" || !!heroCountdown?.isFuture);
+
+    const handleWatchHeroTrailer = async () => {
+        if (!heroContent) return;
+        try {
+            const data = await tmdbFetch(`/movie/${heroContent.id}/videos`);
+            const ytTrailers = (data?.results || []).filter(
+                v => v.site === "YouTube" && v.key && (v.type === "Trailer" || v.type === "Teaser")
+            );
+            ytTrailers.sort((a, b) => {
+                const aIsTrailer = a.type === "Trailer" ? 1 : 0;
+                const bIsTrailer = b.type === "Trailer" ? 1 : 0;
+                if (aIsTrailer !== bIsTrailer) return bIsTrailer - aIsTrailer;
+
+                const aOfficial = a.official ? 1 : 0;
+                const bOfficial = b.official ? 1 : 0;
+                if (aOfficial !== bOfficial) return bOfficial - aOfficial;
+
+                const dateA = new Date(a.published_at || 0).getTime();
+                const dateB = new Date(b.published_at || 0).getTime();
+                return dateB - dateA;
+            });
+
+            if (ytTrailers.length > 0) {
+                setSelectedTrailer(ytTrailers[0]);
+            } else {
+                toast("Trailer not available yet", { icon: "🎬" });
+            }
+        } catch (err) {
+            console.error("Error fetching trailer:", err);
+            toast("Trailer not available yet", { icon: "🎬" });
+        }
+    };
 
     return (
         <div className="epicstream-home">
@@ -737,48 +789,63 @@ const HomeScreen = () => {
                         </div>
                         <p>{heroContent?.overview || "Movies, shows, trailers and more are ready to watch."}</p>
                         <div className="browse-actions">
+                            {isHeroUpcoming ? (
+                                <button
+                                    type="button"
+                                    className="browse-play browse-trailer-btn"
+                                    onClick={handleWatchHeroTrailer}
+                                    title="Watch Trailer"
+                                    aria-label="Watch Trailer"
+                                >
+                                    <Play size={20} fill="currentColor" />
+                                    Watch Trailer
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="browse-play"
+                                    onClick={() => {
+                                        const type = getMediaType(heroContent);
+                                        const status = getStatusLabel(heroContent);
+                                        const isCinemas = status?.text === "In Cinemas";
+                                        
+                                        if (isCinemas && !heroContent.has_digital_release) {
+                                            setShowPlayWarning(true);
+                                        } else {
+                                            addToHistory(heroContent, type);
+                                            navigate(`/watch/${type}/${heroContent.id}`);
+                                        }
+                                    }}
+                                >
+                                    <Play size={20} fill="currentColor" />
+                                    Play
+                                </button>
+                            )}
                             <button
                                 type="button"
-                                className="browse-play"
-                                onClick={() => {
-                                    const type = getMediaType(heroContent);
-                                    const status = getStatusLabel(heroContent);
-                                    const isCinemas = status?.text === "In Cinemas";
-                                    const isUpcoming = status?.text === "Upcoming";
-                                    
-                                    if (isUpcoming || (isCinemas && !heroContent.has_digital_release)) {
-                                        setShowPlayWarning(true);
-                                    } else {
-                                        addToHistory(heroContent, type);
-                                        navigate(`/watch/${type}/${heroContent.id}`);
-                                    }
-                                }}
+                                className={`browse-action-btn add-list-btn ${heroInList ? "active" : ""}`}
+                                onClick={() => toggleItem(heroContent, heroType)}
+                                title={heroInList ? "Remove from List" : "Add to List"}
+                                aria-label={heroInList ? "Remove from List" : "Add to List"}
                             >
-                                <Play size={20} fill="currentColor" />
-                                Play
+                                {heroInList ? <Bookmark size={20} fill="currentColor" /> : <Plus size={20} />}
                             </button>
-                            <div className="browse-action-group">
-                                <button
-                                    type="button"
-                                    className={`browse-group-btn add-list-btn ${heroInList ? "active" : ""}`}
-                                    onClick={() => toggleItem(heroContent, heroType)}
-                                    title={heroInList ? "Remove from List" : "Add to List"}
-                                    aria-label={heroInList ? "Remove from List" : "Add to List"}
-                                >
-                                    {heroInList ? <Bookmark size={20} fill="currentColor" /> : <Plus size={20} />}
-                                </button>
-                                <span className="browse-divider" />
-                                <button
-                                    type="button"
-                                    className="browse-group-btn"
-                                    onClick={() => openDetails(heroContent)}
-                                    title="View details"
-                                    aria-label="View details"
-                                >
-                                    <Info size={20} />
-                                </button>
-                            </div>
+                            <button
+                                type="button"
+                                className="browse-action-btn"
+                                onClick={() => openDetails(heroContent)}
+                                title="View details"
+                                aria-label="View details"
+                            >
+                                <Info size={20} />
+                            </button>
                         </div>
+                        {isHeroUpcoming && (
+                            <div className="hero-unreleased-subtext">
+                                <Clock size={15} />
+                                <span>{heroCountdown?.text || "Not Yet Released • Coming Soon"}</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="hero-pagination-container">
@@ -870,6 +937,39 @@ const HomeScreen = () => {
                             >
                                 Close
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {selectedTrailer && (
+                <div 
+                    className="trailer-modal-overlay" 
+                    onClick={() => setSelectedTrailer(null)}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Trailer Video Modal"
+                >
+                    <div className="trailer-modal-container" onClick={(e) => e.stopPropagation()}>
+                        <div className="trailer-modal-header">
+                            <button 
+                                type="button" 
+                                className="trailer-modal-close-btn" 
+                                onClick={() => setSelectedTrailer(null)}
+                                aria-label="Close trailer modal"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="trailer-modal-content">
+                            <div className="trailer-video-responsive">
+                                <iframe
+                                    src={`https://www.youtube-nocookie.com/embed/${selectedTrailer.key}?autoplay=1&rel=0`}
+                                    title={selectedTrailer.name || "Trailer"}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

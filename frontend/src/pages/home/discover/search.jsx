@@ -1,6 +1,7 @@
-import { ChevronDown, Search, Star, X } from "lucide-react";
+import { ChevronDown, Search, Star, X, Mic } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { formatMediaType, getMediaType, getRating, getTitle, getYear, imageUrl, tmdbFetch } from "../../../utils/tmdb";
 import "./search.css";
 
@@ -19,11 +20,119 @@ const SearchPage = () => {
     const [categoryOpen, setCategoryOpen] = useState(false);
     const [category, setCategory] = useState(categories[0]);
     const [expandedId, setExpandedId] = useState(null);
+    const [isListening, setIsListening] = useState(false);
+    const recognitionRef = useRef(null);
     const categoryRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const isSearchOpen = searchParams.get('search') === 'true';
+
+    useEffect(() => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 5;
+            recognition.lang = navigator.language || "en-US";
+
+            recognition.onstart = () => {
+                setIsListening(true);
+            };
+
+            recognition.onresult = async (event) => {
+                if (!event.results || event.results.length === 0) return;
+                const result = event.results[0];
+                const candidates = [];
+                for (let i = 0; i < result.length; i++) {
+                    const text = result[i]?.transcript?.trim().replace(/\.$/, "");
+                    if (text && !candidates.includes(text)) {
+                        candidates.push(text);
+                    }
+                }
+
+                if (candidates.length === 0) return;
+
+                if (candidates.length === 1) {
+                    setSearchTerm(candidates[0]);
+                    return;
+                }
+
+                // When speech engine returns multiple hypotheses (e.g. "the odc" vs "The Odyssey"),
+                // check which candidate actually yields valid movie/show results on TMDB
+                try {
+                    const checks = await Promise.all(
+                        candidates.slice(0, 4).map(async (cand) => {
+                            try {
+                                const res = await tmdbFetch("/search/multi", { query: cand, include_adult: "false" });
+                                const validCount = (res?.results || []).filter(item => item.poster_path || item.backdrop_path).length;
+                                return { cand, validCount };
+                            } catch {
+                                return { cand, validCount: 0 };
+                            }
+                        })
+                    );
+
+                    // Pick candidate with the highest number of valid media results; fallback to primary
+                    const best = checks.reduce((acc, curr) => (curr.validCount > acc.validCount ? curr : acc), checks[0]);
+                    setSearchTerm(best?.cand || candidates[0]);
+                } catch {
+                    setSearchTerm(candidates[0]);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.warn("Speech recognition error:", event.error);
+                setIsListening(false);
+                if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+                    toast.error("Microphone access denied. Please allow mic permissions.");
+                } else if (event.error !== "no-speech" && event.error !== "aborted") {
+                    toast.error("Voice search error. Please try again.");
+                }
+            };
+
+            recognition.onend = () => {
+                setIsListening(false);
+            };
+
+            recognitionRef.current = recognition;
+        }
+
+        return () => {
+            if (recognitionRef.current) {
+                try {
+                    recognitionRef.current.abort();
+                } catch {
+                    // ignore
+                }
+            }
+        };
+    }, []);
+
+    const toggleVoiceSearch = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            toast.error("Voice search is not supported in this browser.");
+            return;
+        }
+
+        if (isListening) {
+            try {
+                recognitionRef.current?.stop();
+            } catch {
+                // ignore
+            }
+            setIsListening(false);
+        } else {
+            setSearchTerm("");
+            try {
+                recognitionRef.current?.start();
+            } catch (err) {
+                console.warn("Recognition start error:", err);
+            }
+        }
+    };
 
     useEffect(() => {
         if (isSearchOpen) {
@@ -36,9 +145,25 @@ const SearchPage = () => {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'auto';
+            if (recognitionRef.current) {
+                try {
+                    recognitionRef.current.abort();
+                } catch {
+                    // ignore
+                }
+            }
+            setIsListening(false);
         }
         return () => {
             document.body.style.overflow = 'auto';
+            if (recognitionRef.current) {
+                try {
+                    recognitionRef.current.abort();
+                } catch {
+                    // ignore
+                }
+            }
+            setIsListening(false);
         };
     }, [isSearchOpen]);
 
@@ -173,20 +298,24 @@ const SearchPage = () => {
                     </div>
                 </div>
 
-                <label className="search-input-wrap">
+                <label className={`search-input-wrap ${isListening ? "listening" : ""}`}>
                     <Search size={20} />
                     <input
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Type here to search..."
+                        placeholder={isListening ? "Listening... Speak movie title" : "Type here to search..."}
                         autoFocus
                     />
-                    {searchTerm && (
-                        <button type="button" onClick={() => setSearchTerm("")} aria-label="Clear search">
-                            <X size={18} />
-                        </button>
-                    )}
+                    <button
+                        type="button"
+                        className={`search-mic-btn ${isListening ? "listening" : ""}`}
+                        onClick={toggleVoiceSearch}
+                        title={isListening ? "Listening... Click to stop" : "Voice search"}
+                        aria-label={isListening ? "Listening... Click to stop" : "Voice search"}
+                    >
+                        <Mic size={18} />
+                    </button>
                 </label>
 
                 <section className="search-results-panel">
