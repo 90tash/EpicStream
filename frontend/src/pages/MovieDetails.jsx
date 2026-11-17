@@ -1,10 +1,10 @@
 import { useLocation, useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useRef, Fragment } from "react";
-import { ChevronLeft, ChevronRight, Star, X, LayoutGrid, Plus, Check, Bookmark, Heart, Play, Eye, Info, ArrowUpRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, X, LayoutGrid, Plus, Check, Bookmark, Heart, Play, Eye, Info, ArrowUpRight, Clock } from "lucide-react";
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
 import ListModal from "../components/ListModal";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel, isMajorStudio } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel, getReleaseCountdownInfo, isMajorStudio, getRating, getYear, formatMediaType } from "../utils/tmdb";
 import { addToHistory, getHistory, removeFromHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
@@ -35,30 +35,12 @@ const formatDate = (dateStr) => {
 
 /* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) => {
-    const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
     const [isWatched, setIsWatched] = useState(() => getHistory().some(h => h.id === item.id));
-    const isListOpen = activeListItemId === item.id;
     const [isMobileActive, setIsMobileActive] = useState(false);
+    const isListOpen = activeListItemId === item.id;
     const cardRef = useRef(null);
-
-    useEffect(() => {
-        const fetchTitledBanner = async () => {
-            try {
-                const data = await tmdbGetImages(type, item.id);
-                if (data.backdrops && data.backdrops.length > 0) {
-                    const titledBackdrops = data.backdrops.filter(b => b.iso_639_1 !== null);
-                    if (titledBackdrops.length > 0) {
-                        const enTitled = titledBackdrops.find(b => b.iso_639_1 === 'en');
-                        const selected = enTitled || titledBackdrops[0];
-                        setBannerUrl(imageUrl(selected.file_path, "w780"));
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching images for similar item:", error);
-            }
-        };
-        fetchTitledBanner();
-    }, [item.id, type]);
+    const rating = getRating(item);
+    const statusLabel = getStatusLabel(item);
 
     const handlePlay = (e) => {
         e.stopPropagation();
@@ -116,28 +98,30 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
             onClick={handleCardClick}
         >
             <div className="similar-card-img-wrapper">
-                <picture>
-                    <source media="(max-width: 900px)" srcSet={imageUrl(item.poster_path || item.backdrop_path, "w500")} />
-                    <img
-                        src={bannerUrl}
-                        alt={getTitle(item)}
-                        loading="lazy"
-                    />
-                </picture>
+                <img
+                    src={imageUrl(item.poster_path || item.backdrop_path, "w500")}
+                    alt={getTitle(item)}
+                    loading="lazy"
+                />
+                {statusLabel && (
+                    <span className={`card-status-badge ${statusLabel.className}`}>
+                        {statusLabel.text}
+                    </span>
+                )}
                 {/* Mobile view info overlay */}
                 <div className="card-mobile-info-container">
                     <div className="card-mobile-title">{getTitle(item)}</div>
                     <div className="card-mobile-meta">
-                        {typeof item.vote_average === 'number' && item.vote_average > 0 && (
+                        {rating && parseFloat(rating) > 0 && (
                             <span className="mobile-rating-wrapper">
                                 <Star size={10} fill="currentColor" className="mobile-rating-star" />
-                                <span className="rating-mono">{item.vote_average.toFixed(1)}</span> • 
+                                <span className="rating-mono">{rating}</span> • 
                             </span>
                         )}
-                        {((item.release_date || item.first_air_date || "").slice(0, 4)) && (
-                            <span>{(item.release_date || item.first_air_date || "").slice(0, 4)} • </span>
+                        {getYear(item) && (
+                            <span>{getYear(item)} • </span>
                         )}
-                        <span>{type === "movie" ? "Movie" : "TV Show"}</span>
+                        <span>{formatMediaType(type)}</span>
                     </div>
                 </div>
 
@@ -177,18 +161,22 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
                 </div>
             </div>
             <span className="similar-card-title">{getTitle(item)}</span>
-            <div className="similar-card-meta">
-                {item.vote_average > 0 && (
-                    <span className="rating-value-wrapper">
-                        <Star size={13} fill="currentColor" /> 
-                        {item.vote_average.toFixed(1)}
-                    </span>
+            <span className="similar-card-meta">
+                {rating && (
+                    <>
+                        <Star size={13} fill="currentColor" />
+                        {rating}
+                        <span className="dot" />
+                    </>
                 )}
-                {((item.release_date || item.first_air_date || "").slice(0, 4)) && (
-                    <span>{(item.release_date || item.first_air_date || "").slice(0, 4)}</span>
+                {getYear(item) && (
+                    <>
+                        {getYear(item)}
+                        <span className="dot" />
+                    </>
                 )}
-                <span>{type === "movie" ? "Movie" : "TV Show"}</span>
-            </div>
+                {formatMediaType(type)}
+            </span>
         </div>
     );
 };
@@ -462,7 +450,7 @@ const MovieDetails = () => {
                 
                 setCast((castData?.cast || []).slice(0, 36));
                 const prioritizedRecs = prioritizeSimilarContent(fullData, recsData || []);
-                setSimilarMovies((prioritizedRecs || []).slice(0, 10));
+                setSimilarMovies((prioritizedRecs || []).slice(0, 20));
 
                 const ytTrailers = (videosData?.results || []).filter(
                     v => v.site === "YouTube" && v.key && (v.type === "Trailer" || v.type === "Teaser")
@@ -548,6 +536,11 @@ const MovieDetails = () => {
         }
     }) : [];
 
+    const status = getStatusLabel(movie);
+    const isCinemas = status?.text === "In Cinemas";
+    const countdownInfo = getReleaseCountdownInfo(movie?.release_date);
+    const isUpcoming = status?.text === "Upcoming" || !!countdownInfo?.isFuture;
+
     return (
         <div className="details-page">
             <button className="back-btn" onClick={() => navigate("/")} aria-label="Go back">
@@ -584,34 +577,51 @@ const MovieDetails = () => {
                             <h1>{title}</h1>
                         ) : null}
                         <div className="details-actions">
-                            <button 
-                                className="details-play" 
-                                onClick={() => {
-                                    const status = getStatusLabel(movie);
-                                    const isCinemas = status?.text === "In Cinemas";
-                                    const isUpcoming = status?.text === "Upcoming";
-                                    
-                                    if (isUpcoming || (isCinemas && !hasDigitalRelease)) {
-                                        setShowPlayWarning(true);
-                                    } else {
-                                        addToHistory(movie, "movie");
-                                        navigate(`/watch/movie/${id}`);
-                                    }
-                                }}
-                            >
-                                <svg viewBox="0 0 24 24" width={20} height={20} fill="currentColor">
-                                    <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
-                                </svg>
-                                <span>Play</span>
-                            </button>
-                            <button 
-                                className={`details-action-btn watched-btn ${isWatched ? 'active' : ''}`}
-                                onClick={handleToggleWatched}
-                                title={isWatched ? "Remove from Watched" : "Mark as Watched"}
-                                aria-label={isWatched ? "Remove from Watched" : "Mark as Watched"}
-                            >
-                                <Eye size={20} color={isWatched ? "#4cd964" : "currentColor"} />
-                            </button>
+                            {isUpcoming ? (
+                                <button 
+                                    type="button"
+                                    className="details-play details-trailer-btn" 
+                                    onClick={() => {
+                                        if (trailers && trailers.length > 0) {
+                                            setSelectedTrailer(trailers[0]);
+                                        } else {
+                                            toast("Trailer not available yet", { icon: "🎬" });
+                                        }
+                                    }}
+                                    title="Watch Trailer"
+                                    aria-label="Watch Trailer"
+                                >
+                                    <Play size={20} fill="currentColor" />
+                                    <span>Watch Trailer</span>
+                                </button>
+                            ) : (
+                                <button 
+                                    className="details-play" 
+                                    onClick={() => {
+                                        if (isCinemas && !hasDigitalRelease) {
+                                            setShowPlayWarning(true);
+                                        } else {
+                                            addToHistory(movie, "movie");
+                                            navigate(`/watch/movie/${id}`);
+                                        }
+                                    }}
+                                >
+                                    <svg viewBox="0 0 24 24" width={20} height={20} fill="currentColor">
+                                        <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
+                                    </svg>
+                                    <span>Play</span>
+                                </button>
+                            )}
+                            {!isUpcoming && (
+                                <button 
+                                    className={`details-action-btn watched-btn ${isWatched ? 'active' : ''}`}
+                                    onClick={handleToggleWatched}
+                                    title={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                                    aria-label={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                                >
+                                    <Eye size={20} color={isWatched ? "#4cd964" : "currentColor"} />
+                                </button>
+                            )}
                             <div className="add-to-list-wrapper" ref={dropdownRef}>
                                 <button 
                                     className={`details-action-btn add-list-btn ${inAnyList ? 'active' : ''}`}
@@ -695,6 +705,12 @@ const MovieDetails = () => {
                                 )}
                             </div>
                         </div>
+                        {isUpcoming && (
+                            <div className="unreleased-subtext">
+                                <Clock size={15} />
+                                <span>{countdownInfo?.text || "Not Yet Released • Coming Soon"}</span>
+                            </div>
+                        )}
                         <div className="details-hero-meta">
                             {rating && (
                                 <span className="rating" title="TMDB Rating">
@@ -910,7 +926,7 @@ const MovieDetails = () => {
                     <section className="similar-section">
                         <div className="section-header-with-arrows">
                             <h2 id="similar" className="details-section-title">Similar Movies</h2>
-                            <div className="similar-nav-arrows">
+                            <div className="slider-nav-arrows">
                                 <button 
                                     type="button" 
                                     className="nav-arrow-btn" 
@@ -929,17 +945,19 @@ const MovieDetails = () => {
                                 </button>
                             </div>
                         </div>
-                        <div className="similar-grid" ref={similarSliderRef}>
-                            {similarMovies.map((similar) => (
-                                <SimilarCard 
-                                    key={similar.id} 
-                                    item={similar} 
-                                    type="movie" 
-                                    navigate={navigate} 
-                                    onAddToList={setListModalItem}
-                                    activeListItemId={listModalItem?.item?.id ?? listModalItem?.id}
-                                />
-                            ))}
+                        <div className="similar-slider-wrapper">
+                            <div className="similar-slider" ref={similarSliderRef}>
+                                {similarMovies.map((similar) => (
+                                    <SimilarCard 
+                                        key={similar.id} 
+                                        item={similar} 
+                                        type="movie" 
+                                        navigate={navigate} 
+                                        onAddToList={setListModalItem}
+                                        activeListItemId={listModalItem?.item?.id ?? listModalItem?.id}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </section>
                 )}

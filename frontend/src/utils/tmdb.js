@@ -94,6 +94,61 @@ export const getStatusLabel = (item) => {
     return null;
 };
 
+export const getReleaseCountdownInfo = (releaseDateStr) => {
+    if (!releaseDateStr) return null;
+
+    const parts = releaseDateStr.split('-');
+    if (parts.length < 3) {
+        if (parts.length === 1 && parts[0] && parts[0].length === 4) {
+            return {
+                isFuture: true,
+                text: `Not Yet Released • Releases in ${parts[0]}`
+            };
+        }
+        return null;
+    }
+
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const day = parseInt(parts[2], 10);
+
+    const releaseDate = new Date(year, month, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    releaseDate.setHours(0, 0, 0, 0);
+
+    const diffTime = releaseDate.getTime() - today.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        return { isFuture: false, text: null };
+    }
+
+    const formattedDate = releaseDate.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+    });
+
+    let countdownPrefix = "";
+    if (diffDays === 0) {
+        countdownPrefix = "Releasing today";
+    } else if (diffDays === 1) {
+        countdownPrefix = "Coming tomorrow";
+    } else if (diffDays <= 30) {
+        countdownPrefix = `Coming in ${diffDays} days`;
+    } else {
+        countdownPrefix = "Not Yet Released";
+    }
+
+    return {
+        isFuture: true,
+        diffDays,
+        formattedDate,
+        text: `${countdownPrefix} • ${formattedDate}`
+    };
+};
+
 
 export const tmdbGetImages = async (type, id) => {
     try {

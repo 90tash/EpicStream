@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Star, ChevronDown, LayoutGrid, Plus, Check, 
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
 import ListModal from "../components/ListModal";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel, getRating, getYear, formatMediaType } from "../utils/tmdb";
 import { addToHistory, getWatchedEpisodes, removeEpisodeWatched, getHistory, removeFromHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
@@ -46,30 +46,12 @@ const formatEpisodeDate = (dateStr) => {
 
 /* eslint-disable react/prop-types */
 const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) => {
-    const [bannerUrl, setBannerUrl] = useState(imageUrl(item.backdrop_path || item.poster_path, "w780"));
     const [isWatched, setIsWatched] = useState(() => getHistory().some(h => h.id === item.id));
     const [isMobileActive, setIsMobileActive] = useState(false);
     const isListOpen = activeListItemId === item.id;
     const cardRef = useRef(null);
-
-    useEffect(() => {
-        const fetchTitledBanner = async () => {
-            try {
-                const data = await tmdbGetImages(type, item.id);
-                if (data.backdrops && data.backdrops.length > 0) {
-                    const titledBackdrops = data.backdrops.filter(b => b.iso_639_1 !== null);
-                    if (titledBackdrops.length > 0) {
-                        const enTitled = titledBackdrops.find(b => b.iso_639_1 === 'en');
-                        const selected = enTitled || titledBackdrops[0];
-                        setBannerUrl(imageUrl(selected.file_path, "w780"));
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching images for similar item:", error);
-            }
-        };
-        fetchTitledBanner();
-    }, [item.id, type]);
+    const rating = getRating(item);
+    const statusLabel = getStatusLabel(item);
 
     const handlePlay = (e) => {
         e.stopPropagation();
@@ -127,30 +109,30 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
             onClick={handleCardClick}
         >
             <div className="similar-card-img-wrapper">
-                <picture>
-                    <source media="(max-width: 900px)" srcSet={imageUrl(item.poster_path || item.backdrop_path, "w500")} />
-                    <img
-                        src={bannerUrl}
-                        alt={getTitle(item)}
-                        loading="lazy"
-                    />
-                </picture>
-                <div className="similar-card-shade" />
-                
+                <img
+                    src={imageUrl(item.poster_path || item.backdrop_path, "w500")}
+                    alt={getTitle(item)}
+                    loading="lazy"
+                />
+                {statusLabel && (
+                    <span className={`card-status-badge ${statusLabel.className}`}>
+                        {statusLabel.text}
+                    </span>
+                )}
                 {/* Mobile view info overlay */}
                 <div className="card-mobile-info-container">
                     <div className="card-mobile-title">{getTitle(item)}</div>
                     <div className="card-mobile-meta">
-                        {typeof item.vote_average === 'number' && item.vote_average > 0 && (
+                        {rating && parseFloat(rating) > 0 && (
                             <span className="mobile-rating-wrapper">
                                 <Star size={10} fill="currentColor" className="mobile-rating-star" />
-                                <span className="rating-mono">{item.vote_average.toFixed(1)}</span> • 
+                                <span className="rating-mono">{rating}</span> • 
                             </span>
                         )}
-                        {((item.release_date || item.first_air_date || "").slice(0, 4)) && (
-                            <span>{(item.release_date || item.first_air_date || "").slice(0, 4)} • </span>
+                        {getYear(item) && (
+                            <span>{getYear(item)} • </span>
                         )}
-                        <span>{type === "movie" ? "Movie" : "TV Show"}</span>
+                        <span>{formatMediaType(type)}</span>
                     </div>
                 </div>
 
@@ -190,18 +172,22 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
                 </div>
             </div>
             <span className="similar-card-title">{getTitle(item)}</span>
-            <div className="similar-card-meta">
-                {item.vote_average > 0 && (
-                    <span className="rating-value-wrapper">
-                        <Star size={13} fill="currentColor" /> 
-                        {item.vote_average.toFixed(1)}
-                    </span>
+            <span className="similar-card-meta">
+                {rating && (
+                    <>
+                        <Star size={13} fill="currentColor" />
+                        {rating}
+                        <span className="dot" />
+                    </>
                 )}
-                {((item.release_date || item.first_air_date || "").slice(0, 4)) && (
-                    <span>{(item.release_date || item.first_air_date || "").slice(0, 4)}</span>
+                {getYear(item) && (
+                    <>
+                        {getYear(item)}
+                        <span className="dot" />
+                    </>
                 )}
-                <span>{type === "movie" ? "Movie" : "TV Show"}</span>
-            </div>
+                {formatMediaType(type)}
+            </span>
         </div>
     );
 };
@@ -466,7 +452,7 @@ const TvDetails = () => {
                 }));
                 setCast(normalizedCast.slice(0, 36));
                 const prioritizedRecs = prioritizeSimilarContent(fullTvData, recsData || []);
-                setSimilarTv((prioritizedRecs || []).slice(0, 10));
+                setSimilarTv((prioritizedRecs || []).slice(0, 20));
 
                 const ytTrailers = (videosData?.results || []).filter(
                     v => v.site === "YouTube" && v.key && (v.type === "Trailer" || v.type === "Teaser")
@@ -1061,7 +1047,7 @@ const TvDetails = () => {
                     <section className="similar-section">
                         <div className="section-header-with-arrows">
                             <h2 id="similar" className="details-section-title">Similar TV Shows</h2>
-                            <div className="similar-nav-arrows">
+                            <div className="slider-nav-arrows">
                                 <button 
                                     type="button" 
                                     className="nav-arrow-btn" 
@@ -1080,17 +1066,19 @@ const TvDetails = () => {
                                 </button>
                             </div>
                         </div>
-                        <div className="similar-grid" ref={similarSliderRef}>
-                            {similarTv.map((similar) => (
-                                <SimilarCard 
-                                    key={similar.id} 
-                                    item={similar} 
-                                    type="tv" 
-                                    navigate={navigate} 
-                                    onAddToList={setListModalItem}
-                                    activeListItemId={listModalItem?.item?.id ?? listModalItem?.id}
-                                />
-                            ))}
+                        <div className="similar-slider-wrapper">
+                            <div className="similar-slider" ref={similarSliderRef}>
+                                {similarTv.map((similar) => (
+                                    <SimilarCard 
+                                        key={similar.id} 
+                                        item={similar} 
+                                        type="tv" 
+                                        navigate={navigate} 
+                                        onAddToList={setListModalItem}
+                                        activeListItemId={listModalItem?.item?.id ?? listModalItem?.id}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </section>
                 )}
