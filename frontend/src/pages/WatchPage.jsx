@@ -73,9 +73,9 @@ const AdsIcon = () => (
 );
 
 const WATCH_PROVIDERS = [
+    { id: "vidrift", name: "Rift(Best-Server)", rec: true },
     { id: "zxc", name: "Titan(Fast/HD)", rec: true },
     { id: "vidly", name: "Vidly(Fast/Multi)", rec: true },
-    { id: "vidrift", name: "Rift(Best-Server)", rec: true },
     // { id: "chillflix", name: "Chill(Best - Server)", rec: true },
     { id: "vidlove", name: "Atlas(HD-Server)", rec: true },
     { id: "atlantic", name: "Aqua(Fast-Server)", rec: true },
@@ -204,7 +204,7 @@ const WatchPage = () => {
         }
     };
 
-    // Default to the last used provider for this item, or default to "zxc" as fallback
+    // Default to the last used provider for this item, or default to "vidrift" as fallback
     const [selectedProvider, setSelectedProvider] = useState(() => {
         try {
             const historyItem = getHistory().find(h => h.id === Number(id));
@@ -215,7 +215,7 @@ const WatchPage = () => {
         } catch (e) {
             console.error("Failed to parse history for provider:", e);
         }
-        return "zxc"; // Default to Titan (zxcstream.cc)
+        return "vidrift"; // Default to Rift (vidrift)
     });
 
 
@@ -356,13 +356,13 @@ const WatchPage = () => {
         setEpisodes([]);
         setEpisodeQuery("");
 
-        // Set provider from history or default to zxc immediately when id changes
+        // Set provider from history or default to vidrift immediately when id changes
         setAnilistId(null);
         const historyItem = getHistory().find(h => h.id === Number(id));
         if (historyItem?.provider) {
             setSelectedProvider(historyItem.provider);
         } else {
-            setSelectedProvider("zxc");
+            setSelectedProvider("vidrift");
         }
 
         // Reset initial season and episode refs for the new title

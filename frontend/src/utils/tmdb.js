@@ -188,7 +188,8 @@ export const tmdbGetRecommendations = async (type, id) => {
 // To switch the main embed provider, uncomment your preferred option below 
 // and ensure all others are commented out.
 // =========================================================================
-export const ACTIVE_PROVIDER = "zxc"; // Option 1: Titan — zxcstream.cc (Default)
+export const ACTIVE_PROVIDER = "vidrift"; // Rift — embed.vidrift.in (Default)
+// export const ACTIVE_PROVIDER = "zxc"; // Titan — zxcstream.cc
 // export const ACTIVE_PROVIDER = "vidsrc_to"; // Option 2: VidSrc.to
 // export const ACTIVE_PROVIDER = "vidsrc_me"; // Option 3: VidSrc.me (Alternative API format)
 // export const ACTIVE_PROVIDER = "vidlink"; // Option 4: VidLink.pro (Default)
