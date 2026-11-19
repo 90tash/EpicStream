@@ -1,0 +1,316 @@
+/* Network Browse Section Styles */
+
+.network-browse-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.network-browse-section {
+    margin-bottom: 48px;
+    padding-left: clamp(22px, 3vw, 56px);
+    position: relative;
+}
+
+/* Icons Container with smooth scroll */
+.network-icons-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.network-icons-slider {
+    display: flex;
+    gap: clamp(16px, 1.8vw, 24px);
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 12px 8px 16px 8px;
+    margin-left: -8px;
+    margin-right: clamp(22px, 3vw, 56px);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.network-icons-slider::-webkit-scrollbar {
+    display: none;
+}
+
+/* Individual Network Item (Tile + Label) */
+.network-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    outline: none;
+    user-select: none;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.network-icon-box {
+    width: 68px;
+    height: 68px;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+                border-color 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000;
+    transform: translateZ(0);
+    isolation: isolate;
+    will-change: transform;
+}
+
+.network-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+    transition: transform 0.7s cubic-bezier(0.2, 1, 0.3, 1);
+    will-change: transform;
+}
+
+/* Hover State - follows EpicStream's UI animations (fluid scale in place on the whole tile) */
+.network-item:hover .network-icon-box {
+    transform: scale(1.05);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.65), 0 0 16px rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Active Press State - snappy spring response matching our UI */
+.network-item:active .network-icon-box {
+    transform: scale(0.94) !important;
+    transition-duration: 0.1s;
+}
+
+/* Selected State - only the label text changes to brand color, no thick white outline */
+.network-item.selected .network-icon-box {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.network-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: -0.01em;
+    transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1), font-weight 0.25s ease;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.network-item:hover .network-label {
+    color: #ffffff;
+}
+
+.network-item.selected .network-label {
+    color: var(--network-color, #ffffff);
+    font-weight: 700;
+}
+
+/* Slider Arrows for Network Icons */
+.network-slider-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-65%);
+    width: 38px;
+    height: 68px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, opacity 0.2s;
+    opacity: 0;
+}
+
+.network-icons-container:hover .network-slider-arrow {
+    opacity: 1;
+}
+
+.network-slider-arrow.left {
+    left: 0;
+    border-radius: 0 10px 10px 0;
+}
+
+.network-slider-arrow.right {
+    right: 0;
+    border-radius: 10px 0 0 10px;
+}
+
+.network-slider-arrow:hover {
+    background: rgba(0, 0, 0, 0.95);
+    color: #fff;
+}
+
+/* --- 2. Dynamic Popular on [Network] Section --- */
+.network-popular-section {
+    margin-bottom: 56px;
+    padding-left: clamp(22px, 3vw, 56px);
+    animation: networkSectionGlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes networkSectionGlide {
+    from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.99);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.network-popular-header {
+    width: calc(100% - clamp(22px, 3vw, 56px));
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 18px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.network-popular-header .section-title {
+    display: block;
+    margin-bottom: 0;
+    color: #ffffff;
+    gap: 0;
+}
+
+.network-heading-brand {
+    display: inline;
+    vertical-align: baseline;
+    color: var(--network-color, #ffffff);
+    transition: color 0.3s ease;
+}
+
+.network-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px 6px 10px;
+    border-radius: 9999px;
+    background: rgba(15, 17, 21, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    will-change: transform;
+}
+
+.network-clear-btn svg {
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.2s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.network-clear-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.32);
+    transform: scale(1.03);
+}
+
+.network-clear-btn:hover svg {
+    color: #ffffff;
+    transform: rotate(90deg);
+}
+
+.network-clear-btn:active {
+    transform: scale(0.96) !important;
+    transition-duration: 0.1s;
+}
+
+/* Items Slider Wrapper */
+.network-items-slider-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.network-items-slider-wrapper .row-arrow {
+    color: #ffffff !important;
+}
+
+.network-items-slider-wrapper .row-arrow:hover {
+    background: rgba(5, 6, 7, 0.95);
+    color: #ffffff !important;
+}
+
+.network-empty-message {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    padding: 24px 0;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .network-browse-section {
+        margin-bottom: 28px;
+        padding-left: 16px;
+    }
+
+    .network-icons-slider {
+        margin-right: 16px;
+        gap: 14px;
+        padding: 8px 0 12px 0;
+    }
+
+    .network-icon-box {
+        width: 58px;
+        height: 58px;
+        border-radius: 13px;
+    }
+
+    .network-label {
+        font-size: 11px;
+    }
+
+    .network-slider-arrow {
+        display: none !important;
+    }
+
+    .network-popular-section {
+        margin-bottom: 32px;
+        padding-left: 16px;
+    }
+
+    .network-popular-header {
+        width: calc(100% - 16px);
+        margin-bottom: 12px;
+    }
+
+    .network-popular-header .section-title {
+        font-size: 18px;
+    }
+
+    .network-clear-btn {
+        padding: 5px 10px 5px 8px;
+        font-size: 12px;
+    }
+}

@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Star, X, LayoutGrid, Plus, Check, Bookmark, 
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
 import ListModal from "../components/ListModal";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel, getReleaseCountdownInfo, isMajorStudio, getRating, getYear, formatMediaType } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel, getReleaseCountdownInfo, isMajorStudio, getRating, getYear, formatMediaType, getMediaType } from "../utils/tmdb";
 import { addToHistory, getHistory, removeFromHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
@@ -34,16 +34,26 @@ const formatDate = (dateStr) => {
 };
 
 /* eslint-disable react/prop-types */
-const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) => {
+const SimilarCard = ({ item, type, navigate, onAddToList, onWatchTrailer, activeListItemId }) => {
     const [isWatched, setIsWatched] = useState(() => getHistory().some(h => h.id === item.id));
     const [isMobileActive, setIsMobileActive] = useState(false);
     const isListOpen = activeListItemId === item.id;
     const cardRef = useRef(null);
     const rating = getRating(item);
     const statusLabel = getStatusLabel(item);
+    const countdownInfo = getReleaseCountdownInfo(item.release_date || item.first_air_date);
+    const isUpcoming = statusLabel?.text === "Upcoming" || !!countdownInfo?.isFuture;
 
     const handlePlay = (e) => {
         e.stopPropagation();
+        if (isUpcoming) {
+            if (onWatchTrailer) {
+                onWatchTrailer(item);
+            } else {
+                toast("Trailer not available yet", { icon: "🎬" });
+            }
+            return;
+        }
         addToHistory(item, type, type === "tv" ? 1 : null, type === "tv" ? 1 : null);
         navigate(`/watch/${type}/${item.id}${type === "tv" ? "?season=1&episode=1" : ""}`);
     };
@@ -128,7 +138,8 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
                 <div className={`card-hover-actions${isCardActive ? ' force-show' : ''}`}>
                     <button 
                         className="card-action-btn hover-play-btn"
-                        title="Play"
+                        title={isUpcoming ? "Watch Trailer" : "Play"}
+                        aria-label={isUpcoming ? "Watch Trailer" : "Play"}
                         onClick={handlePlay}
                     >
                         <Play size={16} fill="currentColor" />
@@ -144,13 +155,15 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
                     >
                         <Info size={16} />
                     </button>
-                    <button 
-                        className="card-action-btn"
-                        title={isWatched ? "Remove from Watched" : "Mark as Watched"}
-                        onClick={handleWatched}
-                    >
-                        <Eye size={16} color={isWatched ? "#4cd964" : "currentColor"} />
-                    </button>
+                    {!isUpcoming && (
+                        <button 
+                            className="card-action-btn"
+                            title={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                            onClick={handleWatched}
+                        >
+                            <Eye size={16} color={isWatched ? "#4cd964" : "currentColor"} />
+                        </button>
+                    )}
                     <button 
                         className="card-action-btn"
                         title="Add to List"
@@ -522,6 +535,39 @@ const MovieDetails = () => {
             setIsCreatingInline(false);
         } else {
             toast.error(res.error || "Failed to create list.");
+        }
+    };
+
+    const handleWatchTrailer = async (mediaItem) => {
+        if (!mediaItem) return;
+        const mediaType = getMediaType(mediaItem) || "movie";
+        try {
+            const data = await tmdbFetch(`/${mediaType}/${mediaItem.id}/videos`);
+            const ytTrailers = (data?.results || []).filter(
+                v => v.site === "YouTube" && v.key && (v.type === "Trailer" || v.type === "Teaser")
+            );
+            ytTrailers.sort((a, b) => {
+                const aIsTrailer = a.type === "Trailer" ? 1 : 0;
+                const bIsTrailer = b.type === "Trailer" ? 1 : 0;
+                if (aIsTrailer !== bIsTrailer) return bIsTrailer - aIsTrailer;
+
+                const aOfficial = a.official ? 1 : 0;
+                const bOfficial = b.official ? 1 : 0;
+                if (aOfficial !== bOfficial) return bOfficial - aOfficial;
+
+                const dateA = new Date(a.published_at || 0).getTime();
+                const dateB = new Date(b.published_at || 0).getTime();
+                return dateB - dateA;
+            });
+
+            if (ytTrailers.length > 0) {
+                setSelectedTrailer(ytTrailers[0]);
+            } else {
+                toast("Trailer not available yet", { icon: "🎬" });
+            }
+        } catch (err) {
+            console.error("Error fetching trailer:", err);
+            toast("Trailer not available yet", { icon: "🎬" });
         }
     };
 
@@ -954,6 +1000,7 @@ const MovieDetails = () => {
                                         type="movie" 
                                         navigate={navigate} 
                                         onAddToList={setListModalItem}
+                                        onWatchTrailer={handleWatchTrailer}
                                         activeListItemId={listModalItem?.item?.id ?? listModalItem?.id}
                                     />
                                 ))}

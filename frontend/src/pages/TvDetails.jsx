@@ -1,10 +1,10 @@
 import { useLocation, useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useRef, Fragment } from "react";
-import { ChevronLeft, ChevronRight, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark, Heart, Play, Eye, Info, ArrowUpRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, ChevronDown, LayoutGrid, Plus, Check, X, Bookmark, Heart, Play, Eye, Info, ArrowUpRight, Clock } from "lucide-react";
 import "./movieTvDetails.css";
 import toast from "react-hot-toast";
 import ListModal from "../components/ListModal";
-import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel, getRating, getYear, formatMediaType } from "../utils/tmdb";
+import { getTitle, imageUrl, tmdbFetch, tmdbGetSeason, tmdbGetRecommendations, tmdbGetImages, prioritizeSimilarContent, getStatusLabel, getRating, getYear, formatMediaType, getReleaseCountdownInfo, getMediaType } from "../utils/tmdb";
 import { addToHistory, getWatchedEpisodes, removeEpisodeWatched, getHistory, removeFromHistory } from "../utils/history";
 import { useWatchlistStore } from "../stores/watchlist";
 import { useCustomListsStore } from "../stores/customLists";
@@ -45,16 +45,26 @@ const formatEpisodeDate = (dateStr) => {
 };
 
 /* eslint-disable react/prop-types */
-const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) => {
+const SimilarCard = ({ item, type, navigate, onAddToList, onWatchTrailer, activeListItemId }) => {
     const [isWatched, setIsWatched] = useState(() => getHistory().some(h => h.id === item.id));
     const [isMobileActive, setIsMobileActive] = useState(false);
     const isListOpen = activeListItemId === item.id;
     const cardRef = useRef(null);
     const rating = getRating(item);
     const statusLabel = getStatusLabel(item);
+    const countdownInfo = getReleaseCountdownInfo(item.first_air_date || item.release_date);
+    const isUpcoming = statusLabel?.text === "Upcoming" || !!countdownInfo?.isFuture;
 
     const handlePlay = (e) => {
         e.stopPropagation();
+        if (isUpcoming) {
+            if (onWatchTrailer) {
+                onWatchTrailer(item);
+            } else {
+                toast("Trailer not available yet", { icon: "🎬" });
+            }
+            return;
+        }
         addToHistory(item, type, type === "tv" ? 1 : null, type === "tv" ? 1 : null);
         navigate(`/watch/${type}/${item.id}${type === "tv" ? "?season=1&episode=1" : ""}`);
     };
@@ -139,7 +149,8 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
                 <div className={`card-hover-actions${isCardActive ? ' force-show' : ''}`}>
                     <button 
                         className="card-action-btn hover-play-btn"
-                        title="Play"
+                        title={isUpcoming ? "Watch Trailer" : "Play"}
+                        aria-label={isUpcoming ? "Watch Trailer" : "Play"}
                         onClick={handlePlay}
                     >
                         <Play size={16} fill="currentColor" />
@@ -155,13 +166,15 @@ const SimilarCard = ({ item, type, navigate, onAddToList, activeListItemId }) =>
                     >
                         <Info size={16} />
                     </button>
-                    <button 
-                        className="card-action-btn"
-                        title={isWatched ? "Remove from Watched" : "Mark as Watched"}
-                        onClick={handleWatched}
-                    >
-                        <Eye size={16} color={isWatched ? "#4cd964" : "currentColor"} />
-                    </button>
+                    {!isUpcoming && (
+                        <button 
+                            className="card-action-btn"
+                            title={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                            onClick={handleWatched}
+                        >
+                            <Eye size={16} color={isWatched ? "#4cd964" : "currentColor"} />
+                        </button>
+                    )}
                     <button 
                         className="card-action-btn"
                         title="Add to List"
@@ -243,10 +256,36 @@ const TvDetails = () => {
         return history.some(h => h.id === currentId || (tv?.id && h.id === tv.id));
     });
 
+    const [lastPlayed, setLastPlayed] = useState(() => {
+        const history = getHistory();
+        const currentId = tv?.id || (id ? Number(id) : null);
+        const entry = history.find(h => (h.id === currentId || (currentId && Number(h.id) === Number(currentId))) && h.type === "tv");
+        if (entry?.season && entry?.episode) {
+            return { season: Number(entry.season), episode: Number(entry.episode) };
+        }
+        return null;
+    });
+
     useEffect(() => {
         const history = getHistory();
         const currentId = tv?.id || (id ? Number(id) : null);
         setIsWatched(history.some(h => h.id === currentId || (tv?.id && h.id === tv.id)));
+    }, [id, tv?.id]);
+
+    useEffect(() => {
+        const syncLastPlayed = () => {
+            const history = getHistory();
+            const currentId = tv?.id || (id ? Number(id) : null);
+            const entry = history.find(h => (h.id === currentId || (currentId && Number(h.id) === Number(currentId))) && h.type === "tv");
+            if (entry?.season && entry?.episode) {
+                setLastPlayed({ season: Number(entry.season), episode: Number(entry.episode) });
+            } else {
+                setLastPlayed(null);
+            }
+        };
+        syncLastPlayed();
+        window.addEventListener("focus", syncLastPlayed);
+        return () => window.removeEventListener("focus", syncLastPlayed);
     }, [id, tv?.id]);
 
     const handleToggleWatched = () => {
@@ -255,10 +294,14 @@ const TvDetails = () => {
         if (isWatched) {
             removeFromHistory(targetId);
             setIsWatched(false);
+            setLastPlayed(null);
             toast.success("Removed from watched");
         } else {
-            addToHistory(targetItem || { id: targetId }, "tv", selectedSeason || 1, 1);
+            const s = lastPlayed?.season || selectedSeason || 1;
+            const e = lastPlayed?.episode || 1;
+            addToHistory(targetItem || { id: targetId }, "tv", s, e);
             setIsWatched(true);
+            setLastPlayed({ season: s, episode: e });
             toast.success("Marked as watched");
         }
     };
@@ -430,10 +473,19 @@ const TvDetails = () => {
                 setTv({ ...fullTvData, title_logo: titleLogo });
                 setLogoFetched(true);
 
-                // Initialize first season
+                // Initialize default season (last played season if available, otherwise first season)
                 if (fullTvData.seasons?.length > 0) {
-                    const firstSeason = fullTvData.seasons.find(s => s.season_number > 0) || fullTvData.seasons[0];
-                    setSelectedSeason(firstSeason.season_number);
+                    const history = getHistory();
+                    const currentId = id ? Number(id) : fullTvData.id;
+                    const entry = history.find(h => (h.id === currentId || (currentId && Number(h.id) === Number(currentId))) && h.type === "tv");
+                    const targetSeasonNum = (entry && entry.season) ? Number(entry.season) : null;
+                    const matchedSeason = targetSeasonNum 
+                        ? fullTvData.seasons.find(s => s.season_number === targetSeasonNum) 
+                        : null;
+                    const defaultSeason = matchedSeason 
+                        || fullTvData.seasons.find(s => s.season_number > 0) 
+                        || fullTvData.seasons[0];
+                    setSelectedSeason(defaultSeason.season_number);
                 }
 
                 // Fetch other secondary data (aggregate credits across all seasons, recommendations, videos)
@@ -542,6 +594,43 @@ const TvDetails = () => {
     const seasonsList = tv.seasons?.filter(s => s.season_number > 0) || [];
     const currentSeasonName = seasonsList.find(s => s.season_number === selectedSeason)?.name || `Season ${selectedSeason}`;
 
+    const handleWatchTrailer = async (mediaItem) => {
+        if (!mediaItem) return;
+        const mediaType = getMediaType(mediaItem) || "tv";
+        try {
+            const data = await tmdbFetch(`/${mediaType}/${mediaItem.id}/videos`);
+            const ytTrailers = (data?.results || []).filter(
+                v => v.site === "YouTube" && v.key && (v.type === "Trailer" || v.type === "Teaser")
+            );
+            ytTrailers.sort((a, b) => {
+                const aIsTrailer = a.type === "Trailer" ? 1 : 0;
+                const bIsTrailer = b.type === "Trailer" ? 1 : 0;
+                if (aIsTrailer !== bIsTrailer) return bIsTrailer - aIsTrailer;
+
+                const aOfficial = a.official ? 1 : 0;
+                const bOfficial = b.official ? 1 : 0;
+                if (aOfficial !== bOfficial) return bOfficial - aOfficial;
+
+                const dateA = new Date(a.published_at || 0).getTime();
+                const dateB = new Date(b.published_at || 0).getTime();
+                return dateB - dateA;
+            });
+
+            if (ytTrailers.length > 0) {
+                setSelectedTrailer(ytTrailers[0]);
+            } else {
+                toast("Trailer not available yet", { icon: "🎬" });
+            }
+        } catch (err) {
+            console.error("Error fetching trailer:", err);
+            toast("Trailer not available yet", { icon: "🎬" });
+        }
+    };
+
+    const status = getStatusLabel(tv);
+    const countdownInfo = getReleaseCountdownInfo(tv?.first_air_date || tv?.release_date);
+    const isUpcoming = status?.text === "Upcoming" || !!countdownInfo?.isFuture;
+
     return (
         <div className="details-page">
             <button className="back-btn" onClick={() => navigate("/")} aria-label="Go back">
@@ -578,32 +667,55 @@ const TvDetails = () => {
                             <h1>{title}</h1>
                         ) : null}
                         <div className="details-actions">
-                            <button 
-                                className="details-play" 
-                                onClick={() => {
-                                    const status = getStatusLabel(tv);
-                                    if (status && (status.text === "In Cinemas" || status.text === "Upcoming")) {
-                                        setShowPlayWarning(true);
-                                    } else {
-                                        addToHistory(tv, "tv", selectedSeason || 1, 1);
-                                        navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`);
-                                    }
-                                }}
-                            >
-                                <svg viewBox="0 0 24 24" width={20} height={20} fill="currentColor">
-                                    <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
-                                </svg>
-                                <span>Play</span>
-                            </button>
+                            {isUpcoming ? (
+                                <button 
+                                    type="button"
+                                    className="details-play details-trailer-btn" 
+                                    onClick={() => {
+                                        if (trailers && trailers.length > 0) {
+                                            setSelectedTrailer(trailers[0]);
+                                        } else {
+                                            toast("Trailer not available yet", { icon: "🎬" });
+                                        }
+                                    }}
+                                    title="Watch Trailer"
+                                    aria-label="Watch Trailer"
+                                >
+                                    <Play size={20} fill="currentColor" />
+                                    <span>Watch Trailer</span>
+                                </button>
+                            ) : (
+                                <button 
+                                    className="details-play" 
+                                    onClick={() => {
+                                        const status = getStatusLabel(tv);
+                                        if (status && (status.text === "In Cinemas" || status.text === "Upcoming")) {
+                                            setShowPlayWarning(true);
+                                        } else {
+                                            const playSeason = lastPlayed?.season || selectedSeason || 1;
+                                            const playEpisode = lastPlayed?.episode || 1;
+                                            addToHistory(tv, "tv", playSeason, playEpisode);
+                                            navigate(`/watch/tv/${id}?season=${playSeason}&episode=${playEpisode}`);
+                                        }
+                                    }}
+                                >
+                                    <svg viewBox="0 0 24 24" width={20} height={20} fill="currentColor">
+                                        <path d="M9.5 4.3c-1.3-0.8-3 0.1-3 1.7v12c0 1.6 1.7 2.5 3 1.7l9.5-6c1.1-0.7 1.1-2.4 0-3.1l-9.5-6z" />
+                                    </svg>
+                                    <span>{lastPlayed ? `Play S${lastPlayed.season} E${lastPlayed.episode}` : "Play"}</span>
+                                </button>
+                            )}
 
-                            <button 
-                                className={`details-action-btn watched-btn ${isWatched ? 'active' : ''}`}
-                                onClick={handleToggleWatched}
-                                title={isWatched ? "Remove from Watched" : "Mark as Watched"}
-                                aria-label={isWatched ? "Remove from Watched" : "Mark as Watched"}
-                            >
-                                <Eye size={20} color={isWatched ? "#4cd964" : "currentColor"} />
-                            </button>
+                            {!isUpcoming && (
+                                <button 
+                                    className={`details-action-btn watched-btn ${isWatched ? 'active' : ''}`}
+                                    onClick={handleToggleWatched}
+                                    title={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                                    aria-label={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                                >
+                                    <Eye size={20} color={isWatched ? "#4cd964" : "currentColor"} />
+                                </button>
+                            )}
 
                             <div className="add-to-list-wrapper" ref={dropdownRef}>
                                 <button 
@@ -686,6 +798,12 @@ const TvDetails = () => {
                                 )}
                             </div>
                         </div>
+                        {isUpcoming && (
+                            <div className="unreleased-subtext">
+                                <Clock size={16} />
+                                <span>{countdownInfo?.text || "Not Yet Released • Coming Soon"}</span>
+                            </div>
+                        )}
                         <div className="details-hero-meta">
                             {rating && (
                                 <span className="rating" title="TMDB Rating">
@@ -933,9 +1051,13 @@ const TvDetails = () => {
                                         key={ep.id} 
                                         className={`episode-card ${isWatched ? "watched" : ""}`}
                                         onClick={() => {
-                                            addToHistory(tv, "tv", selectedSeason || 1, ep.episode_number || 1);
+                                            const epNum = ep.episode_number || 1;
+                                            const seasonNum = selectedSeason || 1;
+                                            addToHistory(tv, "tv", seasonNum, epNum);
                                             setWatchedEpisodes(getWatchedEpisodes(Number(id)));
-                                            navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=${ep.episode_number || 1}`);
+                                            setLastPlayed({ season: seasonNum, episode: epNum });
+                                            setIsWatched(true);
+                                            navigate(`/watch/tv/${id}?season=${seasonNum}&episode=${epNum}`);
                                         }}
                                     >
                                         <div className="episode-thumb-wrapper">
@@ -1075,6 +1197,7 @@ const TvDetails = () => {
                                         type="tv" 
                                         navigate={navigate} 
                                         onAddToList={setListModalItem}
+                                        onWatchTrailer={handleWatchTrailer}
                                         activeListItemId={listModalItem?.item?.id ?? listModalItem?.id}
                                     />
                                 ))}
@@ -1167,8 +1290,10 @@ const TvDetails = () => {
                                     className="warning-btn-primary"
                                     onClick={() => {
                                         setShowPlayWarning(false);
-                                        addToHistory(tv, "tv", selectedSeason || 1, 1);
-                                        navigate(`/watch/tv/${id}?season=${selectedSeason || 1}&episode=1`);
+                                        const playSeason = lastPlayed?.season || selectedSeason || 1;
+                                        const playEpisode = lastPlayed?.episode || 1;
+                                        addToHistory(tv, "tv", playSeason, playEpisode);
+                                        navigate(`/watch/tv/${id}?season=${playSeason}&episode=${playEpisode}`);
                                     }}
                                 >
                                     <svg viewBox="0 0 24 24" width={18} height={18} fill="currentColor">

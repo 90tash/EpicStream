@@ -1,10 +1,11 @@
 /* eslint-disable react/prop-types */
 import { ChevronLeft, ChevronRight, Info, Play, Star, ArrowUp, X, Pencil, Check, Plus, Bookmark, Heart, Eye, Clock } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ListModal from "../../components/ListModal";
+import NetworkBrowse from "../../components/NetworkBrowse";
 import { formatMediaType, getMediaType, getRating, getTitle, getYear, getStatusLabel, getReleaseCountdownInfo, imageUrl, tmdbFetch, tmdbGetImages } from "../../utils/tmdb";
 import { addToHistory, getHistory, removeFromHistory } from "../../utils/history";
 import { useWatchlistStore } from "../../stores/watchlist";
@@ -206,10 +207,12 @@ const HistoryCard = ({ item, openWatch, openDetails, onRemove, isEditing }) => {
     );
 };
 
-const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemId }) => {
+const MovieCard = ({ item, row, index, openDetails, onAddToList, onWatchTrailer, activeListItemId }) => {
     const type = getMediaType(item);
     const rating = getRating(item);
     const statusLabel = getStatusLabel(item);
+    const countdownInfo = getReleaseCountdownInfo(item.release_date || item.first_air_date);
+    const isUpcoming = statusLabel?.text === "Upcoming" || !!countdownInfo?.isFuture;
     const isListOpen = activeListItemId === item.id;
     
     const navigate = useNavigate();
@@ -219,6 +222,14 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemI
 
     const handlePlay = (e) => {
         e.stopPropagation();
+        if (isUpcoming) {
+            if (onWatchTrailer) {
+                onWatchTrailer(item);
+            } else {
+                toast("Trailer not available yet", { icon: "🎬" });
+            }
+            return;
+        }
         addToHistory(item, type, type === "tv" ? 1 : null, type === "tv" ? 1 : null);
         navigate(`/watch/${type}/${item.id}${type === "tv" ? "?season=1&episode=1" : ""}`);
     };
@@ -310,7 +321,8 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemI
                 <div className={`card-hover-actions${isCardActive ? ' force-show' : ''}`}>
                     <button 
                         className="card-action-btn hover-play-btn"
-                        title="Play"
+                        title={isUpcoming ? "Watch Trailer" : "Play"}
+                        aria-label={isUpcoming ? "Watch Trailer" : "Play"}
                         onClick={handlePlay}
                     >
                         <Play size={16} fill="currentColor" />
@@ -322,13 +334,15 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemI
                     >
                         <Info size={16} />
                     </button>
-                    <button 
-                        className="card-action-btn"
-                        title={isWatched ? "Remove from Watched" : "Mark as Watched"}
-                        onClick={handleWatched}
-                    >
-                        <Eye size={16} color={isWatched ? "#4cd964" : "currentColor"} />
-                    </button>
+                    {!isUpcoming && (
+                        <button 
+                            className="card-action-btn"
+                            title={isWatched ? "Remove from Watched" : "Mark as Watched"}
+                            onClick={handleWatched}
+                        >
+                            <Eye size={16} color={isWatched ? "#4cd964" : "currentColor"} />
+                        </button>
+                    )}
                     <button 
                         className="card-action-btn"
                         title="Add to List"
@@ -359,7 +373,7 @@ const MovieCard = ({ item, row, index, openDetails, onAddToList, activeListItemI
     );
 };
 
-const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory, onAddToList, activeListItemId }) => {
+const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory, onAddToList, onWatchTrailer, activeListItemId }) => {
     const sliderRef = useRef(null);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(false);
@@ -439,6 +453,7 @@ const MovieRow = ({ row, openDetails, openWatch, onRemoveHistory, onAddToList, a
                                 index={index}
                                 openDetails={openDetails}
                                 onAddToList={onAddToList}
+                                onWatchTrailer={onWatchTrailer}
                                 activeListItemId={activeListItemId}
                             />
                         )
@@ -710,10 +725,11 @@ const HomeScreen = () => {
     const heroCountdown = heroType === "movie" ? getReleaseCountdownInfo(heroContent?.release_date) : null;
     const isHeroUpcoming = heroType === "movie" && (heroStatus?.text === "Upcoming" || !!heroCountdown?.isFuture);
 
-    const handleWatchHeroTrailer = async () => {
-        if (!heroContent) return;
+    const handleWatchTrailer = async (mediaItem) => {
+        if (!mediaItem) return;
+        const mediaType = getMediaType(mediaItem) || "movie";
         try {
-            const data = await tmdbFetch(`/movie/${heroContent.id}/videos`);
+            const data = await tmdbFetch(`/${mediaType}/${mediaItem.id}/videos`);
             const ytTrailers = (data?.results || []).filter(
                 v => v.site === "YouTube" && v.key && (v.type === "Trailer" || v.type === "Teaser")
             );
@@ -740,6 +756,11 @@ const HomeScreen = () => {
             console.error("Error fetching trailer:", err);
             toast("Trailer not available yet", { icon: "🎬" });
         }
+    };
+
+    const handleWatchHeroTrailer = () => {
+        if (!heroContent) return;
+        handleWatchTrailer(heroContent);
     };
 
     return (
@@ -872,15 +893,26 @@ const HomeScreen = () => {
 
             <main className="browse-main">
                 {contentRows.map((row) => (
-                    <MovieRow 
-                        key={row.title} 
-                        row={row} 
-                        openDetails={openDetails} 
-                        openWatch={openWatch}
-                        onRemoveHistory={handleRemoveFromHistory}
-                        onAddToList={setListModalItem}
-                        activeListItemId={listModalItem?.item?.id ?? listModalItem?.id}
-                    />
+                    <Fragment key={row.title}>
+                        {row.topTen && (
+                            <NetworkBrowse 
+                                openDetails={openDetails} 
+                                openWatch={openWatch} 
+                                onAddToList={setListModalItem} 
+                                onWatchTrailer={handleWatchTrailer} 
+                                activeListItemId={listModalItem?.item?.id ?? listModalItem?.id} 
+                            />
+                        )}
+                        <MovieRow 
+                            row={row} 
+                            openDetails={openDetails} 
+                            openWatch={openWatch} 
+                            onRemoveHistory={handleRemoveFromHistory} 
+                            onAddToList={setListModalItem} 
+                            onWatchTrailer={handleWatchTrailer} 
+                            activeListItemId={listModalItem?.item?.id ?? listModalItem?.id} 
+                        />
+                    </Fragment>
                 ))}
             </main>
 
